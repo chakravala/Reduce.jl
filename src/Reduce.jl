@@ -44,7 +44,7 @@ import Base: string, show
 
 string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
 
-const slp = 0.01
+const slp = 0.1
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
 	# TODO: reimplement error handling here
