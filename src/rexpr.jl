@@ -75,10 +75,7 @@ function RExpr(expr::Expr)
   str = unparse(expr)
   for key in keys(jl_to_r_utf)
     str = replace(str,key,jl_to_r_utf[key]); end
-  _subst(jl_to_r,str); RExpr(str); end
-#  for key in keys(jl_to_r)
-#    str = _subst(jl_to_r[key], key, str); end
-#  RExpr(str); end
+  return _subst(jl_to_r,str) |> RExpr; end
 
 """
   parse(rexpr::RExpr)
@@ -90,12 +87,10 @@ julia> parse(ra\"sin(i*x)\")
 ```
 """
 function parse(r::RExpr)
-  str = r.str; _subst(r_to_jl,str)
-#  for key in keys(r_to_jl)
-#    str = _subst(r_to_jl[key], key, str); end
+  str = _subst(r_to_jl,r.str)
   for key in keys(r_to_jl_utf)
     str = replace(str,key,r_to_jl_utf[key]); end
-  parse(str); end
+  return parse(str); end
 
 convert(::Type{Compat.String}, r::RExpr) = r.str
 convert(::Type{Expr}, r::RExpr) = parse(r)
