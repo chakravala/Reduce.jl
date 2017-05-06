@@ -30,7 +30,7 @@ type RExpr; str::Compat.String; end
 macro ra_str(str); RExpr(str); end
 
 const r_to_jl = Dict(
-  "e"    => "e",
+  #"e"    => "e",
   "i"    => "im",
   "euler_gamma" => "eulergamma",
   "infinity"   =>  "Inf")
@@ -42,7 +42,7 @@ const r_to_jl_utf = Dict(
   #"khinchin" => "")
 
 const jl_to_r = Dict(
-  "e" => "e",
+  #"e" => "e",
   "eu" => "e",
   "pi" => "pi",
   "eulergamma" => "euler_gamma",
@@ -58,7 +58,7 @@ const jl_to_r_utf = Dict(
 
 function _subst(a, b, expr)
   rstr = "sub(($b) = ($a), ($expr))" |> RExpr
-  rstr = rcall(rstr); return rstr.str; end
+  result = rcall(rstr); return result.str; end
 
 """
   RExpr(expr::Expr)
@@ -72,7 +72,7 @@ julia> rcall(:(sin(x*im) + cos(y*ϕ)))
 function RExpr(expr::Expr)
   str = unparse(expr)
   for key in keys(jl_to_r_utf)
-    str = replace(str,"$(key)",jl_to_r_utf[key]); end
+    str = replace(str,key,jl_to_r_utf[key]); end
   for key in keys(jl_to_r)
     str = _subst(jl_to_r[key], key, str); end
   RExpr(str); end
@@ -112,6 +112,8 @@ julia> rcall(ans)
  - cos(x)
 ```
 """
+#function rcall(r::RExpr); write(rs, r.str); output = read(rs)
+#  return RExpr(replace(output,r"\n","")); end
 rcall(r::RExpr) = (write(rs, r.str); return RExpr(replace(read(rs),r"\n","")))
 
 """

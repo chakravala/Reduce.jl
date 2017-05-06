@@ -19,13 +19,13 @@ Base.process_exited(rs::ReduceSession) = process_exited(rs.process)
 
 function Base.write(rs::ReduceSession, input::Compat.String)
   # The line break right ..v.. there is apparently very important...
-  write(rs.input,"$input;\n"); write(rs.input,"symbolic write(string 4);\n"); end
+  write(rs.input,"$input; symbolic write(string 4);\n"); end
 
 if VERSION < v"0.5.0"
   function Base.write(rs::ReduceSession, input::UTF8String)
-    write(rs.input, "$input;\n"); write(rs.input, "symbolic write(string 4);\n"); end
+    write(rs.input, "$input; symbolic write(string 4);\n"); end
   function Base.write(rs::ReduceSession, input::ASCIIString)
-    write(rs.input, "$input;\n"); write(rs.input, "symbolic write(string 4);\n"); end
+    write(rs.input, "$input; symbolic write(string 4);\n"); end
 end
 
 function ReduceCheck(output)
@@ -34,7 +34,8 @@ function ReduceCheck(output)
 const EOT = Char('$') # end of transmission character
 function Base.read(rs::ReduceSession)
   output = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
-  ReduceCheck(output); return split(output,EOT)[1] |> str -> rstrip(str,EOT); end
+  ReduceCheck(output); output = split(output,EOT)[1] |> str -> rstrip(str,EOT)
+  output = replace(output,r": ",EOT); return split(output,EOT)[end]; end
 
 include("rexpr.jl")
 
@@ -47,14 +48,15 @@ import Base: string, show
 string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-  rcall(ra"on nat"); write(rs, "$r"); output = read(rs)
-  ReduceCheck(output); rcall(ra"off nat")
-  print(io,split(output,"\n\n")[1]); end
+  rcall(ra"on nat"); write(rs, r.str); output = readuntil(rs.output,Char(4)) |> String
+  readavailable(rs.output); ReduceCheck(output); rcall(ra"off nat")
+  output = join(split(output,"\n\n")[1:end-1])
+  output = replace(output,r": ",EOT); print(io,split(output,EOT)[end]); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-  rcall("on latex"); write(rs, "$r"); output = read(rs)
+  rcall("on latex"); write(rs, r.str); output = read(rs)
   ReduceCheck(output); rcall("off latex")
-  print(io,"\$\$"*split(output,"\n")[2]*"\$\$"); end
+  print(io,"\$\$"*join(split(output,"\n")[2:end-3],"\n")*"\$\$"); end
 
 ## Setup
 
@@ -70,7 +72,9 @@ const rs = ReduceSession()	# Spin up a Reduce session
 atexit(() -> kill(rs))  	# Kill the session on exit
 
 write(rs,"off nat")
-println(split(String(read(rs)),'\n')[end-3])
+redpsl = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
+ReduceCheck(redpsl); redpsl = split(redpsl,EOT)[1] |> str -> rstrip(str,EOT)
+println(split(String(redpsl),'\n')[end-3])
 rcall("load_package rlfi")
 
 # REPL setup
