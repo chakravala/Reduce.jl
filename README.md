@@ -7,14 +7,22 @@ julia> Pkg.clone("git://github.com/chakravala/Reduce.jl.git")
 julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
-Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE. In IJulia the output of `RExpr` will be displayed using LaTeX.
-
+Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE. In `IJulia` the output of `RExpr` will be displayed using LaTeX.
 ```Julia
-julia> rcall(:((1+π)^2))
-:(π ^ 2 + 2π + 1)
+julia> rcall(:((1+π+x)^2))
+:(π ^ 2 + 2 * π * x + 2π + x ^ 2 + 2x + 1)
 
 julia> rcall(:(sin(x*im) + cos(y*ϕ)))
 :(cos((sqrt(5) * y + y) / 2) + sinh(x) * im)
+
+julia> Meta.show_sexpr(ans)
+(:call, :+, (:call, :cos, (:call, :/, (:call, :+, (:call, :*, (:call, :sqrt, 5), :y), :y), 2)), (:call, :*, (:call, :sinh, :x), :im))
+
+julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
+
+     sqrt(5)*y + y
+cos(---------------) + sinh(x)*i
+           2
 
 julia> rcall("int(sin(y)^2, y)")
 "( - cos(y)*sin(y) + y)/2"
