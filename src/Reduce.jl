@@ -17,41 +17,40 @@ immutable ReduceSession <: Base.AbstractPipe
 Base.kill(rs::ReduceSession) = kill(rs.process)
 Base.process_exited(rs::ReduceSession) = process_exited(rs.process)
 
+const EOT = Char(4) # end of transmission character
 function Base.write(rs::ReduceSession, input::Compat.String)
-  # The line break right ..v.. there is apparently very important...
-  write(rs.input,"$input; symbolic write(string 4);\n"); end
+  write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
 
 if VERSION < v"0.5.0"
   function Base.write(rs::ReduceSession, input::UTF8String)
-    write(rs.input, "$input; symbolic write(string 4);\n"); end
+  write(rs.input, "$input; symbolic write(string $(Int(EOT)));\n"); end
   function Base.write(rs::ReduceSession, input::ASCIIString)
-    write(rs.input, "$input; symbolic write(string 4);\n"); end
+  write(rs.input, "$input; symbolic write(string $(Int(EOT)));\n"); end
 end
 
 function ReduceCheck(output)
   contains(output,"***** ") && throw(ReduceError(split(output,'\n')[end-2])); end
 
-const EOT = Char('$') # end of transmission character
+const EOS = Char('$') # delimiter character
 function Base.read(rs::ReduceSession)
-  output = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
-  ReduceCheck(output); output = split(output,EOT)[1] #|> str -> rstrip(str,EOT)
-  output = replace(output,r"[0-9]: ",EOT); return split(output,EOT)[end]; end
+  output = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
+  ReduceCheck(output); output = split(output,EOS)[1] |> str -> rstrip(str,EOT)
+  output = replace(output,r"[0-9]: ",EOS); return split(output,EOS)[end]; end
 
 include("rexpr.jl")
 
 ## io
 
 export string, show
-
 import Base: string, show
 
 string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-  rcall(ra"on nat"); write(rs, r.str); output = readuntil(rs.output,Char(4)) |> String
+  rcall(ra"on nat"); write(rs, r.str); output = readuntil(rs.output,EOT) |> String
   readavailable(rs.output); ReduceCheck(output); rcall(ra"off nat")
   output = join(split(output,"\n\n")[1:end-1])
-  output = replace(output,r": ",EOT); print(io,split(output,EOT)[end]); end
+  output = replace(output,r": ",EOS); print(io,split(output,EOS)[end]); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall(ra"on latex"); write(rs, r.str); output = read(rs)
@@ -68,18 +67,18 @@ catch err
 
 # Server setup
 
-const rs = ReduceSession()	# Spin up a Reduce session
-atexit(() -> kill(rs))  	# Kill the session on exit
+const rs = ReduceSession()  # Spin up a Reduce session
+atexit(() -> kill(rs))      # Kill the session on exit
 
 write(rs,"off nat")
-redpsl = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
-ReduceCheck(redpsl); redpsl = split(redpsl,EOT)[1] |> str -> rstrip(str,EOT)
+redpsl = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
+ReduceCheck(redpsl); redpsl = split(redpsl,EOS)[1] |> str -> rstrip(str,EOS)
 println(split(String(redpsl),'\n')[end-3])
 ra"load_package rlfi" |> rcall
 
 # REPL setup
-#repl_active = isdefined(Base, :active_repl)	# Is an active repl defined?
-#interactive = isinteractive()				# In interactive mode?
+#repl_active = isdefined(Base, :active_repl)  # Is an active repl defined?
+#interactive = isinteractive()                # In interactive mode?
 
 #if repl_active && interactive
 #  repl_init(Base.active_repl)
