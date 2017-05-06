@@ -56,8 +56,10 @@ const jl_to_r_utf = Dict(
   "ϕ" => "golden_ratio",
   "^" => "**")
 
-function _subst(a, b, expr)
-  rstr = "sub(($b) = ($a), ($expr))" |> RExpr
+function _subst(syme,expr)
+  str = ""; for key in keys(syme)
+    str = str*"($key)=($(syme[key])),"; end
+  rstr = "sub({$(str[1:end-1])},($expr))" |> RExpr
   result = rcall(rstr); return result.str; end
 
 """
@@ -73,9 +75,10 @@ function RExpr(expr::Expr)
   str = unparse(expr)
   for key in keys(jl_to_r_utf)
     str = replace(str,key,jl_to_r_utf[key]); end
-  for key in keys(jl_to_r)
-    str = _subst(jl_to_r[key], key, str); end
-  RExpr(str); end
+  _subst(jl_to_r,str); RExpr(str); end
+#  for key in keys(jl_to_r)
+#    str = _subst(jl_to_r[key], key, str); end
+#  RExpr(str); end
 
 """
   parse(rexpr::RExpr)
@@ -87,9 +90,9 @@ julia> parse(ra\"sin(i*x)\")
 ```
 """
 function parse(r::RExpr)
-  str = r.str
-  for key in keys(r_to_jl)
-    str = _subst(r_to_jl[key], key, str); end
+  str = r.str; _subst(r_to_jl,str)
+#  for key in keys(r_to_jl)
+#    str = _subst(r_to_jl[key], key, str); end
   for key in keys(r_to_jl_utf)
     str = replace(str,key,r_to_jl_utf[key]); end
   parse(str); end
@@ -112,8 +115,6 @@ julia> rcall(ans)
  - cos(x)
 ```
 """
-#function rcall(r::RExpr); write(rs, r.str); output = read(rs)
-#  return RExpr(replace(output,r"\n","")); end
 rcall(r::RExpr) = (write(rs, r.str); return RExpr(replace(read(rs),r"\n","")))
 
 """
