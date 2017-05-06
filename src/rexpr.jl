@@ -6,7 +6,7 @@ export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
 import Base: parse, convert, error, ==, getindex
 
 type ReduceError <: Exception; errstr::Compat.String; end
-Base.showerror(io::IO, err::ReduceError) = print(io, err.errstr)
+Base.showerror(io::IO, err::ReduceError) = print(io,"REDUCE: "*err.errstr)
 
 const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
@@ -52,13 +52,13 @@ const jl_to_r_utf = Dict(
   "ϕ"             =>  "golden_ratio",
   "^"             =>  "**")
 
-function _syme(syme); str = ""; for key in keys(syme)
+function _syme(syme::Dict{String,String}); str = ""; for key in keys(syme)
   str = str*"($key)=($(syme[key])),"; end; return str[1:end-1]; end
 
 const symrjl = _syme(r_to_jl)
 const symjlr = _syme(jl_to_r)
 
-_subst(syme,expr) = rcall(RExpr("sub({$syme},($expr))"))
+_subst(syme::String,expr) = "sub({$syme},($expr))" |> RExpr |> rcall
 
 """
   RExpr(expr::Expr)
@@ -108,7 +108,7 @@ julia> rcall(ans)
  - cos(x)
 ```
 """
-rcall(r::RExpr) = (write(rs, r.str); return RExpr(replace(read(rs),r"\n","")))
+rcall(r::RExpr) = (write(rs, r.str); return replace(read(rs),r"\n","") |> RExpr)
 
 """
   rcall{T}(expr::T)
@@ -125,5 +125,5 @@ julia> rcall(:(int(1/(1+x^2), x)))
 rcall{T}(expr::T) = convert(T, rcall(RExpr(expr)))
 
 function ==(r::RExpr, s::RExpr)
-  return rcall(RExpr("if ($r) = ($s) then 1 else 0")) |> parse |> eval |> Bool; end
-getindex(r::RExpr, i) = (return RExpr("$r($i)") |> rcall)
+  return "if ($r) = ($s) then 1 else 0" |> rcall |> parse |> eval |> Bool; end
+getindex(r::RExpr, i) = "$r($i)" |> rcall

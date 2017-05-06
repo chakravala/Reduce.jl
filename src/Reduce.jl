@@ -34,7 +34,7 @@ function ReduceCheck(output)
 const EOT = Char('$') # end of transmission character
 function Base.read(rs::ReduceSession)
   output = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
-  ReduceCheck(output); output = split(output,EOT)[1] |> str -> rstrip(str,EOT)
+  ReduceCheck(output); output = split(output,EOT)[1] #|> str -> rstrip(str,EOT)
   output = replace(output,r"[0-9]: ",EOT); return split(output,EOT)[end]; end
 
 include("rexpr.jl")
@@ -54,8 +54,8 @@ string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
   output = replace(output,r": ",EOT); print(io,split(output,EOT)[end]); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-  rcall("on latex"); write(rs, r.str); output = read(rs)
-  ReduceCheck(output); rcall("off latex")
+  rcall(ra"on latex"); write(rs, r.str); output = read(rs)
+  ReduceCheck(output); rcall(ra"off latex")
   print(io,"\$\$"*join(split(output,"\n")[2:end-3],"\n")*"\$\$"); end
 
 ## Setup
@@ -75,7 +75,7 @@ write(rs,"off nat")
 redpsl = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
 ReduceCheck(redpsl); redpsl = split(redpsl,EOT)[1] |> str -> rstrip(str,EOT)
 println(split(String(redpsl),'\n')[end-3])
-rcall("load_package rlfi")
+ra"load_package rlfi" |> rcall
 
 # REPL setup
 #repl_active = isdefined(Base, :active_repl)	# Is an active repl defined?
