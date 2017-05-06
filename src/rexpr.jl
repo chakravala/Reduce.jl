@@ -53,7 +53,7 @@ const jl_to_r_utf = Dict(
   "^"             =>  "**")
 
 function _syme(syme); str = ""; for key in keys(syme)
-  str = str*"($key)=($(syme[key])),"; return str[1:end-1]; end
+  str = str*"($key)=($(syme[key])),"; end; return str[1:end-1]; end
 
 const symrjl = _syme(r_to_jl)
 const symjlr = _syme(jl_to_r)
