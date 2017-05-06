@@ -53,7 +53,8 @@ const jl_to_r = Dict(
 const jl_to_r_utf = Dict(
   "π" => "pi",
   "γ" => "euler_gamma",
-  "ϕ" => "golden_ratio")
+  "ϕ" => "golden_ratio",
+  "^" => "**")
 
 function _subst(a, b, expr)
   rstr = "sub(($b) = ($a), ($expr))" |> RExpr
@@ -113,7 +114,7 @@ julia> rcall(ans)
 """
 function rcall(r::RExpr)
   write(rs, r.str); sleep(slp); output = read(rs)
-  return RExpr(split(output,'\n')[end]); end
+  return RExpr(replace(output,r"\n","")); end
 
 """
 	rcall{T}(expr::T)
@@ -130,5 +131,5 @@ julia> rcall(:(int(1/(1+x^2), x)))
 rcall{T}(expr::T) = convert(T, rcall(RExpr(expr)))
 
 function ==(r::RExpr, s::RExpr)
-  return rcall(RExpr("if ($r) = ($s) then 1 else 0")) |> parse |> eval; end
-getindex(r::RExpr, i) = (return Bool(RExpr("$r($i)") |> rcall))
+  return rcall(RExpr("if ($r) = ($s) then 1 else 0")) |> parse |> eval |> Bool; end
+getindex(r::RExpr, i) = (return RExpr("$r($i)") |> rcall)
