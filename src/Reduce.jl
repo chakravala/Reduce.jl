@@ -5,14 +5,14 @@ using Compat; import Compat.String
 #   Copyright (C) 2017 Michael Reed
 
 immutable ReduceSession <: Base.AbstractPipe
-	input::Pipe; output::Pipe; process::Base.Process
-	function ReduceSession()
-		# Setup pipes and reduce process
-		input = Pipe(); output = Pipe()
-		process = spawn(`redpsl`, (input, output, STDERR))
-		# Close the unneeded ends of Pipes
-		close(input.out); close(output.in)
-		return new(input, output, process); end; end
+  input::Pipe; output::Pipe; process::Base.Process
+  function ReduceSession()
+    # Setup pipes and reduce process
+    input = Pipe(); output = Pipe()
+    process = spawn(`redpsl`, (input, output, STDERR))
+    # Close the unneeded ends of Pipes
+    close(input.out); close(output.in)
+    return new(input, output, process); end; end
 
 Base.kill(rs::ReduceSession) = kill(rs.process)
 Base.process_exited(rs::ReduceSession) = process_exited(rs.process)
