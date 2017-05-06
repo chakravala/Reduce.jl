@@ -49,7 +49,7 @@ const slp = 0.1
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
 	rcall(ra"on nat"); write(rs, "$r"); sleep(slp); output = read(rs)
   contains(output, rederr) && throw(ReduceError(split(output,'\n')[end-2]))
-  output = split(output,"\n\n")[1]; rcall(ra"off nat"); print(io, str); end
+  output = split(output,"\n\n")[1]; rcall(ra"off nat"); print(io, output); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall("on latex"); write(rs, "$r"); sleep(slp); output = read(rs)
