@@ -14,7 +14,7 @@ show_expr(io::IO, ex) = print(io, ex)
 
 function show_expr(io::IO, expr::Expr)
   if expr.head != :call; error("Block structure is not supported by Reduce.jl")
-  else; isinfix(expr.args) ? print(io,"$(expr.args[1])\n") : show_expr(io, expr.args[1])
+  else; isinfix(expr.args) ? print(io,"$(expr.args[1])") : show_expr(io, expr.args[1])
     print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
       show_expr(io, arg); i!=endof(args) ? print(io,","):print(io,")"); end; end; end
 unparse(expr::Expr) = (io = IOBuffer(); show_expr(io, expr); return String(io))

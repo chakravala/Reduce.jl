@@ -22,10 +22,10 @@ function Base.write(rs::ReduceSession, input::Compat.String)
 	write(rs.input, "$input;\n"); end
 
 if VERSION < v"0.5.0"
-    function Base.write(rs::ReduceSession, input::UTF8String)
-        write(rs.input, "$input;\n"); write(rs.input, "print(ascii(4))\$"); end
-    function Base.write(rs::ReduceSession, input::ASCIIString)
-        write(rs.input, "$input;\n"); write(rs.input, "print(ascii(4))\$"); end
+  function Base.write(rs::ReduceSession, input::UTF8String)
+    write(rs.input, "$input;\n"); write(rs.input, "print(ascii(4))\$"); end
+  function Base.write(rs::ReduceSession, input::ASCIIString)
+    write(rs.input, "$input;\n"); write(rs.input, "print(ascii(4))\$"); end
 end
 
 const rederr = "***** "
@@ -47,20 +47,14 @@ string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
 const slp = 0.1
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-	# TODO: reimplement error handling here
-	rcall(ra"on nat")
-	write(rs, "$r")
-  sleep(slp)
-	str = read(rs)
-  str = split(str,"\n\n")[1]
-	rcall(ra"off nat")
-	print(io, str); end
+	rcall(ra"on nat"); write(rs, "$r"); sleep(slp); output = read(rs)
+  contains(output, rederr) && throw(ReduceError(split(output,'\n')[end-2]))
+  output = split(output,"\n\n")[1]; rcall(ra"off nat"); print(io, str); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-  # TODO: and here...
-  rcall("on latex"); write(rs, "$r")
-  print(io,"\$\$"*split(read(rs),"\n")[2]*"\$\$")
-  rcall("off latex"); end
+  rcall("on latex"); write(rs, "$r"); sleep(slp); output = read(rs)
+  contains(output, rederr) && throw(ReduceError(split(output,'\n')[end-2]))
+  print(io,"\$\$"*split(output,"\n")[2]*"\$\$"); rcall("off latex"); end
 
 ## Setup
 
