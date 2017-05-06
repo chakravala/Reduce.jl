@@ -56,13 +56,11 @@ const slp = 0.1
 	rcall(ra"off nat")
 	print(io, str); end
 
-#=
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   # TODO: and here...
-  write(rs, "tex('($r))\$")
-  print(io,read(rs))
-end
-=#
+  rcall("on latex"); write(rs, "$r")
+  print(io,"\$\$"*split(read(rs),"\n")[2]*"\$\$")
+  rcall("off latex"); end
 
 ## Setup
 
@@ -78,7 +76,8 @@ const rs = ReduceSession()	# Spin up a Reduce session
 atexit(() -> kill(rs))  	# Kill the session on exit
 
 write(rs,"off nat"); sleep(slp)
-print(split(String(readavailable(rs.output)),'\n')[end-3])
+println(split(String(readavailable(rs.output)),'\n')[end-3])
+rcall("load_package rlfi")
 
 # REPL setup
 #repl_active = isdefined(Base, :active_repl)	# Is an active repl defined?

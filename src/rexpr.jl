@@ -1,14 +1,12 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ReduceSyntaxError, ==, getindex
+export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
 
 import Base: parse, convert, error, ==, getindex
 
 type ReduceError <: Exception; errstr::Compat.String; end
 Base.showerror(io::IO, err::ReduceError) = print(io, err.errstr)
-type ReduceSyntaxError <: Exception; errstr::Compat.String; end
-Base.showerror(io::IO, err::ReduceSyntaxError) = print(io, err.errstr)
 
 const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
@@ -16,7 +14,7 @@ show_expr(io::IO, ex) = print(io, ex)
 
 function show_expr(io::IO, expr::Expr)
   if expr.head != :call; error("Block structure is not supported by Reduce.jl")
-  else; isinfix(expr.args) ? print(io,"$(expr.args[1])") : show_expr(io, expr.args[1])
+  else; isinfix(expr.args) ? print(io,"$(expr.args[1])\n") : show_expr(io, expr.args[1])
     print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
       show_expr(io, arg); i!=endof(args) ? print(io,","):print(io,")"); end; end; end
 unparse(expr::Expr) = (io = IOBuffer(); show_expr(io, expr); return String(io))
@@ -41,7 +39,6 @@ const r_to_jl_utf = Dict(
   "pi"   => "π",
   "golden_ratio"  =>  "φ",
   "**"   => "^")
-  #"catalan" =>  "catalannum",
   #"khinchin" => "")
 
 const jl_to_r = Dict(
@@ -67,8 +64,8 @@ function _subst(a, b, expr)
 Convert Julia expression to Reduce expression
 ## Examples
 ```julia
-julia> RExpr(:(sin(x*im) + cos(y*φ)))
-                           cos(%phi y) + %i sinh(x)
+julia> rcall(:(sin(x*im) + cos(y*ϕ)))
+:(cos((sqrt(5) * y + y) / 2) + sinh(x) * im)
 ```
 """
 function RExpr(expr::Expr)
@@ -85,7 +82,7 @@ Parse a Reduce expression into a Julia expression
 ## Examples
 ```julia
 julia> parse(ra\"sin(i*x)\")
-:(im * sinh(x))
+:(sinh(x) * im)
 ```
 """
 function parse(r::RExpr)
@@ -108,10 +105,10 @@ end
 Evaluate a Reduce expression.
 ## Examples
 ```julia
-julia> ra\"integrate(sin(x), x)\"
-                             integrate(sin(x), x)
+julia> ra\"int(sin(x), x)\"
+ - cos(x)
 julia> rcall(ans)
-                                   - cos(x)
+ - cos(x)
 ```
 """
 function rcall(r::RExpr)
@@ -125,8 +122,8 @@ output back into the input type
 ## Examples
 ```julia
 julia> rcall(\"integrate(sin(y)^2, y)\")
-\"(y-sin(2*y)/2)/2\"
-julia> rcall(:(integrate(1/(1+x^2), x)))
+\"( - cos(y)*sin(y) + y)/2\"
+julia> rcall(:(int(1/(1+x^2), x)))
 :(atan(x))
 ```
 """
@@ -134,4 +131,4 @@ rcall{T}(expr::T) = convert(T, rcall(RExpr(expr)))
 
 function ==(r::RExpr, s::RExpr)
   return rcall(RExpr("if ($r) = ($s) then 1 else 0")) |> parse |> eval; end
-getindex(r::RExpr, i) = (return RExpr("$r($i)") |> rcall)
+getindex(r::RExpr, i) = (return Bool(RExpr("$r($i)") |> rcall))
