@@ -30,37 +30,35 @@ type RExpr; str::Compat.String; end
 macro ra_str(str); RExpr(str); end
 
 const r_to_jl = Dict(
-  #"e"    => "e",
-  "i"    => "im",
-  "euler_gamma" => "eulergamma",
-  "infinity"   =>  "Inf")
+  "i"             =>  "im",
+  "euler_gamma"   =>  "eulergamma",
+  "infinity"      =>  "Inf")
 
 const r_to_jl_utf = Dict(
-  "pi"   => "π",
+  "pi"            =>  "π",
   "golden_ratio"  =>  "φ",
-  "**"   => "^")
-  #"khinchin" => "")
+  "**"            =>  "^")
 
 const jl_to_r = Dict(
-  #"e" => "e",
-  "eu" => "e",
-  "pi" => "pi",
-  "eulergamma" => "euler_gamma",
-  "golden" => "golden_ratio",
-  "im" => "i",
-  "Inf" => "infinity")
+  "eu"            =>  "e",
+  "eulergamma"    =>  "euler_gamma",
+  "golden"        =>  "golden_ratio",
+  "im"            =>  "i",
+  "Inf"           =>  "infinity")
 
 const jl_to_r_utf = Dict(
-  "π" => "pi",
-  "γ" => "euler_gamma",
-  "ϕ" => "golden_ratio",
-  "^" => "**")
+  "π"             =>  "pi",
+  "γ"             =>  "euler_gamma",
+  "ϕ"             =>  "golden_ratio",
+  "^"             =>  "**")
 
-function _subst(syme,expr)
-  str = ""; for key in keys(syme)
-    str = str*"($key)=($(syme[key])),"; end
-  rstr = "sub({$(str[1:end-1])},($expr))" |> RExpr
-  result = rcall(rstr); return result.str; end
+function _syme(syme); str = ""; for key in keys(syme)
+  str = str*"($key)=($(syme[key])),"; return str[1:end-1]; end
+
+const symrjl = _syme(r_to_jl)
+const symjlr = _syme(jl_to_r)
+
+_subst(syme,expr) = rcall(RExpr("sub({$syme},($expr))"))
 
 """
   RExpr(expr::Expr)
@@ -75,7 +73,7 @@ function RExpr(expr::Expr)
   str = unparse(expr)
   for key in keys(jl_to_r_utf)
     str = replace(str,key,jl_to_r_utf[key]); end
-  return _subst(jl_to_r,str) |> RExpr; end
+  return _subst(symjlr,str); end
 
 """
   parse(rexpr::RExpr)
@@ -87,7 +85,7 @@ julia> parse(ra\"sin(i*x)\")
 ```
 """
 function parse(r::RExpr)
-  str = _subst(r_to_jl,r.str)
+  str = _subst(symrjl,r.str).str
   for key in keys(r_to_jl_utf)
     str = replace(str,key,r_to_jl_utf[key]); end
   return parse(str); end
