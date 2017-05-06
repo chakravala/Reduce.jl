@@ -35,7 +35,7 @@ const EOT = Char('$') # end of transmission character
 function Base.read(rs::ReduceSession)
   output = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
   ReduceCheck(output); output = split(output,EOT)[1] |> str -> rstrip(str,EOT)
-  output = replace(output,r": ",EOT); return split(output,EOT)[end]; end
+  output = replace(output,r"[0-9]: ",EOT); return split(output,EOT)[end]; end
 
 include("rexpr.jl")
 

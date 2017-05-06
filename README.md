@@ -1,6 +1,6 @@
 # Reduce.jl
 
-Interface for [reduce algebra](http://www.reduce-algebra.com/index.htm) for symbolic manipulation of [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using reduce algebra's term rewrite system.
+Interface for applying [reduce algebra](http://www.reduce-algebra.com/index.htm)'s symbolic manipulation on [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using REDUCE's term rewrite system.
 
 ```Julia
 julia> Pkg.clone("git://github.com/chakravala/Reduce.jl.git")
