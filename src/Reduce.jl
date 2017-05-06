@@ -18,21 +18,23 @@ Base.kill(rs::ReduceSession) = kill(rs.process)
 Base.process_exited(rs::ReduceSession) = process_exited(rs.process)
 
 function Base.write(rs::ReduceSession, input::Compat.String)
-	# The line break right ..v.. there is apparently very important...
-	write(rs.input, "$input;\n"); end
+  # The line break right ..v.. there is apparently very important...
+  write(rs.input,"$input;\n"); write(rs.input,"symbolic write(string 4);\n"); end
 
 if VERSION < v"0.5.0"
   function Base.write(rs::ReduceSession, input::UTF8String)
-    write(rs.input, "$input;\n"); write(rs.input, "print(ascii(4))\$"); end
+    write(rs.input, "$input;\n"); write(rs.input, "symbolic write(string 4);\n"); end
   function Base.write(rs::ReduceSession, input::ASCIIString)
-    write(rs.input, "$input;\n"); write(rs.input, "print(ascii(4))\$"); end
+    write(rs.input, "$input;\n"); write(rs.input, "symbolic write(string 4);\n"); end
 end
 
-const rederr = "***** "
+function ReduceCheck(output)
+  contains(output,"***** ") && throw(ReduceError(split(output,'\n')[end-2])); end
+
 const EOT = Char('$') # end of transmission character
-function Base.read(rs::ReduceSession); output = readavailable(rs.output) |> String
-  contains(output, rederr) && throw(ReduceError(split(output,'\n')[end-2]))
-  return split(output,EOT)[1] |> str -> rstrip(str, EOT); end
+function Base.read(rs::ReduceSession)
+  output = readuntil(rs.output,Char(4)) |> String; readavailable(rs.output);
+  ReduceCheck(output); return split(output,EOT)[1] |> str -> rstrip(str,EOT); end
 
 include("rexpr.jl")
 
@@ -44,33 +46,31 @@ import Base: string, show
 
 string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
 
-const slp = 0.1
-
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-	rcall(ra"on nat"); write(rs, "$r"); sleep(slp); output = read(rs)
-  contains(output, rederr) && throw(ReduceError(split(output,'\n')[end-2]))
-  output = split(output,"\n\n")[1]; rcall(ra"off nat"); print(io, output); end
+  rcall(ra"on nat"); write(rs, "$r"); output = read(rs)
+  ReduceCheck(output); rcall(ra"off nat")
+  print(io,split(output,"\n\n")[1]); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-  rcall("on latex"); write(rs, "$r"); sleep(slp); output = read(rs)
-  contains(output, rederr) && throw(ReduceError(split(output,'\n')[end-2]))
-  print(io,"\$\$"*split(output,"\n")[2]*"\$\$"); rcall("off latex"); end
+  rcall("on latex"); write(rs, "$r"); output = read(rs)
+  ReduceCheck(output); rcall("off latex")
+  print(io,"\$\$"*split(output,"\n")[2]*"\$\$"); end
 
 ## Setup
 
 try
-	if is_unix(); Reduce.@compat readstring(`which redpsl`)
-	else; Reduce.@compat readstring(`which redpsl`); end
+  if is_unix(); Reduce.@compat readstring(`which redpsl`)
+  else; Reduce.@compat readstring(`which redpsl`); end
 catch err
-	error("Looks like Reduce is either not installed or not in the path"); end
+  error("Looks like Reduce is either not installed or not in the path"); end
 
 # Server setup
 
 const rs = ReduceSession()	# Spin up a Reduce session
 atexit(() -> kill(rs))  	# Kill the session on exit
 
-write(rs,"off nat"); sleep(slp)
-println(split(String(readavailable(rs.output)),'\n')[end-3])
+write(rs,"off nat")
+println(split(String(read(rs)),'\n')[end-3])
 rcall("load_package rlfi")
 
 # REPL setup
@@ -78,7 +78,7 @@ rcall("load_package rlfi")
 #interactive = isinteractive()				# In interactive mode?
 
 #if repl_active && interactive
-#	repl_init(Base.active_repl)
+#  repl_init(Base.active_repl)
 #end
 
 end # module

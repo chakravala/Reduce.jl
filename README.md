@@ -1,4 +1,4 @@
-# Reduce
+# Reduce.jl
 
 Interface for [reduce algebra](http://www.reduce-algebra.com/index.htm) for symbolic manipulation of [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using reduce algebra's term rewrite system.
 
@@ -7,7 +7,7 @@ julia> Pkg.clone("git://github.com/chakravala/Reduce.jl.git")
 julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
-Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE.
+Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE. In IJulia the output of `RExpr` will be displayed using LaTeX.
 
 ```Julia
 julia> rcall(:((1+π)^2))

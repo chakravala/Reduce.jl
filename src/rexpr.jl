@@ -61,7 +61,7 @@ function _subst(a, b, expr)
   rstr = rcall(rstr); return rstr.str; end
 
 """
-    RExpr(expr::Expr)
+  RExpr(expr::Expr)
 Convert Julia expression to Reduce expression
 ## Examples
 ```julia
@@ -78,7 +78,7 @@ function RExpr(expr::Expr)
   RExpr(str); end
 
 """
-    parse(rexpr::RExpr)
+  parse(rexpr::RExpr)
 Parse a Reduce expression into a Julia expression
 ## Examples
 ```julia
@@ -102,7 +102,7 @@ if VERSION < v"0.5.0"
 end
 
 """
-	rcall(r::RExpr)
+  rcall(r::RExpr)
 Evaluate a Reduce expression.
 ## Examples
 ```julia
@@ -112,12 +112,10 @@ julia> rcall(ans)
  - cos(x)
 ```
 """
-function rcall(r::RExpr)
-  write(rs, r.str); sleep(slp); output = read(rs)
-  return RExpr(replace(output,r"\n","")); end
+rcall(r::RExpr) = (write(rs, r.str); return RExpr(replace(read(rs),r"\n","")))
 
 """
-	rcall{T}(expr::T)
+  rcall{T}(expr::T)
 Evaluate a Julia expression or string using the Reduce interpretor and convert
 output back into the input type
 ## Examples
