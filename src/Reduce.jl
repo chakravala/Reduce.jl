@@ -4,9 +4,9 @@ using Compat; import Compat.String
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-immutable ReduceSession <: Base.AbstractPipe
+immutable RedPSL <: Base.AbstractPipe
   input::Pipe; output::Pipe; process::Base.Process
-  function ReduceSession()
+  function RedPSL()
     # Setup pipes and reduce process
     input = Pipe(); output = Pipe()
     process = spawn(`redpsl`, (input, output, STDERR))
@@ -14,17 +14,17 @@ immutable ReduceSession <: Base.AbstractPipe
     close(input.out); close(output.in)
     return new(input, output, process); end; end
 
-Base.kill(rs::ReduceSession) = kill(rs.process)
-Base.process_exited(rs::ReduceSession) = process_exited(rs.process)
+Base.kill(rs::RedPSL) = kill(rs.process)
+Base.process_exited(rs::RedPSL) = process_exited(rs.process)
 
 const EOT = Char(4) # end of transmission character
-function Base.write(rs::ReduceSession, input::Compat.String)
+function Base.write(rs::RedPSL, input::Compat.String)
   write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
 
 if VERSION < v"0.5.0"
-  function Base.write(rs::ReduceSession, input::UTF8String)
+  function Base.write(rs::RedPSL, input::UTF8String)
   write(rs.input, "$input; symbolic write(string $(Int(EOT)));\n"); end
-  function Base.write(rs::ReduceSession, input::ASCIIString)
+  function Base.write(rs::RedPSL, input::ASCIIString)
   write(rs.input, "$input; symbolic write(string $(Int(EOT)));\n"); end
 end
 
@@ -32,7 +32,7 @@ function ReduceCheck(output)
   contains(output,"***** ") && throw(ReduceError(split(output,'\n')[end-2])); end
 
 const EOS = Char('$') # delimiter character
-function Base.read(rs::ReduceSession)
+function Base.read(rs::RedPSL)
   output = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   ReduceCheck(output); output = split(output,EOS)[1] |> str -> rstrip(str,EOT)
   output = replace(output,r"[0-9]: ",EOS); return split(output,EOS)[end]; end
@@ -49,8 +49,8 @@ string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
   rcall(ra"on nat"); write(rs, r.str); output = readuntil(rs.output,EOT) |> String
   readavailable(rs.output); ReduceCheck(output); rcall(ra"off nat")
-  output = join(split(output,"\n\n")[1:end-1])
-  output = replace(output,r": ",EOS); print(io,split(output,EOS)[end]); end
+  output = join(split(output,"\n\n")[1:end-1],"\n\n")
+  output = replace(output,r"[0-9]: ",EOS); print(io,split(output,EOS)[end]); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall(ra"on latex"); write(rs, r.str); output = read(rs)
@@ -67,13 +67,13 @@ catch err
 
 # Server setup
 
-const rs = ReduceSession()  # Spin up a Reduce session
+const rs = RedPSL()         # Spin up a Reduce session
 atexit(() -> kill(rs))      # Kill the session on exit
 
 write(rs,"off nat")
-redpsl = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
-ReduceCheck(redpsl); redpsl = split(redpsl,EOS)[1] |> str -> rstrip(str,EOS)
-println(split(String(redpsl),'\n')[end-3])
+banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
+ReduceCheck(banner); banner = split(banner,EOS)[1] |> str -> rstrip(str,EOS)
+println(split(String(banner),'\n')[end-3])
 ra"load_package rlfi" |> rcall
 
 # REPL setup
