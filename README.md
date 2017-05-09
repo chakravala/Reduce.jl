@@ -20,7 +20,7 @@ julia> :(sin(x*im) + cos(y*ϕ)) |> rcall
 julia> Meta.show_sexpr(ans)
 (:call, :+, (:call, :cos, (:call, :/, (:call, :+, (:call, :*, (:call, :sqrt, 5), :y), :y), 2)), (:call, :*, (:call, :sinh, :x), :im))
 ```
-In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode, while in the REPL the REDUCE default `nat` output mode will be displayed.
+In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode; while in the REPL, REDUCE's default `nat` output mode will be displayed.
 ```Julia
 julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
 

@@ -6,7 +6,7 @@ export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
 import Base: parse, convert, error, ==, getindex
 
 type ReduceError <: Exception; errstr::Compat.String; end
-Base.showerror(io::IO, err::ReduceError) = print(io,"REDUCE"*err.errstr)
+Base.showerror(io::IO, err::ReduceError) = print(io,"REDUCE PSL\n"*err.errstr)
 
 const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
@@ -119,8 +119,8 @@ julia> ra\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
 """
-function rcall(r::RExpr); write(rs, convert(Compat.String,r))
-  output = read(rs); for h ∈ 1:length(output)
+function rcall(r::RExpr); write(rs,r)
+  output = readsp(rs); for h ∈ 1:length(output)
     output[h] = replace(output[h],r"\n",""); end
   return output |> RExpr; end
 
