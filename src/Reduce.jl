@@ -32,14 +32,14 @@ end
 function ReduceCheck(output) # check for REDUCE errors
   contains(output,"***** ") && throw(ReduceError(output*"\n")); end
 
-const SOS = "\n[0-9]+: " # REDUCE terminal prompt
+const SOS = "[0-9]+: " # REDUCE terminal prompt
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
   output = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
   output = replace(output,r"\$\n\n","\n\n")
-  output = replace(output,Regex("\n\n($EOT$SOS)|($SOS$EOT)"),"")
+  output = replace(output,Regex("\n\n($EOT\n$SOS)|($SOS\n$EOT)"),"")
+  output = replace(output,Regex(SOS),"")
   ReduceCheck(output); return output; end
-function readsp(rs::PSL); sp = split(read(rs),"\n\n\n") # split read results
-  for h ∈ 1:length(sp); sp[h] = replace(sp[h],Regex(SOS),""); end; return sp; end
+readsp(rs::PSL) = split(read(rs),"\n\n\n")
 
 include("rexpr.jl") # load RExpr features
 
@@ -54,7 +54,7 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
   rcall(ra"on nat"); write(rs,r); output = read(rs)
-  rcall(ra"off nat"); print(io,replace(output,Regex(SOS),"")); end
+  rcall(ra"off nat"); print(io,replace(output,Regex("\n"*SOS),"")); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall(ra"on latex"); write(rs,r); rd = readsp(rs)
