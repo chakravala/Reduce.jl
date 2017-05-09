@@ -6,18 +6,21 @@ export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
 import Base: parse, convert, error, ==, getindex
 
 type ReduceError <: Exception; errstr::Compat.String; end
-Base.showerror(io::IO, err::ReduceError) = print(io,"REDUCE: "*err.errstr)
+Base.showerror(io::IO, err::ReduceError) = print(io,"REDUCE"*err.errstr)
 
 const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
 show_expr(io::IO, ex) = print(io, ex)
 
 function show_expr(io::IO, expr::Expr)
-  if expr.head != :call; error("Block structure is not supported by Reduce.jl")
-  else; isinfix(expr.args) ? print(io,"$(expr.args[1])") : show_expr(io, expr.args[1])
+  if expr.head != :call; error("Nested block structure is not supported by Reduce.jl")
+  else; isinfix(expr.args)?print(io,"$(expr.args[1])"):show_expr(io, expr.args[1])
     print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
       show_expr(io, arg); i!=endof(args) ? print(io,","):print(io,")"); end; end; end
-unparse(expr::Expr) = (io = IOBuffer(); show_expr(io, expr); return String(io))
+function unparse(expr::Expr); str = Array{Compat.String,1}(0); io = IOBuffer()
+  if expr.head == :block; for line ∈ expr.args;
+      show_expr(io,line); push!(str,takebuf_string(io)); end; return str;
+  else; show_expr(io, expr); return push!(str,String(io)); end; end
 
 """
 A Reduce expression
@@ -26,7 +29,8 @@ type RExpr <: Any
 ## Fields:
 str :: String
 """
-type RExpr; str::Compat.String; end
+type RExpr; str::Array{Compat.String,1}; end
+RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
 macro ra_str(str); RExpr(str); end
 
 const r_to_jl = Dict(
@@ -38,6 +42,7 @@ const r_to_jl_utf = Dict(
   "pi"            =>  "π",
   "golden_ratio"  =>  "φ",
   "**"            =>  "^")
+  #"$"             =>  ";")
 
 const jl_to_r = Dict(
   "eu"            =>  "e",
@@ -71,9 +76,11 @@ julia> rcall(:(sin(x*im) + cos(y*ϕ)))
 """
 function RExpr(expr::Expr)
   str = unparse(expr)
-  for key in keys(jl_to_r_utf)
-    str = replace(str,key,jl_to_r_utf[key]); end
-  return _subst(symjlr,str); end
+  for h ∈ 1:length(str)
+    for key ∈ keys(jl_to_r_utf)
+      str[h] = replace(str[h],key,jl_to_r_utf[key]); end;
+    str = [str[1:h-1]; (_subst(symjlr,str[h])).str; str[h+1:end]]; end
+  return str |> RExpr; end
 
 """
   parse(rexpr::RExpr)
@@ -85,12 +92,15 @@ julia> parse(ra\"sin(i*x)\")
 ```
 """
 function parse(r::RExpr)
-  str = _subst(symrjl,r.str).str
-  for key in keys(r_to_jl_utf)
-    str = replace(str,key,r_to_jl_utf[key]); end
-  return parse(str); end
+  pexpr = Array{Expr,1}(0); sexpr = Array{Compat.String,1}(0)
+  for h ∈ 1:length(r.str); push!(sexpr,_subst(symrjl,r.str[h]).str...); end
+  for h ∈ 1:length(sexpr)
+    for key in keys(r_to_jl_utf)
+      sexpr[h] = replace(sexpr[h],key,r_to_jl_utf[key]); end
+    push!(pexpr,parse(sexpr[h])); end
+  return length(pexpr) == 1 ? pexpr[1] : Expr(:block,pexpr...); end
 
-convert(::Type{Compat.String}, r::RExpr) = r.str
+convert(::Type{Compat.String}, r::RExpr) = join(r.str,"; ")
 convert(::Type{Expr}, r::RExpr) = parse(r)
 if VERSION < v"0.5.0"
   convert(::Type{UTF8String}, r::RExpr) = UTF8String(r.str)
@@ -108,7 +118,10 @@ julia> rcall(ans)
  - cos(x)
 ```
 """
-rcall(r::RExpr) = (write(rs, r.str); return replace(read(rs),r"\n","") |> RExpr)
+function rcall(r::RExpr); write(rs, convert(Compat.String,r))
+  output = read(rs); for h ∈ 1:length(output)
+    output[h] = replace(output[h],r"\n",""); end
+  return output |> RExpr; end
 
 """
   rcall{T}(expr::T)
