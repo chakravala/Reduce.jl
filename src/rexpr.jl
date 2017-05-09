@@ -27,7 +27,7 @@ A Reduce expression
 ## Summary:
 type RExpr <: Any
 ## Fields:
-str :: String
+str :: Array{Compat.String,1}
 """
 type RExpr; str::Array{Compat.String,1}; end
 RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
@@ -42,7 +42,6 @@ const r_to_jl_utf = Dict(
   "pi"            =>  "π",
   "golden_ratio"  =>  "φ",
   "**"            =>  "^")
-  #"$"             =>  ";")
 
 const jl_to_r = Dict(
   "eu"            =>  "e",
@@ -63,15 +62,18 @@ function _syme(syme::Dict{String,String}); str = ""; for key in keys(syme)
 const symrjl = _syme(r_to_jl)
 const symjlr = _syme(jl_to_r)
 
-_subst(syme::String,expr) = "sub({$syme},($expr))" |> RExpr |> rcall
+_subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
 
 """
   RExpr(expr::Expr)
 Convert Julia expression to Reduce expression
 ## Examples
 ```julia
-julia> rcall(:(sin(x*im) + cos(y*ϕ)))
-:(cos((sqrt(5) * y + y) / 2) + sinh(x) * im)
+julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
+
+     sqrt(5)*y + y
+cos(---------------) + sinh(x)*i
+           2
 ```
 """
 function RExpr(expr::Expr)
@@ -93,7 +95,8 @@ julia> parse(ra\"sin(i*x)\")
 """
 function parse(r::RExpr)
   pexpr = Array{Expr,1}(0); sexpr = Array{Compat.String,1}(0)
-  for h ∈ 1:length(r.str); push!(sexpr,_subst(symrjl,r.str[h]).str...); end
+  for h ∈ 1:length(r.str); sp = split(replace(r.str[h],r"\$",";"),';')
+    for str ∈ sp; push!(sexpr,_subst(symrjl,str).str...); end; end
   for h ∈ 1:length(sexpr)
     for key in keys(r_to_jl_utf)
       sexpr[h] = replace(sexpr[h],key,r_to_jl_utf[key]); end
@@ -112,9 +115,7 @@ end
 Evaluate a Reduce expression.
 ## Examples
 ```julia
-julia> ra\"int(sin(x), x)\"
- - cos(x)
-julia> rcall(ans)
+julia> ra\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
 """

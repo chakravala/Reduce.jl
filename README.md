@@ -7,51 +7,56 @@ julia> Pkg.clone("git://github.com/chakravala/Reduce.jl.git")
 julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
-Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE. In `IJulia` the output of `RExpr` will be displayed using LaTeX.
+Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE.
 ```Julia
 julia> rcall(:((1+π+x)^2))
 :(π ^ 2 + 2 * π * x + 2π + x ^ 2 + 2x + 1)
-
+```
+With this package, expressions are piped into/from REDUCE and parsed using Julia's abstract syntax tree.
+```Julia
 julia> :(sin(x*im) + cos(y*ϕ)) |> rcall
 :(cos((sqrt(5) * y + y) / 2) + sinh(x) * im)
 
 julia> Meta.show_sexpr(ans)
 (:call, :+, (:call, :cos, (:call, :/, (:call, :+, (:call, :*, (:call, :sqrt, 5), :y), :y), 2)), (:call, :*, (:call, :sinh, :x), :im))
-
+```
+In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode, while in the REPL the REDUCE default `nat` output mode will be displayed.
+```Julia
 julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
 
      sqrt(5)*y + y
 cos(---------------) + sinh(x)*i
            2
-
+```
+The output of `rcall` will be the same as its input type.
+```Julia
 julia> "int(sin(y)^2, y)" |> rcall
 "( - cos(y)*sin(y) + y)/2"
+```
+Sequences of REDUCE statements are automatically parsed into Julia `quote` blocks.
+```Julia
+julia> :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr
 
-julia> :(int(1/(im-1+x^4),x)) |> RExpr
+  2                    2
+pi  + 2*pi*x + 2*pi + x  + 2*x + 1
 
-                                       1/4
-        1/4                     (i - 1)   *sqrt(2) - 2*x
-((i - 1)   *sqrt(2)*( - 2*atan(--------------------------)
-                                          1/4
-                                   (i - 1)   *sqrt(2)
 
-                      1/4
-               (i - 1)   *sqrt(2) + 2*x
-     + 2*atan(--------------------------)
-                         1/4
-                  (i - 1)   *sqrt(2)
-
-                     1/4                            2
-     - log( - (i - 1)   *sqrt(2)*x + sqrt(i - 1) + x )
-
-                  1/4                            2
-     + log((i - 1)   *sqrt(2)*x + sqrt(i - 1) + x )))/(8*(i - 1))
+                 2*x - 1          2
+ 2*sqrt(3)*atan(---------) - log(x  - x + 1) + 2*log(x + 1)
+                 sqrt(3)
+------------------------------------------------------------
+                             6
 
 julia> ans.str
-"((i - 1)**(1/4)*sqrt(2)*( - 2*atan(((i - 1)**(1/4)*sqrt(2) - 2*x)/((i - 1)**(1/4)*sqrt(2))) + 2*atan(((i - 1)**(1/4)*sqrt(2) + 2*x)/((i - 1)**(1/4)*sqrt(2))) - log( - (i - 1)**(1/4)*sqrt(2)*x + sqrt(i - 1) + x**2) + log((i - 1)**(1/4)*sqrt(2)*x + sqrt(i - 1) + x**2)))/(8*(i - 1))"
+2-element Array{String,1}:
+ "pi**2 + 2*pi*x + 2*pi + x**2 + 2*x + 1"
+ "(2*sqrt(3)*atan((2*x - 1)/sqrt(3)) - log(x**2 - x + 1) + 2*log(x + 1))/6"
 
 julia> ans |> RExpr |> parse
-:(((im - 1) ^ (1 / 4) * sqrt(2) * (((-2 * atan(((im - 1) ^ (1 / 4) * sqrt(2) - 2x) / ((im - 1) ^ (1 / 4) * sqrt(2))) + 2 * atan(((im - 1) ^ (1 / 4) * sqrt(2) + 2x) / ((im - 1) ^ (1 / 4) * sqrt(2)))) - log(-((im - 1) ^ (1 / 4)) * sqrt(2) * x + sqrt(im - 1) + x ^ 2)) + log((im - 1) ^ (1 / 4) * sqrt(2) * x + sqrt(im - 1) + x ^ 2))) / (8 * (im - 1)))
+quote
+    π ^ 2 + 2 * π * x + 2π + x ^ 2 + 2x + 1
+    ((2 * sqrt(3) * atan((2x - 1) / sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) / 6
+end
 ```
 Reduce.jl currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path.
 

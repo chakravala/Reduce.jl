@@ -29,19 +29,20 @@ if VERSION < v"0.5.0"
 end
 
 function ReduceCheck(output)
-  #contains(output,"***** ") && throw(ReduceError(split(output,'\n')[end-2])); end
   contains(output,"***** ") && throw(ReduceError(output)); end
 
 const EOS = Char(3)
-function Base.read(rs::RedPSL)
+function Base.read(rs::RedPSL,EOT::Char)
   output = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   output = replace(output,r"\$\n\n","\n\n");
   output = replace(output,r"\n\n\x04","")
-  output = replace(output,r"\n\n[0-9]+: \x04",""); ReduceCheck(output);
-  output = split(replace(output,r"\n\n\n",EOS),EOS)
+  output = replace(output,r"\n\n[0-9]+: \x04","")
+  ReduceCheck(output); return output; end
+function Base.read(rs::RedPSL)
+  output = split(replace(read(rs,EOT),r"\n\n\n",EOS),EOS)
   for h ∈ 1:length(output)
-    sp = split(replace(output[h],r"[0-9]+: ",EOS),EOS)
-    output[h] = join(sp[find(sp.!="")]); end; return output; end
+    output[h] = split(replace(output[h],r"[0-9]+: ",EOS),EOS) |> join; end
+  return output; end
 
 include("rexpr.jl")
 
@@ -54,11 +55,8 @@ string(r::RExpr) = convert(Compat.String,r)
 show(io::IO, r::RExpr) = print(io, convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-  rcall(ra"on nat"); write(rs, convert(Compat.String,r))
-  output = readuntil(rs.output,EOT) |> String
-  readavailable(rs.output); rcall(ra"off nat")
-  output = replace(output,r"\n\n\x04",""); output = replace(output,r"[0-9]: ",EOS)
-  ReduceCheck(output); print(io,split(output,EOS)[end]); end
+  rcall(ra"on nat"); write(rs, convert(Compat.String,r)); output = read(rs,EOT)
+  rcall(ra"off nat"); print(io,split(replace(output,r"[0-9]+: ",EOS),EOS) |> join); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall(ra"on latex"); write(rs, convert(Compat.String,r)); rd = read(rs)
