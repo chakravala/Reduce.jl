@@ -29,13 +29,19 @@ if VERSION < v"0.5.0"
 end
 
 function ReduceCheck(output)
-  contains(output,"***** ") && throw(ReduceError(split(output,'\n')[end-2])); end
+  #contains(output,"***** ") && throw(ReduceError(split(output,'\n')[end-2])); end
+  contains(output,"***** ") && throw(ReduceError(output)); end
 
-const EOS = Char('$') # delimiter character
+const EOS = Char(3)
 function Base.read(rs::RedPSL)
   output = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
-  ReduceCheck(output); output = split(output,EOS)[1] |> str -> rstrip(str,EOT)
-  output = replace(output,r"[0-9]: ",EOS); return split(output,EOS)[end]; end
+  output = replace(output,r"\$\n\n","\n\n");
+  output = replace(output,r"\n\n\x04","")
+  output = replace(output,r"\n\n[0-9]+: \x04",""); ReduceCheck(output);
+  output = split(replace(output,r"\n\n\n",EOS),EOS)
+  for h ∈ 1:length(output)
+    sp = split(replace(output[h],r"[0-9]+: ",EOS),EOS)
+    output[h] = join(sp[find(sp.!="")]); end; return output; end
 
 include("rexpr.jl")
 
@@ -44,18 +50,24 @@ include("rexpr.jl")
 export string, show
 import Base: string, show
 
-string(r::RExpr) = r.str; show(io::IO, r::RExpr) = print(io, r.str)
+string(r::RExpr) = convert(Compat.String,r)
+show(io::IO, r::RExpr) = print(io, convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-  rcall(ra"on nat"); write(rs, r.str); output = readuntil(rs.output,EOT) |> String
-  readavailable(rs.output); ReduceCheck(output); rcall(ra"off nat")
-  output = join(split(output,"\n\n")[1:end-1],"\n\n")
-  output = replace(output,r"[0-9]: ",EOS); print(io,split(output,EOS)[end]); end
+  rcall(ra"on nat"); write(rs, convert(Compat.String,r))
+  output = readuntil(rs.output,EOT) |> String
+  readavailable(rs.output); rcall(ra"off nat")
+  output = replace(output,r"\n\n\x04",""); output = replace(output,r"[0-9]: ",EOS)
+  ReduceCheck(output); print(io,split(output,EOS)[end]); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-  rcall(ra"on latex"); write(rs, r.str); output = read(rs)
-  ReduceCheck(output); rcall(ra"off latex")
-  print(io,"\$\$"*join(split(output,"\n")[2:end-3],"\n")*"\$\$"); end
+  rcall(ra"on latex"); write(rs, convert(Compat.String,r)); rd = read(rs)
+  output = replace(join(rd),r"\n\n",EOT); rcall(ra"off latex")
+  print(io,"\\begin{eqnarray}\n"); ct = 0; sp = split(output,EOT)
+  for str ∈ sp; ct += 1; length(sp) != 1 && print(io,"($ct)\&\\,")
+    print(io,join(split(str,"\n")[2:end-1],"\n"));
+    ct != length(sp) && print(io,"\\\\\\\\"); end
+  print(io,"\\end{eqnarray}"); end
 
 ## Setup
 
