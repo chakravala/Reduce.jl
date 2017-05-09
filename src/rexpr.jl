@@ -12,13 +12,13 @@ const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
 show_expr(io::IO, ex) = print(io, ex)
 
-function show_expr(io::IO, expr::Expr)
+function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
   if expr.head != :call; error("Nested block structure is not supported by Reduce.jl")
   else; isinfix(expr.args)?print(io,"$(expr.args[1])"):show_expr(io, expr.args[1])
     print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
       show_expr(io, arg); i!=endof(args) ? print(io,","):print(io,")"); end; end; end
 function unparse(expr::Expr); str = Array{Compat.String,1}(0); io = IOBuffer()
-  if expr.head == :block; for line ∈ expr.args;
+  if expr.head == :block; for line ∈ expr.args # block structure
       show_expr(io,line); push!(str,takebuf_string(io)); end; return str;
   else; show_expr(io, expr); return push!(str,String(io)); end; end
 
@@ -56,6 +56,7 @@ const jl_to_r_utf = Dict(
   "ϕ"             =>  "golden_ratio",
   "^"             =>  "**")
 
+# convert substitution dictionary into SUB parameter string
 function _syme(syme::Dict{String,String}); str = ""; for key in keys(syme)
   str = str*"($key)=($(syme[key])),"; end; return str[1:end-1]; end
 
@@ -119,10 +120,9 @@ julia> ra\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
 """
-function rcall(r::RExpr); write(rs,r)
-  output = readsp(rs); for h ∈ 1:length(output)
-    output[h] = replace(output[h],r"\n",""); end
-  return output |> RExpr; end
+function rcall(r::RExpr); write(rs,r); sp = readsp(rs)
+  for h ∈ 1:length(sp); sp[h] = replace(sp[h],r"\n",""); end
+  return sp |> RExpr; end
 
 """
   rcall{T}(expr::T)

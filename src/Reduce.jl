@@ -1,3 +1,4 @@
+__precompile__()
 module Reduce
 using Compat; import Compat.String
 
@@ -21,33 +22,30 @@ const EOT = Char(4) # end of transmission character
 function Base.write(rs::PSL, input::Compat.String)
   write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
 
-if VERSION < v"0.5.0"
+if VERSION < v"0.5.0" # backwards compatability
   function Base.write(rs::PSL, input::UTF8String)
-  write(rs.input, "$input; symbolic write(string $(Int(EOT)));\n"); end
+  write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
   function Base.write(rs::PSL, input::ASCIIString)
-  write(rs.input, "$input; symbolic write(string $(Int(EOT)));\n"); end
+  write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
 end
 
-function ReduceCheck(output)
+function ReduceCheck(output) # check for REDUCE errors
   contains(output,"***** ") && throw(ReduceError(output*"\n")); end
 
-const SOS = "\\n[0-9]+: "
-function Base.read(rs::PSL)
+const SOS = "\n[0-9]+: " # REDUCE terminal prompt
+function Base.read(rs::PSL) # get result and strip prompts/EOT char
   output = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
-  output = replace(output,r"\$\n\n","\n\n");
-  output = replace(output,Regex("\\n($EOT$SOS)|($SOS$EOT)"),"")
+  output = replace(output,r"\$\n\n","\n\n")
+  output = replace(output,Regex("\n\n($EOT$SOS)|($SOS$EOT)"),"")
   ReduceCheck(output); return output; end
-function readsp(rs::PSL)
-  output = split(read(rs),"\n\n\n")
-  for h ∈ 1:length(output)
-    output[h] = replace(output[h],Regex(SOS),""); end
-  return output; end
+function readsp(rs::PSL); sp = split(read(rs),"\n\n\n") # split read results
+  for h ∈ 1:length(sp); sp[h] = replace(sp[h],Regex(SOS),""); end; return sp; end
 
-include("rexpr.jl")
+include("rexpr.jl") # load RExpr features
 
 ## io
 
-export string, show
+export string, show, ResetReduce
 import Base: string, show
 
 string(r::RExpr) = convert(Compat.String,r)
@@ -61,23 +59,33 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall(ra"on latex"); write(rs,r); rd = readsp(rs)
   rcall(ra"off latex"); sp = split(join(rd),"\n\n")
-  print(io,"\\begin{eqnarray}\n"); ct = 0
+  print(io,"\\begin{eqnarray}\n"); ct = 0 # add enumeration
   for str ∈ sp; ct += 1; length(sp) != 1 && print(io,"($ct)\&\\,")
-    print(io,join(split(str,"\n")[2:end-1],"\n"));
-    ct != length(sp) && print(io,"\\\\\\\\"); end
+    print(io,join(split(str,"\n")[2:end-1],"\n")) # strip LaTeX
+    ct != length(sp) && print(io,"\\\\\\\\"); end # new line
   print(io,"\n\\end{eqnarray}"); end
 
 ## Setup
 
+"""
+  ResetReduce()
+Kills the REDUCE process and starts a new instance.
+## Examples
+```julia
+julia> ResetReduce()
+Reduce (Free PSL version, revision 4015),  5-May-2017 ...
+```
+"""
+ResetReduce() = (kill(rs); LoadReduce())
+__init__() = (LoadReduce(); atexit(() -> kill(rs)))
+
 # Server setup
 
-const rs = PSL()         # Spin up a Reduce session
-atexit(() -> kill(rs))      # Kill the session on exit
-
-write(rs,"off nat")
-banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
-ReduceCheck(banner); println(split(String(banner),'\n')[end-3])
-ra"load_package rlfi" |> rcall
+function LoadReduce()
+  global rs = PSL(); write(rs,"off nat") # disable nat mode
+  banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
+  ReduceCheck(banner); println(split(String(banner),'\n')[end-3])
+  ra"load_package rlfi" |> rcall; end # load REDUCE's LaTeX package
 
 # REPL setup
 #repl_active = isdefined(Base, :active_repl)  # Is an active repl defined?
