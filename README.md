@@ -52,7 +52,6 @@ julia> ans.str
 
 julia> ans |> RExpr |> parse
 :(((im - 1) ^ (1 / 4) * sqrt(2) * (((-2 * atan(((im - 1) ^ (1 / 4) * sqrt(2) - 2x) / ((im - 1) ^ (1 / 4) * sqrt(2))) + 2 * atan(((im - 1) ^ (1 / 4) * sqrt(2) + 2x) / ((im - 1) ^ (1 / 4) * sqrt(2)))) - log(-((im - 1) ^ (1 / 4)) * sqrt(2) * x + sqrt(im - 1) + x ^ 2)) + log((im - 1) ^ (1 / 4) * sqrt(2) * x + sqrt(im - 1) + x ^ 2))) / (8 * (im - 1)))
-
 ```
 Reduce.jl currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path.
 
