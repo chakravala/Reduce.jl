@@ -20,15 +20,7 @@ julia> :(sin(x*im) + cos(y*ϕ)) |> rcall
 julia> Meta.show_sexpr(ans)
 (:call, :+, (:call, :cos, (:call, :/, (:call, :+, (:call, :*, (:call, :sqrt, 5), :y), :y), 2)), (:call, :*, (:call, :sinh, :x), :im))
 ```
-In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode; while in the REPL, the default `nat` output mode of REDUCE will be displayed.
-```Julia
-julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
-
-     sqrt(5)*y + y
-cos(---------------) + sinh(x)*i
-           2
-```
-The output of `rcall` will be the same as its input type.
+In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode; while in the REPL, the default `nat` output mode of REDUCE will be displayed. The output of `rcall` will be the same as its input type.
 ```Julia
 julia> "int(sin(y)^2, y)" |> rcall
 "( - cos(y)*sin(y) + y)/2"
@@ -60,18 +52,7 @@ end
 ```
 Similar to `?` and `;`, `Reduce` provides a `reduce>` REPL using `}`.
 ```Julia
-reduce> int(1/(im+x^3),x)
-        ;df(atan(golden_ratio*x),x);
-
-                              1/3
-   1/3                      im    - 2*x            2/3     1/3      2
-(im   *( - 2*sqrt(3)*atan(---------------) - log(im    - im   *x + x )
-                             1/3
-                           im   *sqrt(3)
-
-                   1/3
-         + 2*log(im    + x)))/(6*im)
-
+reduce> df(atan(golden_ratio*x),x);
 
           2              2
  sqrt(5)*x  + sqrt(5) - x  + 1
@@ -80,7 +61,7 @@ reduce> int(1/(im+x^3),x)
        2*(x  + 3*x  + 1)
 ```
 
-The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. The `Reduce` and `Maxima` packages can be imported and used simultaneously in Julia without any conflicts.
+The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. The `Reduce` and `Maxima` packages can be imported and used simultaneously in Julia.
 
 
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl) [![Coverage Status](https://coveralls.io/repos/chakravala/Reduce.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/chakravala/Reduce.jl?branch=master) [![codecov.io](http://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](http://codecov.io/github/chakravala/Reduce.jl?branch=master)

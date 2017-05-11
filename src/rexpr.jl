@@ -12,10 +12,10 @@ isinfix(args) = args[1] in infix_ops && length(args) > 2
 show_expr(io::IO, ex) = print(io, ex)
 
 function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
-  if expr.head != :call; error("Nested block structure is not supported by Reduce.jl")
+  if expr.head ≠ :call; error("Nested block structure is not supported by Reduce.jl")
   else; isinfix(expr.args)?print(io,"$(expr.args[1])"):show_expr(io, expr.args[1])
     print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
-      show_expr(io, arg); i!=endof(args) ? print(io,","):print(io,")"); end; end; end
+      show_expr(io, arg); i≠endof(args) ? print(io,","):print(io,")"); end; end; end
 function unparse(expr::Expr); str = Array{Compat.String,1}(0); io = IOBuffer()
   if expr.head == :block; for line ∈ expr.args # block structure
       show_expr(io,line); push!(str,takebuf_string(io)); end; return str;

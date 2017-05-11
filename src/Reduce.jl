@@ -59,9 +59,9 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
   rcall(ra"on latex"); write(rs,r); rd = readsp(rs)
   rcall(ra"off latex"); sp = split(join(rd),"\n\n")
   print(io,"\\begin{eqnarray}\n"); ct = 0 # add enumeration
-  for str ∈ sp; ct += 1; length(sp) != 1 && print(io,"($ct)\&\\,")
+  for str ∈ sp; ct += 1; length(sp) ≠ 1 && print(io,"($ct)\&\\,")
     print(io,join(split(str,"\n")[2:end-1],"\n")) # strip LaTeX
-    ct != length(sp) && print(io,"\\\\\\\\"); end # new line
+    ct ≠ length(sp) && print(io,"\\\\\\\\"); end # new line
   print(io,"\n\\end{eqnarray}"); end
 
 include("repl.jl") # load repl features
