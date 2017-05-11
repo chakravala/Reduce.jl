@@ -34,11 +34,10 @@ function ReduceCheck(output) # check for REDUCE errors
 
 const SOS = "[0-9]+: " # REDUCE terminal prompt
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
-  output = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
-  output = replace(output,r"\$\n\n","\n\n")
-  output = replace(output,Regex("\n\n($EOT\n$SOS)|($SOS\n$EOT)"),"")
-  output = replace(output,Regex(SOS),"")
-  ReduceCheck(output); return output; end
+  out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
+  out = replace(out,r"\$\n\n","\n\n")
+  out = replace(out,Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)"),"")
+  out = replace(out,Regex(SOS),""); ReduceCheck(out); return out; end
 readsp(rs::PSL) = split(read(rs),"\n\n\n")
 
 include("rexpr.jl") # load RExpr features
@@ -65,6 +64,8 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
     ct != length(sp) && print(io,"\\\\\\\\"); end # new line
   print(io,"\n\\end{eqnarray}"); end
 
+include("repl.jl") # load repl features
+
 ## Setup
 
 """
@@ -85,14 +86,8 @@ function LoadReduce()
   global rs = PSL(); write(rs,"off nat") # disable nat mode
   banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   ReduceCheck(banner); println(split(String(banner),'\n')[end-3])
-  ra"load_package rlfi" |> rcall; end # load REDUCE's LaTeX package
-
-# REPL setup
-#repl_active = isdefined(Base, :active_repl)  # Is an active repl defined?
-#interactive = isinteractive()                # In interactive mode?
-
-#if repl_active && interactive
-#  repl_init(Base.active_repl)
-#end
+  ra"load_package rlfi" |> rcall # load REDUCE's LaTeX package
+  if isdefined(Base,:active_repl) && isinteractive()
+    repl_init(Base.active_repl); end; end
 
 end # module
