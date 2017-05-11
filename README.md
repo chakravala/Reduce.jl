@@ -7,7 +7,7 @@ julia> Pkg.clone("git://github.com/chakravala/Reduce.jl.git")
 julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
-Similar to [Maxima.jl](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE.
+Similar to the [`Maxima.jl`](https://github.com/nsmith5/Maxima.jl) package, use `rcall` to evaluate Julia expressions or strings of reduce expressions using the PSL version of REDUCE.
 ```Julia
 julia> rcall(:((1+π+x)^2))
 :(π ^ 2 + 2 * π * x + 2π + x ^ 2 + 2x + 1)
@@ -20,7 +20,7 @@ julia> :(sin(x*im) + cos(y*ϕ)) |> rcall
 julia> Meta.show_sexpr(ans)
 (:call, :+, (:call, :cos, (:call, :/, (:call, :+, (:call, :*, (:call, :sqrt, 5), :y), :y), 2)), (:call, :*, (:call, :sinh, :x), :im))
 ```
-In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode; while in the REPL, REDUCE's default `nat` output mode will be displayed.
+In `IJulia` the output of `RExpr` will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode; while in the REPL, the default `nat` output mode of REDUCE will be displayed.
 ```Julia
 julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
 
@@ -33,7 +33,7 @@ The output of `rcall` will be the same as its input type.
 julia> "int(sin(y)^2, y)" |> rcall
 "( - cos(y)*sin(y) + y)/2"
 ```
-Sequences of REDUCE statements are automatically parsed into Julia `quote` blocks.
+Sequences of `Reduce` statements are automatically parsed into Julia `quote` blocks.
 ```Julia
 julia> :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr
 
@@ -58,7 +58,29 @@ quote
     ((2 * sqrt(3) * atan((2x - 1) / sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) / 6
 end
 ```
-Reduce.jl currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path.
+Similar to `?` and `;`, `Reduce` provides a `reduce>` REPL using `}`.
+```Julia
+reduce> int(1/(im+x^3),x)
+        ;df(atan(golden_ratio*x),x);
+
+                              1/3
+   1/3                      im    - 2*x            2/3     1/3      2
+(im   *( - 2*sqrt(3)*atan(---------------) - log(im    - im   *x + x )
+                             1/3
+                           im   *sqrt(3)
+
+                   1/3
+         + 2*log(im    + x)))/(6*im)
+
+
+          2              2
+ sqrt(5)*x  + sqrt(5) - x  + 1
+-------------------------------
+           4      2
+       2*(x  + 3*x  + 1)
+```
+
+The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. The `Reduce` and `Maxima` packages can be imported and used simultaneously in Julia without any conflicts.
 
 
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl) [![Coverage Status](https://coveralls.io/repos/chakravala/Reduce.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/chakravala/Reduce.jl?branch=master) [![codecov.io](http://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](http://codecov.io/github/chakravala/Reduce.jl?branch=master)

@@ -2,11 +2,10 @@
 #   Copyright (C) 2017 Michael Reed
 
 export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
-
 import Base: parse, convert, error, ==, getindex
 
 type ReduceError <: Exception; errstr::Compat.String; end
-Base.showerror(io::IO, err::ReduceError) = print(io,"REDUCE PSL\n"*err.errstr)
+Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce:\n"*err.errstr)
 
 const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
@@ -60,8 +59,7 @@ const jl_to_r_utf = Dict(
 function _syme(syme::Dict{String,String}); str = ""; for key in keys(syme)
   str = str*"($key)=($(syme[key])),"; end; return str[1:end-1]; end
 
-const symrjl = _syme(r_to_jl)
-const symjlr = _syme(jl_to_r)
+const symrjl = _syme(r_to_jl); const symjlr = _syme(jl_to_r)
 
 _subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
 
@@ -121,8 +119,7 @@ julia> ra\"int(sin(x), x)\" |> RExpr |> rcall
 ```
 """
 function rcall(r::RExpr); write(rs,r); sp = readsp(rs)
-  for h ∈ 1:length(sp); sp[h] = replace(sp[h],r"\n",""); end
-  return sp |> RExpr; end
+  for h ∈ 1:length(sp); sp[h] = replace(sp[h],r"\n",""); end; return RExpr(sp); end
 
 """
   rcall{T}(expr::T)
