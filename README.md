@@ -3,7 +3,7 @@
 Interface for applying [reduce algebra](http://www.reduce-algebra.com/index.htm)'s symbolic manipulation on [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using REDUCE's term rewrite system.
 
 ```Julia
-julia> Pkg.clone("git://github.com/chakravala/Reduce.jl.git")
+julia> Pkg.add("Reduce")
 julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
