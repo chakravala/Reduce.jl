@@ -1,7 +1,8 @@
+#   This file is part of Reduce.jl. It is licensed under the MIT license
+#   Copyright (C) 2017 Michael Reed
 
 oldwdir = pwd()
-pkgdir = Pkg.dir("Reduce")
-wdir = Pkg.dir("Reduce", "deps")
+wdir = dirname(@__FILE__)
 
 if !is_windows()
    try
@@ -10,9 +11,9 @@ if !is_windows()
        kill(process)
      catch
        if is_linux()
-         cmd = `$(joinpath("$(Pkg.dir("Reduce", "deps"))","usr","bin"))/redpsl`
+         cmd = `$(joinpath(wdir,"usr","bin"))/redpsl`
        else
-         cmd = `$(joinpath("$(Pkg.dir("Reduce", "deps"))","Reduce-svn4052-src","bin"))/redpsl`
+         cmd = `$(joinpath(wdir,"Reduce-svn4052-src","bin"))/redpsl`
        end
        process = spawn(cmd)
        kill(process)
