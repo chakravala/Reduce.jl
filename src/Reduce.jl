@@ -8,12 +8,22 @@ using Compat; import Compat.String
 immutable PSL <: Base.AbstractPipe
   input::Pipe; output::Pipe; process::Base.Process
   function PSL()
-    # Setup pipes and reduce process
-    input = Pipe(); output = Pipe()
-    process = spawn(`redpsl`, (input, output, STDERR))
-    # Close the unneeded ends of Pipes
-    close(input.out); close(output.in)
-    return new(input, output, process); end; end
+    try
+      # Setup pipes and reduce process
+      input = Pipe(); output = Pipe()
+      process = spawn(`redpsl`, (input, output, STDERR))
+      # Close the unneeded ends of Pipes
+      close(input.out); close(output.in)
+      return new(input, output, process)
+    catch
+      # Setup pipes and reduce process
+      input = Pipe(); output = Pipe()
+      cmd = `$(joinpath("$(Pkg.dir("Reduce", "deps"))","Reduce-svn4052-src","bin"))/redpsl`
+      process = spawn(cmd, (input, output, STDERR))
+      # Close the unneeded ends of Pipes
+      close(input.out); close(output.in)
+      return new(input, output, process)
+    end; end; end
 
 Base.kill(rs::PSL) = kill(rs.process)
 Base.process_exited(rs::PSL) = process_exited(rs.process)
