@@ -18,7 +18,7 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
       show_expr(io, arg); i≠endof(args) ? print(io,","):print(io,")"); end; end; end
 function unparse(expr::Expr); str = Array{Compat.String,1}(0); io = IOBuffer()
   if expr.head == :block; for line ∈ expr.args # block structure
-      show_expr(io,line); push!(str,takebuf_string(io)); end; return str
+      show_expr(io,line); push!(str,String(take!(io))); end; return str
   else; show_expr(io, expr); return push!(str,String(io)); end; end
 
 """

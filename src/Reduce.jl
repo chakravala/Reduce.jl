@@ -19,9 +19,9 @@ immutable PSL <: Base.AbstractPipe
       # Setup pipes and reduce process
       input = Pipe(); output = Pipe()
       if is_linux()
-        cmd = `$(joinpath("$(Pkg.dir("Reduce", "deps"))","usr","bin"))/redpsl`
+        cmd = `$(joinpath(dirname(@__FILE__),"..","deps","usr","bin"))/redpsl`
       else
-        cmd = `$(joinpath("$(Pkg.dir("Reduce", "deps"))","Reduce-svn4052-src","bin"))/redpsl`
+        cmd = `$(joinpath(dirname(@__FILE__),"..","Reduce-svn4052-src","bin"))/redpsl`
       end
       process = spawn(cmd, (input, output, STDERR))
       # Close the unneeded ends of Pipes
