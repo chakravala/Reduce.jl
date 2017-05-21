@@ -56,7 +56,19 @@ if !is_windows()
      end
      println("DONE")
    end
- else
+else
+   #= try
+     cmd = `cmd \c %programfiles%\\Reduce\\bin\\redpsl.bat`
+     process = spawn(cmd)
+     kill(process)
+   catch
+     cd(wdir)
+     setup = "Reduce-Setup"
+     download(http*date*"/"*setup*"_"*date*".exe"*dl,joinpath(wdir,"$(setup)_$(date).exe"))
+     run(`cmd \c $(setup)_$(date).exe`)
+     run(`cmd \c DEL $(setup)_$(date).exe`)
+     println("DONE")
+   end =#
    warn("Windows build of redpsl not currently supported.")
  end
 

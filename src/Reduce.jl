@@ -9,28 +9,40 @@ immutable PSL <: Base.AbstractPipe
   input::Pipe; output::Pipe; process::Base.Process
   function PSL()
     rpsl = "redpsl"
-    try
-      # Setup pipes and reduce process
-      input = Pipe(); output = Pipe()
-      process = spawn(`$rpsl`, (input, output, STDERR))
-      # Close the unneeded ends of Pipes
-      close(input.out); close(output.in)
-      return new(input, output, process)
-    catch
-      # Setup pipes and reduce process
-      input = Pipe(); output = Pipe()
-      if is_linux()
-        cmd = `$(joinpath(dirname(@__FILE__),"..","deps","usr","bin"))/$rpsl`
-      elseif is_apple()
-        cmd = `$(joinpath(dirname(@__FILE__),"..","deps","psl"))/$rpsl`
-      else
-        cmd = `$(joinpath(dirname(@__FILE__),"..","Reduce-svn4052-src","bin"))/$rpsl`
+    if !is_windows()
+      try
+        # Setup pipes and reduce process
+        input = Pipe(); output = Pipe()
+        process = spawn(`$rpsl`, (input, output, STDERR))
+        # Close the unneeded ends of Pipes
+        close(input.out); close(output.in)
+        return new(input, output, process)
+      catch
+        # Setup pipes and reduce process
+        input = Pipe(); output = Pipe()
+        if is_linux()
+          cmd = `$(joinpath(dirname(@__FILE__),"..","deps","usr","bin"))/$rpsl`
+        elseif is_apple()
+          cmd = `$(joinpath(dirname(@__FILE__),"..","deps","psl"))/$rpsl`
+        else
+          cmd = `$(joinpath(dirname(@__FILE__),"..","Reduce-svn4052-src","bin"))/$rpsl`
+        end
+        process = spawn(cmd, (input, output, STDERR))
+        # Close the unneeded ends of Pipes
+        close(input.out); close(output.in)
+        return new(input, output, process)
       end
+    else
+      #= Setup pipes and reduce process
+      input = Pipe(); output = Pipe()
+      cmd = `cmd \c %programfiles%\\Reduce\\bin\\redpsl.bat`
       process = spawn(cmd, (input, output, STDERR))
       # Close the unneeded ends of Pipes
       close(input.out); close(output.in)
-      return new(input, output, process)
-    end; end; end
+      return new(input, output, process) =#
+      error("Windows build of redpsl not currently supported.")
+    end
+  end; end
 
 Base.kill(rs::PSL) = kill(rs.process)
 Base.process_exited(rs::PSL) = process_exited(rs.process)
