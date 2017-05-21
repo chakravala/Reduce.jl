@@ -3,6 +3,8 @@
 
 oldwdir = pwd()
 wdir = dirname(@__FILE__)
+date = "2017-05-16"
+rsvn = "Reduce-svn4052-src"
 
 if !is_windows()
    try
@@ -13,34 +15,35 @@ if !is_windows()
        if is_linux()
          cmd = `$(joinpath(wdir,"usr","bin"))/redpsl`
        else
-         cmd = `$(joinpath(wdir,"Reduce-svn4052-src","bin"))/redpsl`
+         cmd = `$(joinpath(wdir,rsvn,"bin"))/redpsl`
        end
        process = spawn(cmd)
        kill(process)
      end
    catch
+     http = "https://sourceforge.net/projects/reduce-algebra/files/snapshot_"
+     src = "/linux-tar/reduce-psl_"
+     dl = "/download"
+     cd(wdir)
      if is_linux()
        if contains(readstring(`uname -m`),"64")
-         download("https://sourceforge.net/projects/reduce-algebra/files/snapshot_2017-05-16/linux-tar/reduce-psl_2017-05-16_amd64.tgz/download",joinpath(wdir,"reduce.tar.gz"))
+         download(http*date*src*date*"_amd64.tgz"*dl,joinpath(wdir,"reduce.tar.gz"))
        else
-         download("https://sourceforge.net/projects/reduce-algebra/files/snapshot_2017-05-16/linux-tar/reduce-psl_2017-05-16_i386.tgz/download",joinpath(wdir,"reduce.tar.gz"))
+         download(http*date*src*date*"_i386.tgz"*dl,joinpath(wdir,"reduce.tar.gz"))
        end
-       cd(wdir)
        println("Building redpsl ... ")
        run(`tar -xvf reduce.tar.gz`)
        run(`rm reduce.tar.gz`)
-       println("DONE")
      else
-       download("https://sourceforge.net/projects/reduce-algebra/files/snapshot_2017-05-16/Reduce-svn4052-src.tar.gz/download",joinpath(wdir,"reduce.tar.gz"))
-       cd(wdir)
+       download(http*date*"/"*rsvn*".tar.gz"*dl,joinpath(wdir,"reduce.tar.gz"))
        println("Building redpsl ... ")
        run(`tar -xvf reduce.tar.gz`)
        run(`rm reduce.tar.gz`)
-       cd(joinpath("$wdir","Reduce-svn4052-src"))
+       cd(joinpath("$wdir",rsvn))
        run(`./configure --with-psl`)
        run(`make`)
-       println("DONE")
      end
+     println("DONE")
    end
  else
    warn("Windows build of redpsl not currently supported.")
