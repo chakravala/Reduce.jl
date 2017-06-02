@@ -8,7 +8,7 @@ using Compat; import Compat.String
 immutable PSL <: Base.AbstractPipe
   input::Pipe; output::Pipe; process::Base.Process
   function PSL()
-    rpsl = "redpsl"; include(joinpath(dirname(@__FILE__),"../deps/svn.jl"))
+    include(joinpath(dirname(@__FILE__),"../deps/svn.jl"))
     if !is_windows()
       try
         # Setup pipes and reduce process
@@ -25,7 +25,7 @@ immutable PSL <: Base.AbstractPipe
         elseif is_apple()
           cmd = `$(joinpath(dirname(@__FILE__),"..","deps","psl"))/$rpsl`
         else
-          cmd = `$(joinpath(dirname(@__FILE__),"..",rsvn[0],"bin"))/$rpsl`
+          cmd = `$(joinpath(dirname(@__FILE__),"..",rsvn[ρ],"bin"))/$rpsl`
         end
         process = spawn(cmd, (input, output, STDERR))
         # Close the unneeded ends of Pipes
