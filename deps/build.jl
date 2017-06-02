@@ -3,9 +3,8 @@
 
 oldwdir = pwd()
 wdir = dirname(@__FILE__)
-date = "2017-05-16"
-rsvn = "Reduce-svn4052-src"
 rpsl = "redpsl"
+include("svn.jl")
 
 if !is_windows()
    try
@@ -18,7 +17,7 @@ if !is_windows()
        elseif is_apple()
          cmd = `$(joinpath(wdir,"psl"))/$rpsl`
        else
-         cmd = `$(joinpath(wdir,rsvn,"bin"))/$rpsl`
+         cmd = `$(joinpath(wdir,rsvn[0],"bin"))/$rpsl`
        end
        process = spawn(cmd)
        kill(process)
@@ -27,30 +26,31 @@ if !is_windows()
      http = "https://sourceforge.net/projects/reduce-algebra/files/snapshot_"
      src = "/linux-tar/reduce-psl_"
      dl = "/download"
+     rtg = "reduce.tar.gz"
      cd(wdir)
+     println("Building redpsl ... ")
      if is_linux()
        if contains(readstring(`uname -m`),"64")
-         download(http*date*src*date*"_amd64.tgz"*dl,joinpath(wdir,"reduce.tar.gz"))
+         download(http*date[0]*src*date[0]*"_amd64.tgz"*dl,joinpath(wdir,rtg))
        else
-         download(http*date*src*date*"_i386.tgz"*dl,joinpath(wdir,"reduce.tar.gz"))
+         download(http*date[0]*src*date[0]*"_i386.tgz"*dl,joinpath(wdir,rtg))
        end
-       println("Building redpsl ... ")
-       run(`tar -xvf reduce.tar.gz`)
-       run(`rm reduce.tar.gz`)
+       run(`rm -rf $(joinpath(wdir,"usr"))`)
+       run(`tar -xvf $(rtg)`)
+       run(`rm $(rtg)`)
      elseif is_apple()
        snap = "Reduce-snapshot"
-       download(http*date*"/"*snap*"_"*date*".dmg"*dl,joinpath(wdir,"$(snap)_$(date).dmg"))
-       println("Building redpsl")
-       run(`hdiutil attach $(wdir)/$(snap)_$(date).dmg`)
+       download(http*date[0]*"/"*snap*"_"*date[0]*".dmg"*dl,joinpath(wdir,"$(snap)_$(date[0]).dmg"))
+       run(`hdiutil attach $(wdir)/$(snap)_$(date[0]).dmg`)
+       run(`rm -rf $(joinpath(wdir,"psl"))`)
        run(`cp -r /Volumes/$(snap)/psl $(wdir)/psl`)
        run(`hdiutil unmount /Volumes/$(snap)`)
-       run(`rm $(snap)_$(date).dmg`)
+       run(`rm $(snap)_$(date[0]).dmg`)
      else
-       download(http*date*"/"*rsvn*".tar.gz"*dl,joinpath(wdir,"reduce.tar.gz"))
-       println("Building redpsl ... ")
-       run(`tar -xvf reduce.tar.gz`)
-       run(`rm reduce.tar.gz`)
-       cd(joinpath("$wdir",rsvn))
+       download(http*date[0]*"/"*rsvn[0]*".tar.gz"*dl,joinpath(wdir,rtg))
+       run(`tar -xvf $(rtg)`)
+       run(`rm $(rtg)`)
+       cd(joinpath("$wdir",rsvn[0]))
        run(`./configure --with-psl`)
        run(`make`)
      end
@@ -64,9 +64,9 @@ else
    catch
      cd(wdir)
      setup = "Reduce-Setup"
-     download(http*date*"/"*setup*"_"*date*".exe"*dl,joinpath(wdir,"$(setup)_$(date).exe"))
-     run(`cmd \c $(setup)_$(date).exe`)
-     run(`cmd \c DEL $(setup)_$(date).exe`)
+     download(http*date[0]*"/"*setup*"_"*date[0]*".exe"*dl,joinpath(wdir,"$(setup)_$(date[0]).exe"))
+     run(`cmd \c $(setup)_$(date[0]).exe`)
+     run(`cmd \c DEL $(setup)_$(date[0]).exe`)
      println("DONE")
    end =#
    warn("Windows build of redpsl not currently supported.")
