@@ -5,10 +5,11 @@ using Compat; import Compat.String
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
+include(joinpath(dirname(@__FILE__),"../deps/svn.jl"))
+
 immutable PSL <: Base.AbstractPipe
   input::Pipe; output::Pipe; process::Base.Process
   function PSL()
-    include(joinpath(dirname(@__FILE__),"../deps/svn.jl"))
     if !is_windows()
       try
         # Setup pipes and reduce process
