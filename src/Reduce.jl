@@ -66,6 +66,7 @@ function ReduceCheck(output) # check for REDUCE errors
 const SOS = "[0-9]+: " # REDUCE terminal prompt
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
   out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
+  is_windows() && out = replace(out,r"\r","")
   out = replace(out,r"\$\n\n","\n\n")
   out = replace(out,Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)"),"")
   out = replace(out,Regex(SOS),""); ReduceCheck(out); return out; end
