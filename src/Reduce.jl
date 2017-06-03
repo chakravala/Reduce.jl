@@ -34,14 +34,14 @@ immutable PSL <: Base.AbstractPipe
         return new(input, output, process)
       end
     else
-      #= Setup pipes and reduce process
+      # Setup pipes and reduce process
       input = Pipe(); output = Pipe()
-      cmd = `cmd \c %programfiles%\\Reduce\\bin\\redpsl.bat`
+      folder = joinpath(dirname(@__FILE__)," ..","deps","install","lib","psl")
+      cmd = `"$(folder)\psl\pbsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
       process = spawn(cmd, (input, output, STDERR))
       # Close the unneeded ends of Pipes
       close(input.out); close(output.in)
-      return new(input, output, process) =#
-      error("Windows build of redpsl not currently supported.")
+      return new(input, output, process)
     end
   end; end
 

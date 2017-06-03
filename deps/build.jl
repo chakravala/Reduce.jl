@@ -4,6 +4,7 @@
 oldwdir = pwd()
 wdir = dirname(@__FILE__)
 include("svn.jl")
+dl = "/download"
 
 if !is_windows()
    try
@@ -23,7 +24,6 @@ if !is_windows()
      end
    catch
      http = "https://sourceforge.net/projects/reduce-algebra/files/snapshot_"
-     dl = "/download"
      rtg = "reduce.tar.gz"
      cd(wdir)
      println("Building redpsl ... ")
@@ -56,19 +56,20 @@ if !is_windows()
      println("DONE")
    end
 else
-   #= try
-     cmd = `cmd \c %programfiles%\\Reduce\\bin\\redpsl.bat`
+   try
+     folder = joinpath(dirname(@__FILE__)," ..","deps","install","lib","psl")
+     cmd = `"$(folder)\psl\pbsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
      process = spawn(cmd)
      kill(process)
    catch
      cd(wdir)
+     http = "https://ayera.dl.sourceforge.net/projects/reduce-algebra/files/snapshot_"
      setup = "Reduce-Setup"
      download(http*date[ρ]*"/"*setup*"_"*date[ρ]*".exe"*dl,joinpath(wdir,"$(setup)_$(date[ρ]).exe"))
-     run(`cmd \c $(setup)_$(date[ρ]).exe`)
+     run(`$(setup)_$(date[ρ]).exe /SILENT /DIR=joinpath(wdir,"install")`)
      run(`cmd \c DEL $(setup)_$(date[ρ]).exe`)
      println("DONE")
-   end =#
-   warn("Windows build of redpsl not currently supported.")
+   end
  end
 
 cd(oldwdir)
