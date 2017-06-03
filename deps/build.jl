@@ -63,11 +63,12 @@ else
      kill(process)
    catch
      cd(wdir)
-     http = "https://ayera.dl.sourceforge.net/projects/reduce-algebra/files/snapshot_"
+     http = "https://ayera.dl.sourceforge.net/project/reduce-algebra/snapshot_"
      setup = "Reduce-Setup"
+     println("Downloading reduce binaries...")
      download(http*date[ρ]*"/"*setup*"_"*date[ρ]*".exe"*dl,joinpath(wdir,"$(setup)_$(date[ρ]).exe"))
-     run(`$(setup)_$(date[ρ]).exe /SILENT /DIR=joinpath(wdir,"install")`)
-     run(`cmd \c DEL $(setup)_$(date[ρ]).exe`)
+     println("Installing reduce binaries...")
+     run(`$(setup)_$(date[ρ]).exe /SILENT /DIR=$(joinpath(wdir,"install"))`)
      println("DONE")
    end
  end
