@@ -118,7 +118,7 @@ function LoadReduce()
   global rs = PSL(); write(rs,"off nat") # disable nat mode
   banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   is_windows() && (banner = replace(banner,r"\r","")); ReduceCheck(banner)
-  !is_windows() || (is_windows() && !contains(dirname(@__FILE__),"appveyor")) && println(split(String(banner),'\n')[end-3])
+  !is_windows() && !(is_windows() && contains(dirname(@__FILE__),"appveyor")) && println(split(String(banner),'\n')[end-3])
   ra"load_package rlfi" |> rcall # load REDUCE's LaTeX package
   if isdefined(Base,:active_repl) && isinteractive()
     repl_init(Base.active_repl); end; end
