@@ -35,9 +35,10 @@ immutable PSL <: Base.AbstractPipe
       end
     else
       # Setup pipes and reduce process
-      input = Pipe(); output = Pipe()
-      folder = joinpath(dirname(@__FILE__)," ..","deps","install","lib","psl")
-      cmd = `"$(folder)\psl\pbsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+      input = Pipe(); output = Pipe(); folder = dirname(@__FILE__)
+      folder = (contains(folder,"appveyor") ? joinpath(folder,"..","deps","psl") :
+        joinpath(folder,"..","deps","install","lib","psl"))
+      cmd = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
       process = spawn(cmd, (input, output, STDERR))
       # Close the unneeded ends of Pipes
       close(input.out); close(output.in)
