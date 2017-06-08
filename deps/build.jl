@@ -58,7 +58,7 @@ if !is_windows()
 else
   try
     folder = joinpath(dirname(@__FILE__)," ..","deps","install","lib","psl")
-    cmd = `"$(folder)\psl\pbsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+    cmd = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
     process = spawn(cmd)
     kill(process)
   catch

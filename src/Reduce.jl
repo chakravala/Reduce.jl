@@ -84,7 +84,7 @@ show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-  rcall(ra"on nat"); write(rs,r); output = read(rs)
+  rcall(ra"on nat"); write(rs,r); output = join(split(read(rs),"\n")[1:end-1],'\n')
   rcall(ra"off nat"); print(io,replace(output,Regex("\n"*SOS),"")); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
