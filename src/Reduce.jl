@@ -68,7 +68,7 @@ function Base.read(rs::PSL) # get result and strip prompts/EOT char
   out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
   is_windows() && (out = replace(out,r"\r",""))
   out = replace(out,r"\$\n\n","\n\n")
-  out = replace(out,Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)"),"")
+  out = replace(out,Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)|(\n$SOS$EOT\n)"),"")
   out = replace(out,Regex(SOS),""); ReduceCheck(out); return out; end
 readsp(rs::PSL) = split(read(rs),"\n\n\n")
 
@@ -92,7 +92,7 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
   rcall(ra"off latex"); sp = split(join(rd),"\n\n")
   print(io,"\\begin{eqnarray}\n"); ct = 0 # add enumeration
   for str ∈ sp; ct += 1; length(sp) ≠ 1 && print(io,"($ct)\&\\,")
-    print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})","")) # strip LaTeX
+    print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})",""))
     ct ≠ length(sp) && print(io,"\\\\\\\\"); end # new line
   print(io,"\n\\end{eqnarray}"); end
 

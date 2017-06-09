@@ -52,7 +52,7 @@ const jl_to_r = Dict(
 const jl_to_r_utf = Dict(
   "π"             =>  "pi",
   "γ"             =>  "euler_gamma",
-  "ϕ"             =>  "golden_ratio",
+  "φ"             =>  "golden_ratio",
   "^"             =>  "**")
 
 # convert substitution dictionary into SUB parameter string
@@ -93,7 +93,7 @@ julia> parse(ra\"sin(i*x)\")
 ```
 """
 function parse(r::RExpr)
-  pexpr = Array{Expr,1}(0); sexpr = Array{Compat.String,1}(0)
+  pexpr = Array{Any,1}(0); sexpr = Array{Compat.String,1}(0)
   for h ∈ 1:length(r.str); sp = split(replace(r.str[h],r"\$",";"),';')
     for str ∈ sp; push!(sexpr,_subst(symrjl,str).str...); end; end
   for h ∈ 1:length(sexpr)
