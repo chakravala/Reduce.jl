@@ -61,7 +61,7 @@ if VERSION < v"0.5.0" # backwards compatability
 end
 
 function ReduceCheck(output) # check for REDUCE errors
-  contains(output,"***** ") && throw(ReduceError(output*"\n")); end
+  contains(output,"***** ") && throw(ReduceError(output)); end
 
 const SOS = "[0-9]+: " # REDUCE terminal prompt
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
@@ -76,7 +76,7 @@ include("rexpr.jl") # load RExpr features
 
 ## io
 
-export string, show, ResetReduce
+export string, show
 import Base: string, show
 
 string(r::RExpr) = convert(Compat.String,r)
@@ -84,8 +84,8 @@ show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-  rcall(ra"on nat"); write(rs,r); output = join(split(read(rs),"\n")[1:end-1],'\n')
-  rcall(ra"off nat"); print(io,replace(output,Regex("\n"*SOS),"")); end
+  write(rs,"on nat"*r*"off nat"); output = join(split(read(rs),"\n")[2:end-1],'\n')
+  print(io,chomp(replace(output,Regex("\n"*SOS),""))); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
   rcall(ra"on latex"); write(rs,r); rd = readsp(rs)
@@ -101,24 +101,25 @@ include("repl.jl") # load repl features
 ## Setup
 
 """
-  ResetReduce()
+  Reduce.Reset()
 Kills the REDUCE process and starts a new instance.
 ## Examples
 ```julia
-julia> ResetReduce()
+julia> Reduce.Reset()
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
 """
-ResetReduce() = (kill(rs); LoadReduce())
-__init__() = (LoadReduce(); atexit(() -> kill(rs)))
+Reset() = (kill(rs); Load())
+__init__() = (Load(); atexit(() -> kill(rs)))
 
 # Server setup
 
-function LoadReduce()
+function Load()
   global rs = PSL(); write(rs,"off nat") # disable nat mode
   banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   is_windows() && (banner = replace(banner,r"\r","")); ReduceCheck(banner)
-  !is_windows() && !(is_windows() && contains(dirname(@__FILE__),"appveyor")) && println(split(String(banner),'\n')[end-3])
+  !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
+    println(split(String(banner),'\n')[end-3])
   ra"load_package rlfi" |> rcall # load REDUCE's LaTeX package
   if isdefined(Base,:active_repl) && isinteractive()
     repl_init(Base.active_repl); end; end

@@ -35,7 +35,7 @@ function respond(repl, main)
       input = subst("$(ans)", "%", input[1:end-1])    # substitute
       input = string(input, tail); end                # add the tail
     if !isempty(strip(input))
-      try; global ans = RExpr(input[1:end-1]) |> rcall; REPL.reset(repl)
+      try; global ans = RExpr(input[1:end-1]); REPL.reset(repl)
         if input[end] == ';'
           REPL.print_response(repl, ans, nothing, true, Base.have_color)
         else; REPL.print_response(repl, nothing, nothing, true, Base.have_color); end

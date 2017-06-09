@@ -2,10 +2,10 @@
 #   Copyright (C) 2017 Michael Reed
 
 export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
-import Base: parse, convert, error, ==, getindex
+import Base: parse, convert, error, ==, getindex, *, split
 
 type ReduceError <: Exception; errstr::Compat.String; end
-Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce:\n"*err.errstr)
+Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce:"*chomp(err.errstr))
 
 const infix_ops = [:+, :-, :*, :/, :^]
 isinfix(args) = args[1] in infix_ops && length(args) > 2
@@ -28,9 +28,17 @@ type RExpr <: Any
 ## Fields:
 str :: Array{Compat.String,1}
 """
-type RExpr; str::Array{Compat.String,1}; end
+type RExpr; str::Array{Compat.String,1}; RExpr(r::Array{Compat.String,1}) = new(r)
+  RExpr(r::Array{SubString{String},1}) = new(convert(Array{Compat.String,1},r)); end
 RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
+RExpr(r::Any) = RExpr("$r")
 macro ra_str(str); RExpr(str); end
+*(x::RExpr,y::Compat.String) = RExpr(push!(deepcopy(x.str),y))
+*(x::Compat.String,y::RExpr) = RExpr(unshift!(deepcopy(y.str),x))
+*(x::RExpr,y::RExpr) = RExpr(vcat(x.str...,y.str...))
+function split(r::RExpr); n = Array{Compat.String,1}(0)
+  for h ∈ 1:length(r.str); p = split(replace(r.str[h],r"\$",";"),';')
+    for t ∈ 1:length(p); push!(n,p[t]); end; end; return RExpr(n); end
 
 const r_to_jl = Dict(
   "i"             =>  "im",
@@ -40,7 +48,8 @@ const r_to_jl = Dict(
 const r_to_jl_utf = Dict(
   "pi"            =>  "π",
   "golden_ratio"  =>  "φ",
-  "**"            =>  "^")
+  "**"            =>  "^",
+  ":="            =>  "=")
 
 const jl_to_r = Dict(
   "eu"            =>  "e",
@@ -53,15 +62,16 @@ const jl_to_r_utf = Dict(
   "π"             =>  "pi",
   "γ"             =>  "euler_gamma",
   "φ"             =>  "golden_ratio",
-  "^"             =>  "**")
+  "^"             =>  "**",
+  "="             =>  ":=")
 
 # convert substitution dictionary into SUB parameter string
 function _syme(syme::Dict{String,String}); str = ""; for key in keys(syme)
   str = str*"($key)=($(syme[key])),"; end; return str[1:end-1]; end
 
-const symrjl = _syme(r_to_jl); const symjlr = _syme(jl_to_r)
-
-_subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
+const symrjl = _syme(r_to_jl); const reprjl = Dict(r_to_jl...,r_to_jl_utf...)
+const symjlr = _syme(jl_to_r); const repjlr = Dict(jl_to_r...,jl_to_r_utf...)
+# _subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
 
 """
   RExpr(expr::Expr)
@@ -78,9 +88,8 @@ cos(---------------) + sinh(x)*i
 function RExpr(expr::Expr)
   str = unparse(expr)
   for h ∈ 1:length(str)
-    for key ∈ keys(jl_to_r_utf)
-      str[h] = replace(str[h],key,jl_to_r_utf[key]); end;
-    str = [str[1:h-1]; (_subst(symjlr,str[h])).str; str[h+1:end]]; end
+    for key ∈ keys(repjlr)
+      str[h] = replace(str[h],key,repjlr[key]); end; end
   return str |> RExpr; end
 
 """
@@ -93,17 +102,17 @@ julia> parse(ra\"sin(i*x)\")
 ```
 """
 function parse(r::RExpr)
-  pexpr = Array{Any,1}(0); sexpr = Array{Compat.String,1}(0)
-  for h ∈ 1:length(r.str); sp = split(replace(r.str[h],r"\$",";"),';')
-    for str ∈ sp; push!(sexpr,_subst(symrjl,str).str...); end; end
+  pexpr = Array{Any,1}(0); sexpr = split(r).str
   for h ∈ 1:length(sexpr)
-    for key in keys(r_to_jl_utf)
-      sexpr[h] = replace(sexpr[h],key,r_to_jl_utf[key]); end
+    for key in keys(reprjl)
+      sexpr[h] = replace(sexpr[h],key,reprjl[key]); end
     push!(pexpr,parse(sexpr[h])); end
   return length(pexpr) == 1 ? pexpr[1] : Expr(:block,pexpr...); end
 
+convert(::Type{RExpr}, r::RExpr) = r
+convert(::Type{Array{Compat.String,1}}, r::RExpr) = r.str
 convert(::Type{Compat.String}, r::RExpr) = join(r.str,"; ")
-convert(::Type{Expr}, r::RExpr) = parse(r)
+convert{T}(::Type{T}, r::RExpr) = parse(r)
 if VERSION < v"0.5.0"
   convert(::Type{UTF8String}, r::RExpr) = UTF8String(r.str)
   convert(::Type{ASCIIString}, r::RExpr) = ASCIIString(r.str)
@@ -135,6 +144,7 @@ julia> rcall(:(int(1/(1+x^2), x)))
 """
 rcall{T}(expr::T) = convert(T, rcall(RExpr(expr)))
 
-function ==(r::RExpr, s::RExpr)
-  return "if ($r) = ($s) then 1 else 0" |> rcall |> parse |> eval |> Bool; end
+function ==(r::RExpr, s::RExpr); n = split(r).str; m = split(s).str
+  l=length(n); l≠length(m) && (return false); b = true; for j∈1:l
+    b &= "if($(n[j]))=($(m[j]))then 1 else 0"|>rcall|>parse|>eval|>Bool; end; return b; end
 getindex(r::RExpr, i) = "$r($i)" |> rcall
