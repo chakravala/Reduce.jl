@@ -29,8 +29,8 @@ type RExpr <: Any
 ## Fields:
 str :: Array{Compat.String,1}
 """
-type RExpr; str::Array{Compat.String,1}; RExpr(r::Array{Compat.String,1}) = new(r)
-  RExpr(r::Array{SubString{String},1}) = new(convert(Array{Compat.String,1},r)); end
+type RExpr; str::Array{Compat.String,1}; RExpr(r::Array{Compat.String,1}) = new(r); end
+RExpr(r::Array{SubString{String},1}) = RExpr(convert(Array{Compat.String,1},r))
 RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
 RExpr(r::Any) = RExpr("$r")
 macro R_str(str); RExpr(str); end
