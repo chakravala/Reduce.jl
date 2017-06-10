@@ -49,14 +49,17 @@ immutable PSL <: Base.AbstractPipe
 Base.kill(rs::PSL) = kill(rs.process)
 Base.process_exited(rs::PSL) = process_exited(rs.process)
 
+clear(rs::PSL) = (write(rs.input,";\n"); readavailable(rs.output))
+clears = (()->(c=true; return (tf=c)->(c≠tf && (c=tf); return c)))()
+
 const EOT = Char(4) # end of transmission character
-function Base.write(rs::PSL, input::Compat.String)
+function Base.write(rs::PSL, input::Compat.String); clears() && clear(rs)
   write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
 
 if VERSION < v"0.5.0" # backwards compatability
-  function Base.write(rs::PSL, input::UTF8String)
+  function Base.write(rs::PSL, input::UTF8String); clears() && clear(rs)
   write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
-  function Base.write(rs::PSL, input::ASCIIString)
+  function Base.write(rs::PSL, input::ASCIIString); clears() && clear(rs)
   write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n"); end
 end
 
@@ -88,8 +91,8 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
   print(io,chomp(replace(output,Regex("\n"*SOS),""))); end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-  rcall(ra"on latex"); write(rs,r); rd = readsp(rs)
-  rcall(ra"off latex"); sp = split(join(rd),"\n\n")
+  rcall(R"on latex"); write(rs,r); rd = readsp(rs)
+  rcall(R"off latex"); sp = split(join(rd),"\n\n")
   print(io,"\\begin{eqnarray}\n"); ct = 0 # add enumeration
   for str ∈ sp; ct += 1; length(sp) ≠ 1 && print(io,"($ct)\&\\,")
     print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})",""))
@@ -114,14 +117,15 @@ __init__() = (Load(); atexit(() -> kill(rs)))
 
 # Server setup
 
-function Load()
-  global rs = PSL(); write(rs,"off nat") # disable nat mode
+function Load(); global rs = PSL(); s = quote; #global rs = PSL()
+  write(rs.input,"off nat;symbolic write(string $(Int(EOT)));\n")
   banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   is_windows() && (banner = replace(banner,r"\r","")); ReduceCheck(banner)
   !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
-    println(split(String(banner),'\n')[end-3])
-  ra"load_package rlfi" |> rcall # load REDUCE's LaTeX package
-  if isdefined(Base,:active_repl) && isinteractive()
-    repl_init(Base.active_repl); end; end
+    println(split(String(banner),'\n')[end-3]); R"load_package rlfi" |> rcall; end
+  if isdefined(Base,:active_repl) && isinteractive(); eval(s); repl_init(Base.active_repl)
+  else; atreplinit() do repl; eval(s); !isdefined(Main,:OhMyREPL) &&
+    (repl.interface = Base.REPL.setup_interface(repl));
+    repl_init(Base.active_repl); print('\n'); end; end; end
 
 end # module

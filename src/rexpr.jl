@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @ra_str, parse, rcall, convert, error, ReduceError, ==, getindex
+export RExpr, @R_str, parse, rcall, convert, error, ReduceError, ==, getindex
 import Base: parse, convert, error, ==, getindex, *, split
 
 type ReduceError <: Exception; errstr::Compat.String; end
@@ -12,10 +12,11 @@ isinfix(args) = args[1] in infix_ops && length(args) > 2
 show_expr(io::IO, ex) = print(io, ex)
 
 function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
-  if expr.head ≠ :call; error("Nested block structure is not supported by Reduce.jl")
-  else; isinfix(expr.args)?print(io,"$(expr.args[1])"):show_expr(io, expr.args[1])
+  if expr.head == :call
+    isinfix(expr.args)?print(io,"$(expr.args[1])"):show_expr(io, expr.args[1])
     print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
-      show_expr(io, arg); i≠endof(args) ? print(io,","):print(io,")"); end; end; end
+      show_expr(io, arg); i≠endof(args) ? print(io,","):print(io,")"); end
+  else; error("Nested :$(expr.head) block structure not supported by Reduce.jl"); end; end
 function unparse(expr::Expr); str = Array{Compat.String,1}(0); io = IOBuffer()
   if expr.head == :block; for line ∈ expr.args # block structure
       show_expr(io,line); push!(str,String(take!(io))); end; return str
@@ -32,7 +33,7 @@ type RExpr; str::Array{Compat.String,1}; RExpr(r::Array{Compat.String,1}) = new(
   RExpr(r::Array{SubString{String},1}) = new(convert(Array{Compat.String,1},r)); end
 RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
 RExpr(r::Any) = RExpr("$r")
-macro ra_str(str); RExpr(str); end
+macro R_str(str); RExpr(str); end
 *(x::RExpr,y::Compat.String) = RExpr(push!(deepcopy(x.str),y))
 *(x::Compat.String,y::RExpr) = RExpr(unshift!(deepcopy(y.str),x))
 *(x::RExpr,y::RExpr) = RExpr(vcat(x.str...,y.str...))
@@ -97,7 +98,7 @@ function RExpr(expr::Expr)
 Parse a Reduce expression into a Julia expression
 ## Examples
 ```julia
-julia> parse(ra\"sin(i*x)\")
+julia> parse(R\"sin(i*x)\")
 :(sinh(x) * im)
 ```
 """
@@ -123,7 +124,7 @@ end
 Evaluate a Reduce expression.
 ## Examples
 ```julia
-julia> ra\"int(sin(x), x)\" |> RExpr |> rcall
+julia> R\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
 """
