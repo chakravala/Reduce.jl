@@ -67,11 +67,11 @@ function ReduceCheck(output) # check for REDUCE errors
   contains(output,"***** ") && throw(ReduceError(output)); end
 
 const SOS = "[0-9]+: " # REDUCE terminal prompt
+const RES = Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)|(\n$SOS$EOT\n)|($EOT\n)")
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
-  out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output));
+  out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output))
   is_windows() && (out = replace(out,r"\r",""))
-  out = replace(out,r"\$\n\n","\n\n")
-  out = replace(out,Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)|(\n$SOS$EOT\n)"),"")
+  out = replace(replace(out,r"\$\n\n","\n\n"),RES,"")
   out = replace(out,Regex(SOS),""); ReduceCheck(out); return out; end
 readsp(rs::PSL) = split(read(rs),"\n\n\n")
 
