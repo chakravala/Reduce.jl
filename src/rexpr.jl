@@ -7,16 +7,13 @@ import Base: parse, convert, error, ==, getindex, *, split
 type ReduceError <: Exception; errstr::Compat.String; end
 Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce:"*chomp(err.errstr))
 
-const infix_ops = [:+, :-, :*, :/, :^]
-isinfix(args) = args[1] in infix_ops && length(args) > 2
-show_expr(io::IO, ex) = print(io, ex)
-
+function print_args(io::IO,a::Array{Any,1}); print(io, "("); for (i, arg) in enumerate(a)
+    show_expr(io, arg); i≠endof(a) ? print(io,","):print(io,")"); end; end
 function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
-  if expr.head == :call
-    isinfix(expr.args)?print(io,"$(expr.args[1])"):show_expr(io, expr.args[1])
-    print(io, "("); args = expr.args[2:end]; for (i, arg) in enumerate(args)
-      show_expr(io, arg); i≠endof(args) ? print(io,","):print(io,")"); end
+  if expr.head == :call; show_expr(io, expr.args[1]); print_args(io,expr.args[2:end])
+  elseif expr.head == :(=); print(io,"="); print_args(io,expr.args)
   else; error("Nested :$(expr.head) block structure not supported by Reduce.jl"); end; end
+show_expr(io::IO, ex) = print(io, ex)
 function unparse(expr::Expr); str = Array{Compat.String,1}(0); io = IOBuffer()
   if expr.head == :block; for line ∈ expr.args # block structure
       show_expr(io,line); push!(str,String(take!(io))); end; return str
