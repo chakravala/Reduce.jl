@@ -87,6 +87,7 @@ show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
+  length(r.str) > 1 && (show(string(r)); return nothing)
   write(rs,"on nat"*r*"off nat"); output = join(split(read(rs),"\n")[2:end-1],'\n')
   print(io,chomp(replace(output,Regex("\n"*SOS),""))); end
 
@@ -122,7 +123,7 @@ function Load(); global rs = PSL(); s = quote; #global rs = PSL()
   banner = readuntil(rs.output,EOT) |> String; readavailable(rs.output);
   is_windows() && (banner = replace(banner,r"\r","")); ReduceCheck(banner)
   !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
-    println(split(String(banner),'\n')[end-3]); R"load_package rlfi" |> rcall; end
+    println(split(String(banner),'\n')[end-3]); rcall(R"load_package rlfi;im:=i"); end
   if isdefined(Base,:active_repl) && isinteractive(); eval(s); repl_init(Base.active_repl)
   else; atreplinit() do repl; eval(s); !isdefined(Main,:OhMyREPL) &&
     (repl.interface = Base.REPL.setup_interface(repl));

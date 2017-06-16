@@ -41,23 +41,14 @@ In `IJulia` the display output of `RExpr` objects will be displayed using LaTeX 
 Sequences of `Reduce` statements are automatically parsed into Julia `quote` blocks using the `RExpr` constructor, which can `parse` back into a Julia expression.
 ```Julia
 julia> :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr
-
-  2                    2
-pi  + 2*pi*x + 2*pi + x  + 2*x + 1
-
-
-                 2*x - 1          2
- 2*sqrt(3)*atan(---------) - log(x  - x + 1) + 2*log(x + 1)
-                 sqrt(3)
-------------------------------------------------------------
-                             6
+"begin **(+(x,1,pi),2); int(/(1,+(1,**(x,3))),x) end"
 
 julia> ans.str
 2-element Array{String,1}:
- "pi**2 + 2*pi*x + 2*pi + x**2 + 2*x + 1"
- "(2*sqrt(3)*atan((2*x - 1)/sqrt(3)) - log(x**2 - x + 1) + 2*log(x + 1))/6"
+ "begin **(+(x,1,pi),2)"
+ "int(/(1,+(1,**(x,3))),x) end"
 
-julia> ans |> RExpr |> parse
+julia> ans |> RExpr |> rcall |> parse
 quote
     π ^ 2 + 2 * π * x + 2π + x ^ 2 + 2x + 1
     ((2 * sqrt(3) * atan((2x - 1) / sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) / 6
@@ -75,7 +66,25 @@ reduce> df(atan(golden_ratio*x),x);
            4      2
        2*(x  + 3*x  + 1)
 ```
+To expand functionality deeper into the Julia abstract syntax tree, more features are going to be built into this package as time progresses.
+```Julia
+julia> Expr(:for,:(i=2:34),:(product(i))) |> rcall
+:(@big_str "295232799039604140847618609643520000000")
+```
+Parsing of reduce expressions is still under development, but it's already possible to parse various combinations of recursively nested program statements, such as
+```Julia
+julia> R"procedure fun; begin; x; return begin; return x end; x; end" |> parse
+:(function fun
+        x
+        return begin
+                return x
+            end
+        x
+    end)
 
-The `Reduce` and `Maxima` packages can be imported and used simultaneously in Julia. Place `using Reduce` as first package to load in the `~/.juliarc.jl` startup file to ensure the REPL loads properly (when `using OhMyREPL`).
+julia> ans == parse(RExpr(ans))
+true
+```
+The `Reduce` and `Maxima` packages can currently be imported and used simultaneously in Julia. Place `using Reduce` as first package to load in the `~/.juliarc.jl` startup file to ensure the REPL loads properly (when `using OhMyREPL`). Otherwise, if you are loading this package when Julia has already been started, load it after `OhMyREPL`.
 
 If the `}` REPL is not appearing or the `Reduce.PSL` pipe is broken, the session can be restored by simply calling `Reduce.Reset()`, without requiring a restart of `julia` or reloading the package.
