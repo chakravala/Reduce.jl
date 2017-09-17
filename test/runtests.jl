@@ -14,3 +14,4 @@ using Base.Test
 @test RExpr(:x) == R"x"
 @test RExpr(:x)*R"x" == R"x;x"
 @test convert(RExpr,R"x").str == convert(Array{Compat.String,1},R"x")
+#@test Reduce.repl_init(Base.active_repl)==nothing

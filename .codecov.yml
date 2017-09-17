@@ -1,1 +1,3 @@
 comment: false
+ignore:
+  - "src/repl.jl"     # not testable
