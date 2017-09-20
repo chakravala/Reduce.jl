@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl) [![Build status](https://ci.appveyor.com/api/projects/status/kaqu2yri4vxyr63n?svg=true)](https://ci.appveyor.com/project/chakravala/reduce-jl) [![Coverage Status](https://coveralls.io/repos/github/chakravala/Reduce.jl/badge.svg?branch=master)](https://coveralls.io/github/chakravala/Reduce.jl?branch=master) [![codecov.io](http://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](http://codecov.io/github/chakravala/Reduce.jl?branch=master)
 
 
-Interface for applying symbolic manipulation on [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using [REDUCE](http://www.reduce-algebra.com/index.htm)'s term rewrite system. The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary of `redpsl` for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic Windows build is now supported.
+Interface for applying symbolic manipulation on [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using [REDUCE](http://www.reduce-algebra.com)'s term rewrite system. The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary of `redpsl` for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic Windows build is now supported.
 
 ```Julia
 julia> Pkg.add("Reduce"); Pkg.build("Reduce")
@@ -84,6 +84,13 @@ julia> R"procedure fun; begin; x; return begin; return x end; x; end" |> parse
 
 julia> ans == parse(RExpr(ans))
 true
+```
+If you are `using Reduce` in julia, there are now an additional 530 methods available in the dispatch table so that trigonometric and other unary mathematical functions can be applied directly to `Expr` and `RExpr` objects. Check [src/unary.jl](src/unary.jl) for a list of currently implemented symbols.
+```Julia
+julia> Expr(:function,:fun,:(y=e^x)) |> log
+:(function fun
+        y = x
+    end)
 ```
 The `Reduce` and `Maxima` packages can currently be imported and used simultaneously in Julia. Place `using Reduce` as first package to load in the `~/.juliarc.jl` startup file to ensure the REPL loads properly (when `using OhMyREPL`). Otherwise, if you are loading this package when Julia has already been started, load it after `OhMyREPL`.
 

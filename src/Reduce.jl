@@ -121,6 +121,7 @@ end
 end
 
 include("repl.jl") # load repl features
+include("unary.jl") # load unary operators
 
 ## Setup
 

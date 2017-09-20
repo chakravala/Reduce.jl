@@ -210,7 +210,8 @@ function parse(r::RExpr,be=0)
             sexpr[h] = replace(sexpr[h],key,reprjl[key])
     end; end
     state = start(iter); #show(sexpr)
-    while !done(iter,state); (h,state) = next(iter, state)
+    while !done(iter,state)
+        (h,state) = next(iter, state)
         sh = split(sexpr[h],r"[ ]+")
         en = 1
         isempty(replace(sh[en]," ","")) && (en = 2); #show(sh[en])
