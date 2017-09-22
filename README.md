@@ -1,7 +1,8 @@
 # Reduce.jl
 
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl) [![Build status](https://ci.appveyor.com/api/projects/status/kaqu2yri4vxyr63n?svg=true)](https://ci.appveyor.com/project/chakravala/reduce-jl) [![Coverage Status](https://coveralls.io/repos/github/chakravala/Reduce.jl/badge.svg?branch=master)](https://coveralls.io/github/chakravala/Reduce.jl?branch=master) [![codecov.io](http://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](http://codecov.io/github/chakravala/Reduce.jl?branch=master)
-
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://chakravala.github.io/Reduce.jl/stable)
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://chakravala.github.io/Reduce.jl/latest)
 
 Interface for applying symbolic manipulation on [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using [REDUCE](http://www.reduce-algebra.com)'s term rewrite system. The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary of `redpsl` for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic Windows build is now supported.
 
@@ -33,7 +34,7 @@ julia> Meta.show_sexpr(ans)
 ```
 The output of `rcall` will be the same as its input type.
 ```Julia
-julia> "int(sin(y)^2, y)" |> RExpr
+julia> "int(sin(y)^2, y)" |> rcall
 "( - cos(y)*sin(y) + y)/2"
 ```
 In `IJulia` the display output of `RExpr` objects will be displayed using LaTeX with the `rlfi` REDUCE package in `latex` mode; while in the REPL, the default `nat` output mode of REDUCE will be displayed.

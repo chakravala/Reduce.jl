@@ -1,21 +1,13 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-import Base: abs, conj, factorial, floor, max, min, round, sign, acos, acosh, acot, acoth, acsc, acsch, asec, asech, asin, asinh, atan, atanh, atan2, cos, cosh, cot, coth, csc, csch, exp, hypot, log, log10, sec, sech, sin, sinh, sqrt, tan, tanh # length
-
-simfun = [
+simbas = [
     :abs,
-    :ceiling,
     :conj,
     :factorial,
-    :fix,
     :floor,
-    :impart,
     :max,
     :min,
-    :nextprime,
-    :random,
-    :repart,
     :round,
     :sign,
     :acos,
@@ -39,31 +31,41 @@ simfun = [
     :csch,
     :exp,
     :hypot,
-    :ibeta,
-    :igamma,
-    :ln,
     :log,
     :log10,
-    :psi,
     :sec,
     :sech,
     :sin,
     :sinh,
     :sqrt,
     :tan,
-    :tanh,
+    :tanh
+] # :length
+
+simfun = [
+    :ceiling,
+    :fix,
+    :impart,
+    :nextprime,
+    :random,
+    :repart,
+    :ibeta,
+    :igamma,
+    :ln,
+    :psi,
     :bernoulli,
     :euler,
     :fibonacci,
     :motzkin,
-    :continued_fraction,
+    :continued_fraction
 ] # :length
 
-:(export $(simfun...)) |> eval
+Expr(:toplevel,[:(import Base: $i) for i ∈ simbas]...) |> eval
+:(export $([simbas;simfun]...)) |> eval
 
 ty = [:(Compat.String),:Expr]
 
-for fun in simfun
+for fun in [simbas;simfun]
     rfun = Symbol(:r,fun)
     for T in ty
         quote
