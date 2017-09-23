@@ -6,10 +6,23 @@ using Documenter, Reduce
 makedocs(
     # options
     modules = [Reduce],
-    deps   = Deps.pip("mkdocs", "python-markdown-math"),
     repo = "github.com/chakravala/Reduce.jl.git",
-    julia  = "0.4",
-    osname = "osx",
-    doctest = false
+    doctest = false,
+    format = :html,
+    sitename = "Reduce.jl",
+    authors = "Michael Reed",
+    pages = Any[
+        "Home" => "index.md"
+        ]
 )
 
+deploydocs(
+    target = "build",
+    repo   = "github.com/chakravala/Reduce.jl.git",
+    branch = "gh-pages",
+    latest = "master",
+    osname = "linux",
+    julia  = "0.5",
+    deps = nothing,
+    make = nothing,
+)
