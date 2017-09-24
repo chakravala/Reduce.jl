@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-simbas = [
+sbas = [
     :abs,
     :conj,
     :factorial,
@@ -40,25 +40,21 @@ simbas = [
     :sqrt,
     :tan,
     :tanh,
-    :beta, #
-    :gamma,
+    :gamma
+]
+
+sdep = [
+    :beta,
     :besseli,
     :besselj,
     :besselk,
     :bessely,
     :polygamma,
-    :zeta,
+    :zeta
 ]
 
-more = [
-]
-
-simfun = [
-#    :ceiling,
+sfun = [
 #    :logb,
-    :fix,
-    :impart,
-    :repart,
     :ibeta,
     :igamma,
     :ln,
@@ -85,24 +81,34 @@ simfun = [
     :whittakeru,
     :solidharmonicy,
     :sphericalharmonicy
-] # :length
+]
 
-simint = [
+snum = [
+    :ceiling,
+    :fix,
+]
+
+scom = [
+    :impart,
+    :repart,
+]
+
+sint = [
     :nextprime,
     :euler,
     :fibonacci,
     :motzkin,
 ]
 
-simext = [
+sran = [
     :random,
     :random_new_seed
 ]
 
-Expr(:toplevel,[:(import Base: $i) for i ∈ [simbas;[:length]]]...) |> eval
-:(export $([simbas;simfun;simint;simext;[:length]]...)) |> eval
+Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;[:length]]]...) |> eval
+:(export $([sbas;sdep;sfun;snum;scom;sint;sran;[:length]]...)) |> eval
 
-for fun in [simbas;simfun;simint;simext;[:length]]
+for fun in [sbas;sdep;sfun;snum;scom;sint;sran;[:length]]
     rfun = Symbol(:r,fun)
     quote
         function $fun(r::RExpr,be=0)
@@ -177,7 +183,7 @@ for fun in [simbas;simfun;simint;simext;[:length]]
     end |> eval
 end
 
-for fun in [simbas;simfun;simint]
+for fun in [sbas;sdep;sfun;snum;scom;sint]
     for T in [:(Compat.String),:Expr]
         quote
             function $fun(expr::$T,be=0)
@@ -189,14 +195,30 @@ end
 
 length(r::Expr,be=0) = r |> RExpr |> length |> parse |> eval
 
-for fun in [simint;simext]
+for fun in [sint;sran]
     quote
         function $fun{T<:Integer}(n::T)
-            convert(T, $fun(RExpr(BigInt(n))) |> parse |> eval)
+            convert(T, $fun(RExpr(n)) |> parse |> eval)
+        end
+    end |> eval
+end
+
+for fun in snum
+    quote
+        function $fun{T<:Real}(x::T)
+            $fun(RExpr(x)) |> parse |> eval
+        end
+    end |> eval
+end
+
+for fun in scom
+    quote
+        function $fun{T<:Number}(x::T)
+            $fun(RExpr(x)) |> parse |> eval
         end
     end |> eval
 end
 
 function bernoulli{T<:Integer}(n::T)
-    bernoulli(RExpr(BigInt(n))) |> parse |> eval
+    bernoulli(RExpr(n)) |> parse |> eval
 end

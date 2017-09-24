@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @R_str, parse, rcall, convert, error, ReduceError, ==, getindex, rounded
+export RExpr, @R_str, parse, rcall, convert, error, ReduceError, ==, getindex
 import Base: parse, convert, error, ==, getindex, *, split
 
 type ReduceError <: Exception
@@ -175,9 +175,9 @@ const symjlr = _syme(jl_to_r)
 const repjlr = Dict(jl_to_r...,jl_to_r_utf...)
 # _subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
 
-rounded = ( () -> begin
-        gs = false
-        return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs?"/":"//"); return gs)
+Rational = ( () -> begin
+        gs = true
+        return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs?"//":"/"); return gs)
     end)()
 
 """
@@ -210,14 +210,15 @@ julia> parse(R\"sin(i*x)\")
 :(sinh(x) * im)
 ```
 """
-function parse(r::RExpr,be=0)
+function parse(r::RExpr,be=0,eb=true)
     pexpr = Array{Any,1}(0)
     sexpr = split(r).str
     iter = 1:length(sexpr)
-    for h ∈ iter
-        for key in keys(reprjl)
-            sexpr[h] = replace(sexpr[h],key,reprjl[key])
-    end; end
+    if eb
+        for h ∈ iter
+            for key in keys(reprjl)
+                sexpr[h] = replace(sexpr[h],key,reprjl[key])
+    end; end; end
     state = start(iter); #show(sexpr)
     while !done(iter,state)
         (h,state) = next(iter, state)
@@ -282,8 +283,8 @@ function parse(r::RExpr,be=0)
     return u==1 ? pexpr[1] : (u==0 ? nothing : Expr(:block,pexpr...))
 end
 
-rparse(r,be=0) = parse(r |> Compat.String |> RExpr, be)
-rparse(r::Array{Compat.String,1},be=0) = parse(RExpr(r),be)
+rparse(r,be=0) = parse(r |> RExpr, be, false)
+rparse(r::Array{Compat.String,1},be=0) = parse(RExpr(r),be,false)
 
 function bematch(js,sexpr,h,iter,state)
     sh = split(js,r"[ ]+")
