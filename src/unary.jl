@@ -39,41 +39,71 @@ simbas = [
     :sinh,
     :sqrt,
     :tan,
-    :tanh
-] # :length
+    :tanh,
+    :beta, #
+    :gamma,
+    :besseli,
+    :besselj,
+    :besselk,
+    :bessely,
+    :polygamma,
+    :zeta,
+]
+
+more = [
+]
 
 simfun = [
-    :ceiling,
+#    :ceiling,
+#    :logb,
     :fix,
     :impart,
-    :nextprime,
-    :random,
     :repart,
     :ibeta,
     :igamma,
     :ln,
     :psi,
     :bernoulli,
+    :continued_fraction,
+    :ci, #
+    :dilog,
+    :ei,
+    :si,
+    :airy_ai,
+    :airy_aiprime,
+    :airy_bi,
+    :airy_biprime,
+    :hanekl1,
+    :hankel2,
+    :kummerm,
+    :kummeru,
+    :lommel1,
+    :lommel2,
+    :struveh,
+    :struvel,
+    :whittakerm,
+    :whittakeru,
+    :solidharmonicy,
+    :sphericalharmonicy
+] # :length
+
+simint = [
+    :nextprime,
     :euler,
     :fibonacci,
     :motzkin,
-    :continued_fraction
-] # :length
+]
 
-Expr(:toplevel,[:(import Base: $i) for i ∈ simbas]...) |> eval
-:(export $([simbas;simfun]...)) |> eval
+simext = [
+    :random,
+    :random_new_seed
+]
 
-ty = [:(Compat.String),:Expr]
+Expr(:toplevel,[:(import Base: $i) for i ∈ [simbas;[:length]]]...) |> eval
+:(export $([simbas;simfun;simint;simext;[:length]]...)) |> eval
 
-for fun in [simbas;simfun]
+for fun in [simbas;simfun;simint;simext;[:length]]
     rfun = Symbol(:r,fun)
-    for T in ty
-        quote
-            function $fun(expr::$T,be=0)
-                convert($T, $fun(RExpr(expr),be))
-            end
-        end |> eval
-    end
     quote
         function $fun(r::RExpr,be=0)
             nsr = Compat.String[]
@@ -145,4 +175,28 @@ for fun in [simbas;simfun]
         $rfun(r::Array{Compat.String,1},be=0) = $fun(RExpr(r),be)
         $rfun(r,be=0) = $fun(r |> Compat.String |> RExpr, be)
     end |> eval
+end
+
+for fun in [simbas;simfun;simint]
+    for T in [:(Compat.String),:Expr]
+        quote
+            function $fun(expr::$T,be=0)
+                convert($T, $fun(RExpr(expr),be))
+            end
+        end |> eval
+    end
+end
+
+length(r::Expr,be=0) = r |> RExpr |> length |> parse |> eval
+
+for fun in [simint;simext]
+    quote
+        function $fun{T<:Integer}(n::T)
+            convert(T, $fun(RExpr(BigInt(n))) |> parse |> eval)
+        end
+    end |> eval
+end
+
+function bernoulli{T<:Integer}(n::T)
+    bernoulli(RExpr(BigInt(n))) |> parse |> eval
 end

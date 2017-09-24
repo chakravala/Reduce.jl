@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @R_str, parse, rcall, convert, error, ReduceError, ==, getindex
+export RExpr, @R_str, parse, rcall, convert, error, ReduceError, ==, getindex, rounded
 import Base: parse, convert, error, ==, getindex, *, split
 
 type ReduceError <: Exception
@@ -130,31 +130,35 @@ function split(r::RExpr)
 end
 
 const r_to_jl = Dict(
-  #"i"             =>  "im",
-  "euler_gamma"   =>  "eulergamma",
-  "infinity"      =>  "Inf")
+    #"i"             =>  "im",
+    "euler_gamma"   =>  "eulergamma",
+    "infinity"      =>  "Inf"
+)
 
 const r_to_jl_utf = Dict(
-  "pi"            =>  "π",
-  "golden_ratio"  =>  "φ",
-  "**"            =>  "^",
-  #":="            =>  "=",
-  "/"             =>  "/")
+    "pi"            =>  "π",
+    "golden_ratio"  =>  "φ",
+    "**"            =>  "^",
+    #":="            =>  "=",
+    "/"             =>  "//"
+)
 
 const jl_to_r = Dict(
-  #"eu"            =>  "euler_gamma",
-  "eulergamma"    =>  "euler_gamma",
-  "golden"        =>  "golden_ratio",
-  #"im"            =>  "i",
-  "Inf"           =>  "infinity")
+    #"eu"            =>  "euler_gamma",
+    "eulergamma"    =>  "euler_gamma",
+    "golden"        =>  "golden_ratio",
+    #"im"            =>  "i",
+    "Inf"           =>  "infinity"
+)
 
 const jl_to_r_utf = Dict(
-  "π"             =>  "pi",
-  "γ"             =>  "euler_gamma",
-  "φ"             =>  "golden_ratio",
-  "^"             =>  "**",
-  #"="             =>  ":=",
-  "//"            =>  "/")
+    "π"             =>  "pi",
+    "γ"             =>  "euler_gamma",
+    "φ"             =>  "golden_ratio",
+    "^"             =>  "**",
+    #"="             =>  ":=",
+    "//"            =>  "/"
+)
 
 # convert substitution dictionary into SUB parameter string
 function _syme(syme::Dict{String,String})
@@ -166,10 +170,15 @@ function _syme(syme::Dict{String,String})
 end
 
 const symrjl = _syme(r_to_jl)
-const reprjl = Dict(r_to_jl...,r_to_jl_utf...)
+reprjl = Dict(r_to_jl...,r_to_jl_utf...)
 const symjlr = _syme(jl_to_r)
 const repjlr = Dict(jl_to_r...,jl_to_r_utf...)
 # _subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
+
+rounded = ( () -> begin
+        gs = false
+        return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs?"/":"//"); return gs)
+    end)()
 
 """
   RExpr(expr::Expr)
