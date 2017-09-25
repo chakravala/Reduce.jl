@@ -149,7 +149,7 @@ function Load()
         ReduceCheck(banner)
         !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
             println(split(String(banner),'\n')[end-3])
-        rcall(R"load_package rlfi;im:=i")
+        rcall(R"load_package rlfi")
     end
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)

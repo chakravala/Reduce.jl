@@ -63,7 +63,7 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     end
 end
 
-show_expr(io::IO, ex) = print(io, ex)
+show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
 
 function unparse(expr::Expr)
     str = Array{Compat.String,1}(0)
@@ -130,7 +130,6 @@ function split(r::RExpr)
 end
 
 const r_to_jl = Dict(
-    #"i"             =>  "im",
     "euler_gamma"   =>  "eulergamma",
     "infinity"      =>  "Inf"
 )
@@ -147,7 +146,6 @@ const jl_to_r = Dict(
     #"eu"            =>  "euler_gamma",
     "eulergamma"    =>  "euler_gamma",
     "golden"        =>  "golden_ratio",
-    #"im"            =>  "i",
     "Inf"           =>  "infinity"
 )
 
@@ -180,6 +178,19 @@ Rational = ( () -> begin
         return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs?"//":"/"); return gs)
     end)()
 
+ImParse = ( () -> begin
+        gs = true
+        return (tf=gs)->(gs≠tf && (gs=tf); return gs)
+    end)()
+
+function JSymReplace(str::Compat.String)
+    for key ∈ keys(repjlr)
+        str = replace(str,key,repjlr[key])
+    end
+    ImParse() && (str = str*"\$ ws where im => i" |> rcall)
+    return str
+end
+
 """
   RExpr(expr::Expr)
 Convert Julia expression to Reduce expression
@@ -192,13 +203,14 @@ cos(---------------) + sinh(x)*i
            2
 ```
 """
-function RExpr(expr::Expr)
-    str = unparse(expr)
-    for h ∈ 1:length(str)
-        for key ∈ keys(repjlr)
-            str[h] = replace(str[h],key,repjlr[key])
-    end; end
-    return str |> RExpr
+RExpr(expr::Expr) = expr |> unparse |> RExpr
+
+function RSymReplace(str::Compat.String)
+    ImParse() && (str = str*"\$ ws where i => im" |> rcall)
+    for key in keys(reprjl)
+        str = replace(str,key,reprjl[key])
+    end
+    return str
 end
 
 """
@@ -210,15 +222,10 @@ julia> parse(R\"sin(i*x)\")
 :(sinh(x) * im)
 ```
 """
-function parse(r::RExpr,be=0,eb=true)
+function parse(r::RExpr,be=0)
     pexpr = Array{Any,1}(0)
     sexpr = split(r).str
     iter = 1:length(sexpr)
-    if eb
-        for h ∈ iter
-            for key in keys(reprjl)
-                sexpr[h] = replace(sexpr[h],key,reprjl[key])
-    end; end; end
     state = start(iter); #show(sexpr)
     while !done(iter,state)
         (h,state) = next(iter, state)
@@ -276,15 +283,15 @@ function parse(r::RExpr,be=0,eb=true)
             se=sum(sh.=="end")
             0<se≤be ? (js=replace(js,"end","")) :
                 (se>be && (js=join(split(js,"end")[1:end-be],"end")))
-            push!(pexpr,parse(js))
+            push!(pexpr,parse(RSymReplace(js)))
         end
     end
     u = length(pexpr)
     return u==1 ? pexpr[1] : (u==0 ? nothing : Expr(:block,pexpr...))
 end
 
-rparse(r,be=0) = parse(r |> RExpr, be, false)
-rparse(r::Array{Compat.String,1},be=0) = parse(RExpr(r),be,false)
+rparse(r,be=0) = parse(r |> RExpr, be)
+rparse(r::Array{Compat.String,1},be=0) = parse(RExpr(r),be)
 
 function bematch(js,sexpr,h,iter,state)
     sh = split(js,r"[ ]+")
