@@ -16,10 +16,15 @@ switches = [
     :evallhseq
 ]
 
-Expr(:toplevel,[:(import Base: $i) for i ∈ switchbas]...) |> eval
-:(export $([switchbas;switches]...)) |> eval
+switchtex = [
+    :nat,
+    :latex
+]
 
-for fun in [switchbas;switches]
+Expr(:toplevel,[:(import Base: $i) for i ∈ switchbas]...) |> eval
+:(export $([switchbas;switches;switchtex]...)) |> eval
+
+for fun in [switchbas;switches;switchtex]
     rfun = Symbol(:r,fun)
     quote
         function $fun(r::RExpr,be=0)
@@ -101,6 +106,16 @@ for fun in [switchbas;switches]
         quote
             function $fun(expr::$T,be=0)
                 convert($T, $fun(RExpr(expr),be))
+            end
+        end |> eval
+    end
+end
+
+for fun in switchtex
+    for T in [:(Compat.String),:Expr]
+        quote
+            function $fun(expr::$T,be=0)
+                convert(String, $fun(RExpr(expr),be))
             end
         end |> eval
     end

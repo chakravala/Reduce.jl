@@ -73,7 +73,6 @@ function show_expr(io::IO, ex)
     print(io, edit |> String |> JSymReplace)
 end
 
-
 function unparse(expr::Expr)
     str = Array{Compat.String,1}(0)
     io = IOBuffer()
@@ -82,7 +81,6 @@ function unparse(expr::Expr)
             show_expr(io,line)
             push!(str,String(take!(io)))
         end
-        str[1] = "begin "*str[1]; str[end] = str[end]*" end"
         return rtrim(str)
     else
         show_expr(io, expr)
@@ -212,7 +210,7 @@ cos(---------------) + sinh(x)*i
            2
 ```
 """
-RExpr(expr::Expr) = expr |> unparse |> RExpr
+RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
 function RSymReplace(str::String)
     ImParse() && (str = str*"\$ ws where i => im" |> rcall)
@@ -353,11 +351,11 @@ function rcall(r::RExpr;
         o == :nat && (trim = true)
     end
     for o in offa
-        offs = offs*"off $o; "
-        !(o in offlist) && (offr = offr*"; on $o")
+        !(o == :factor) && (offs = offs*"off $o; ")
+        !(o in [offlist;[:factor]]) && (offr = offr*"; on $o")
     end
     write(rs,ons*offs*string(r)*onr*offr)
-    mode ? (sp = readsp(rs)) : (sp = rs |> read |> chomp)
+    mode ? (sp = readsp(rs)) : (sp = read(rs))
     expo && rcall(R"off exp")
     mode && for h ∈ 1:length(sp)
         sp[h] = replace(sp[h],r"\n","")
@@ -385,7 +383,12 @@ julia> rcall(:(int(1/(1+x^2), x)))
 :(atan(x))
 ```
 """
-rcall{T}(expr::T;on::Array{Symbol,1}=Symbol[],off::Array{Symbol,1}=Symbol[]) = convert(T, rcall(RExpr(expr);on=on,off=off))
+function rcall{T}(expr::T;on::Array{Symbol,1}=Symbol[],off::Array{Symbol,1}=Symbol[])
+    comp = rcall(RExpr(expr);on=on,off=off)
+    (:latex in on) | (:nat in on) ? (return comp) : (return convert(T,comp))
+end
+
+rcall(r,switches...) = rcall(r;on=Symbol[switches...])
 
 function ==(r::RExpr, s::RExpr)
     n = split(r).str

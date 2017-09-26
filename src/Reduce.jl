@@ -98,7 +98,7 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
     length(r.str) > 1 && (show(string(r)); return nothing)
-    print(io,rcall(r;on=[:nat]) |> string)
+    print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
@@ -124,7 +124,7 @@ include("switch.jl") # load switch operators
 
 ## Setup
 
-offlist = [:nat,:latex,:exp]
+const offlist = [:nat,:latex,:exp]
 
 function load_package(pkg::Union{String,Symbol},pkgs...)
     "load_package $pkg" |> rcall
@@ -173,14 +173,18 @@ function Load()
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)
         repl_init(Base.active_repl)
+    elseif isdefined(Main,:IJulia)
+        eval(s)
     else
         atreplinit() do repl
             eval(s)
             !isdefined(Main,:OhMyREPL) &&
                 (repl.interface = Base.REPL.setup_interface(repl))
-            repl_init(Base.active_repl); print('\n')
+            repl_init(Base.active_repl)
+            print('\n')
         end
     end
+    return nothing
 end
 
 end # module
