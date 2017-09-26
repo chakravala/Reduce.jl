@@ -8,7 +8,7 @@ type ReduceError <: Exception
     errstr::Compat.String
 end
 
-Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce:"*chomp(err.errstr))
+Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce: "*chomp(err.errstr))
 
 function print_args(io::IO,a::Array{Any,1})
     print(io, "(")
@@ -50,7 +50,7 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
         if expr.args[1] == Symbol("@big_str")
             print(io,expr.args[2])
         else
-            error("Macro $(expr.args[1]) block structure not implemented")
+            throw(ReduceError("Macro $(expr.args[1]) block structure not supported"))
         end
     elseif expr.head == :(:)
         show_expr(io,expr.args[1])
@@ -59,11 +59,20 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
         print(io," ")
     elseif expr.head == :line; nothing
     else
-        error("Nested :$(expr.head) block structure not supported by Reduce.jl")
+        throw(ReduceError("Nested :$(expr.head) block structure not supported"))
     end
 end
 
-show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
+const infix_ops = ["+", "-", "*", "/", "**"]
+isinfix(args) = args in infix_ops
+
+#show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
+function show_expr(io::IO, ex)
+    edit = IOBuffer()
+    print(edit, ex)
+    print(io, edit |> String |> JSymReplace)
+end
+
 
 function unparse(expr::Expr)
     str = Array{Compat.String,1}(0)
@@ -187,7 +196,7 @@ function JSymReplace(str::Compat.String)
     for key ∈ keys(repjlr)
         str = replace(str,key,repjlr[key])
     end
-    ImParse() && (str = str*"\$ ws where im => i" |> rcall)
+    ImParse() && !isinfix(str) && (str = str*"\$ ws where im => i" |> rcall)
     return str
 end
 
@@ -205,7 +214,7 @@ cos(---------------) + sinh(x)*i
 """
 RExpr(expr::Expr) = expr |> unparse |> RExpr
 
-function RSymReplace(str::Compat.String)
+function RSymReplace(str::String)
     ImParse() && (str = str*"\$ ws where i => im" |> rcall)
     for key in keys(reprjl)
         str = replace(str,key,reprjl[key])
@@ -268,6 +277,8 @@ function parse(r::RExpr,be=0)
             (h,state) = bematch(js,sexpr,h,iter,state)
             rp = rparse(vcat(js,sexpr[y+1:h]...),be)
             push!(pexpr,Expr(:return,rp))
+        elseif contains(sh[en],"for")
+            throw(ReduceError("for block parsing not supported"))
         elseif contains(sh[en],"end")
             nothing
         elseif isempty(sh[en])
@@ -321,15 +332,46 @@ julia> R\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
 """
-function rcall(r::RExpr)
-    write(rs,r)
-    sp = readsp(rs)
-    for h ∈ 1:length(sp)
+function rcall(r::RExpr;
+        on::Union{Array{Symbol,1},Array{String,1}}=Symbol[],
+        off::Union{Array{Symbol,1},Array{String,1}}=Symbol[])
+    typeof(on) == Array{String,1} ? (ona = convert(Array{Symbol,1},on)) : (ona = on)
+    typeof(off) == Array{String,1} ? (offa = convert(Array{Symbol,1},off)) : (offa = off)
+    ons = ""
+    onr = ""
+    offs = ""
+    offr = ""
+    mode = true
+    trim = false
+    expo = false
+    for o in ona
+        o == :expand ? (ons = ons*"on exp; ") : (ons = ons*"on $o; ")
+        o == :expand ? (onr = onr*"; off exp ") : (onr = onr*"; off $o ")
+        o == :factor && (expo = true)
+        o in offa && throw(ReduceError("Invalid: switch on and off at once"))
+        o in [:latex,:nat] && (mode = false)
+        o == :nat && (trim = true)
+    end
+    for o in offa
+        offs = offs*"off $o; "
+        !(o in offlist) && (offr = offr*"; on $o")
+    end
+    write(rs,ons*offs*string(r)*onr*offr)
+    mode ? (sp = readsp(rs)) : (sp = rs |> read |> chomp)
+    expo && rcall(R"off exp")
+    mode && for h ∈ 1:length(sp)
         sp[h] = replace(sp[h],r"\n","")
         sp[h] = replace(sp[h],r"\\","")
     end
-    return RExpr(sp)
+    trim && (return join(split(sp,"\n")[2:end-1],'\n'))
+    for o in offa
+        o == :nat && (return join(sp))
+        o == :latex && shift!(sp)
+    end
+    return mode ? sp |> RExpr |> split : sp
 end
+
+rcall(r::RExpr,switches...) = rcall(r;on=[switches...])
 
 """
   rcall{T}(expr::T)
@@ -343,7 +385,7 @@ julia> rcall(:(int(1/(1+x^2), x)))
 :(atan(x))
 ```
 """
-rcall{T}(expr::T) = convert(T, rcall(RExpr(expr)))
+rcall{T}(expr::T;on::Array{Symbol,1}=Symbol[],off::Array{Symbol,1}=Symbol[]) = convert(T, rcall(RExpr(expr);on=on,off=off))
 
 function ==(r::RExpr, s::RExpr)
     n = split(r).str

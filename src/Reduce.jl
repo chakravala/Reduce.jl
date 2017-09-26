@@ -89,7 +89,7 @@ include("rexpr.jl") # load RExpr features
 
 ## io
 
-export string, show
+export string, show, load_package
 import Base: string, show
 
 string(r::RExpr) = convert(Compat.String,r)
@@ -98,9 +98,7 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
     length(r.str) > 1 && (show(string(r)); return nothing)
-    write(rs,"on nat"*r*"off nat")
-    output = join(split(read(rs),"\n")[2:end-1],'\n')
-    print(io,chomp(replace(output,Regex("\n"*SOS),"")))
+    print(io,rcall(r;on=[:nat]) |> string)
 end
 
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
@@ -122,8 +120,24 @@ end
 
 include("repl.jl") # load repl features
 include("unary.jl") # load unary operators
+include("switch.jl") # load switch operators
 
 ## Setup
+
+offlist = [:nat,:latex,:exp]
+
+function load_package(pkg::Union{String,Symbol},pkgs...)
+    "load_package $pkg" |> rcall
+    for extra in pkgs
+        load_package(extra)
+    end
+    return nothing
+end
+function load_package(pkgs::Union{Array{String,1},Array{Symbol,1}})
+    for pkg in pkgs
+        load_package(pkg)
+    end
+end
 
 """
   Reduce.Reset()
@@ -142,14 +156,19 @@ __init__() = (Load(); atexit(() -> kill(rs)))
 function Load()
     global rs = PSL()
     s = quote; #global rs = PSL()
-        write(rs.input,"off nat;symbolic write(string $(Int(EOT)));\n")
+        offs = ""
+        for o in offlist
+            o != :nat && (offs = offs*"off $o; ")
+        end
+        write(rs.input,"off nat; symbolic write(string $(Int(EOT)));\n")
         banner = readuntil(rs.output,EOT) |> String
         readavailable(rs.output)
         is_windows() && (banner = replace(banner,r"\r",""))
         ReduceCheck(banner)
         !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
             println(split(String(banner),'\n')[end-3])
-        rcall(R"load_package rlfi")
+        load_package(:rlfi)
+        offs |> RExpr |> rcall
     end
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)
