@@ -13,6 +13,7 @@ makedocs(
     authors = "Michael Reed",
     pages = Any[
         "Home" => "index.md"
+        "Library" => "library.md"
         ]
 )
 

@@ -343,7 +343,7 @@ function rcall(r::RExpr;
     trim = false
     expo = false
     for o in ona
-        o == :expand ? (ons = ons*"on exp; ") : (ons = ons*"on $o; ")
+        o == :expand ? (ons = ons*"on exp\$ ") : (ons = ons*"on $o\$ ")
         o == :expand ? (onr = onr*"; off exp ") : (onr = onr*"; off $o ")
         o == :factor && (expo = true)
         o in offa && throw(ReduceError("Invalid: switch on and off at once"))
@@ -351,7 +351,7 @@ function rcall(r::RExpr;
         o == :nat && (trim = true)
     end
     for o in offa
-        !(o == :factor) && (offs = offs*"off $o; ")
+        !(o == :factor) && (offs = offs*"off $o\$ ")
         !(o in [offlist;[:factor]]) && (offr = offr*"; on $o")
     end
     write(rs,ons*offs*string(r)*onr*offr)
