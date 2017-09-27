@@ -1,6 +1,6 @@
 # Reduce.jl
 
-*Symbolic parser generator for Julia language expressions using REDUCE computer algebra term rewrite system*
+*Symbolic parser generator for Julia language expressions using REDUCE algebra term rewrite system*
 
 
 ```@contents
@@ -10,21 +10,30 @@
 
 REDUCE is a system for general algebraic computations of interest to mathematicians, scientists and engineers:
 
-* exact arithmetic using integers and fractions; arbitrary precision numerical approximation;
-* polynomial and rational function algebra; factorization and expansion of polynomials and rational functions;
-* differentiation and integration of multi-variable functions; exponential, logarithmic, trigonometric and hyperbolic;
-* output of results in a variety of formats; automatic and user controlled simplification of expressions;
-* substitutions and pattern matching of expressions; quantifier elimination and decision for interpreted first-order logic;
-* solution of ordinary differential equations; calculations with a wide variety of special (higher transcendental) functions;
-* calculations involving matrices with numerical and symbolic elements; general matrix and non-commutative algebra;
-* powerful intuitive user-level programming language; generating optimized numerical programs from symbolic input;
-* Dirac matrix calculations of interest to high energy physicists; solution of single and simultaneous equations.
+* exact arithmetic using integers and fractions;
+* arbitrary precision numerical approximation;
+* polynomial and rational function algebra;
+* factorization and expansion of polynomials and rational functions;
+* differentiation and integration of multi-variable functions;
+* exponential, logarithmic, trigonometric and hyperbolic;
+* output of results in a variety of formats;
+* automatic and user controlled simplification of expressions;
+* substitutions and pattern matching of expressions;
+* quantifier elimination and decision for interpreted first-order logic;
+* solution of ordinary differential equations;
+* calculations with a wide variety of special (higher transcendental) functions;
+* calculations involving matrices with numerical and symbolic elements;
+* general matrix and non-commutative algebra;
+* powerful intuitive user-level programming language;
+* generating optimized numerical programs from symbolic input;
+* Dirac matrix calculations of interest to high energy physicists;
+* solution of single and simultaneous equations.
 
 Interface for applying symbolic manipulation on [Julia expressions](https://docs.julialang.org/en/latest/manual/metaprogramming) using [REDUCE](http://www.reduce-algebra.com)'s term rewrite system:
 
 * reduce expressions are `RExpr` objects that can `parse` into julia `Expr` objects and vice versa;
 * interface link communicates and interprets via various reduce output modes using `rcall` method;
-* high-level reduce-julia syntax parser-generator can walk arbitrary expression to rewrite mathematical code;
+* high-level reduce-julia syntax parser-generator walks arbitrary expression to rewrite mathematical code;
 * import operators from REDUCE using code generation to apply to arbitrary computational expressions.
 
 ## Setup
@@ -67,7 +76,7 @@ quote
     -(((log((x ^ 2 - x) + 1) - 2 * log(x + 1)) - 2 * sqrt(3) * atan((2x - 1) // sqrt(3)))) // 6
 end
 ```
-Call `split(::RExpr)` to create a new `RExpr` object with all `Reduce` expressions split into separate array elements.
+Call `split(::RExpr)` to create a new `RExpr` object with all expressions split into separate array elements.
 
 The `rcall` method is used to evaluate any type of expression.
 ```Julia

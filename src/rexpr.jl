@@ -137,6 +137,7 @@ function split(r::RExpr)
 end
 
 const r_to_jl = Dict(
+    "i"             =>  "im",
     "euler_gamma"   =>  "eulergamma",
     "infinity"      =>  "Inf"
 )
@@ -145,12 +146,12 @@ const r_to_jl_utf = Dict(
     "pi"            =>  "π",
     "golden_ratio"  =>  "φ",
     "**"            =>  "^",
-    #":="            =>  "=",
     "/"             =>  "//"
 )
 
 const jl_to_r = Dict(
-    #"eu"            =>  "euler_gamma",
+    "im"            =>  "i",
+    "eu"            =>  "euler_gamma",
     "eulergamma"    =>  "euler_gamma",
     "golden"        =>  "golden_ratio",
     "Inf"           =>  "infinity"
@@ -161,7 +162,6 @@ const jl_to_r_utf = Dict(
     "γ"             =>  "euler_gamma",
     "φ"             =>  "golden_ratio",
     "^"             =>  "**",
-    #"="             =>  ":=",
     "//"            =>  "/"
 )
 
@@ -169,16 +169,16 @@ const jl_to_r_utf = Dict(
 function _syme(syme::Dict{String,String})
     str = ""
     for key in keys(syme)
-        str = str*"($key)=($(syme[key])),"
+        str = str*"($key => $(syme[key])),"
     end
     return str[1:end-1]
 end
 
 const symrjl = _syme(r_to_jl)
-reprjl = Dict(r_to_jl...,r_to_jl_utf...)
+reprjl = r_to_jl_utf
 const symjlr = _syme(jl_to_r)
-const repjlr = Dict(jl_to_r...,jl_to_r_utf...)
-# _subst(syme::String,expr) = "sub({$syme},$expr)" |> RExpr |> rcall
+const repjlr = jl_to_r_utf
+_subst{T}(syme::String,expr::T) = convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
 
 Rational = ( () -> begin
         gs = true
@@ -194,7 +194,7 @@ function JSymReplace(str::Compat.String)
     for key ∈ keys(repjlr)
         str = replace(str,key,repjlr[key])
     end
-    ImParse() && !isinfix(str) && (str = str*"\$ ws where im => i" |> rcall)
+    ImParse() && !isinfix(str) && (str = _subst(symjlr,str))
     return str
 end
 
@@ -213,7 +213,7 @@ cos(---------------) + sinh(x)*i
 RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
 function RSymReplace(str::String)
-    ImParse() && (str = str*"\$ ws where i => im" |> rcall)
+    ImParse() && (str = _subst(symrjl,str))
     for key in keys(reprjl)
         str = replace(str,key,reprjl[key])
     end
@@ -343,8 +343,13 @@ function rcall(r::RExpr;
     trim = false
     expo = false
     for o in ona
-        o == :expand ? (ons = ons*"on exp\$ ") : (ons = ons*"on $o\$ ")
-        o == :expand ? (onr = onr*"; off exp ") : (onr = onr*"; off $o ")
+        if o == :expand
+            ons = ons*"on exp\$ "
+            onr = onr*"; off exp "
+        else
+            ons = ons*"on $o\$ "
+            onr = onr*"; off $o "
+        end
         o == :factor && (expo = true)
         o in offa && throw(ReduceError("Invalid: switch on and off at once"))
         o in [:latex,:nat] && (mode = false)
