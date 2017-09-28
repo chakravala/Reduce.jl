@@ -220,101 +220,19 @@ function RSymReplace(str::String)
     return str
 end
 
-"""
+include("parser.jl")
+parsegen(:parse,:expr) |> eval
+
+@doc """
   parse(rexpr::RExpr)
+
 Parse a Reduce expression into a Julia expression
 ## Examples
 ```julia
 julia> parse(R\"sin(i*x)\")
 :(sinh(x) * im)
 ```
-"""
-function parse(r::RExpr,be=0)
-    pexpr = Array{Any,1}(0)
-    sexpr = split(r).str
-    iter = 1:length(sexpr)
-    state = start(iter); #show(sexpr)
-    while !done(iter,state)
-        (h,state) = next(iter, state)
-        sh = split(sexpr[h],r"[ ]+")
-        en = 1
-        isempty(replace(sh[en]," ","")) && (en = 2); #show(sh[en])
-        if contains(sh[en],"procedure")
-            js = join(split(sexpr[h],"procedure")[2:end],"procedure")
-            (h,state) = next(iter, state)
-            y = h
-            (h,state) = bematch(sexpr[h],sexpr,h,iter,state)
-            push!(pexpr,Expr(:function,parse(js),rparse(sexpr[y:h],be)))
-        elseif contains(sh[en],"begin")
-            js = join(split(sexpr[h],"begin")[2:end],"begin")
-            ep = Array{Any,1}(length(0))
-            sh1 = split(js,r"[ ]+")
-            c = sum(sh1.=="begin")-sum(sh1.=="end")
-            flag = c ≥ 0
-            c ≤ -1 && (js = join(split(js,"end")[1:end+c],"end"))
-            y = h
-            (h,state) = bematch(js,sexpr,h,iter,state)
-            ep[1] = rparse(vcat(js,sexpr[y+1:h]...),be+1)
-            ep[1] == nothing && shift!(ep)
-            while !done(iter,state) & flag
-                (h,state) = next(iter, state)
-                cQ = c
-                js = sexpr[h]
-                sh2 = split(js,r"[ ]+")
-                c += sum(sh2.=="begin")-sum(sh2.=="end")
-                c ≤ -1 && (js = join(split(js,"end")[1:end+c],"end"))
-                y = h
-                (h,state) = bematch(js,sexpr,h,iter,state)
-                epr = rparse(vcat(js,sexpr[y+1:h]...),cQ)
-                epr ≠ nothing && push!(ep,epr)
-            end
-            push!(pexpr,Expr(:block,ep...))
-        elseif contains(sh[en],"return")
-            js = join(split(sexpr[h],"return")[2:end],"return")
-            y = h
-            (h,state) = bematch(js,sexpr,h,iter,state)
-            rp = rparse(vcat(js,sexpr[y+1:h]...),be)
-            push!(pexpr,Expr(:return,rp))
-        elseif contains(sh[en],"for")
-            throw(ReduceError("for block parsing not supported"))
-        elseif contains(sh[en],"end")
-            nothing
-        elseif isempty(sh[en])
-            nothing
-        elseif contains(sexpr[h],":=")
-            sp = split(sexpr[h],":=")
-            push!(pexpr,Expr(:(=),parse(sp[1]),rparse(sp[2],be)))
-        elseif contains(sexpr[h],":")
-            sp = split(sexpr[h],":")
-            push!(pexpr,Expr(:(:),rparse(sp[1],be),rparse(sp[2],be)))
-        else
-            js=sexpr[h]
-            se=sum(sh.=="end")
-            0<se≤be ? (js=replace(js,"end","")) :
-                (se>be && (js=join(split(js,"end")[1:end-be],"end")))
-            push!(pexpr,parse(RSymReplace(js)))
-        end
-    end
-    u = length(pexpr)
-    return u==1 ? pexpr[1] : (u==0 ? nothing : Expr(:block,pexpr...))
-end
-
-rparse(r,be=0) = parse(r |> RExpr, be)
-rparse(r::Array{Compat.String,1},be=0) = parse(RExpr(r),be)
-
-function bematch(js,sexpr,h,iter,state)
-    sh = split(js,r"[ ]+")
-    y = h
-    c = sum(sh.=="begin")-sum(sh.=="end")
-    flag = c > 0
-    while !done(iter,state) & flag
-        (y,state) = next(iter, state)
-        sh2 = split(sexpr[y],r"[ ]+")
-        c += sum(sh2.=="begin")-sum(sh2.=="end")
-        flag = c > 0
-    end
-    return (y,state)
-end
+""" parse
 
 convert(::Type{RExpr}, r::RExpr) = r
 convert(::Type{Array{Compat.String,1}}, r::RExpr) = r.str
@@ -323,6 +241,7 @@ convert{T}(::Type{T}, r::RExpr) = T <: Number ? eval(parse(r)) : parse(r)
 
 """
   rcall(r::RExpr)
+
 Evaluate a Reduce expression.
 ## Examples
 ```julia
