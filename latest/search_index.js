@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Base.parse",
     "category": "Function",
-    "text": "parse(rexpr::RExpr) Parse a Reduce expression into a Julia expression\n\nExamples\n\njulia> parse(R\"sin(i*x)\")\n:(sinh(x) * im)\n\n\n\n"
+    "text": "parse(rexpr::RExpr)\n\nParse a Reduce expression into a Julia expression\n\nExamples\n\njulia> parse(R\"sin(i*x)\")\n:(sinh(x) * im)\n\n\n\n"
 },
 
 {
@@ -125,7 +125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Reduce.rcall",
     "category": "Function",
-    "text": "rcall(r::RExpr) Evaluate a Reduce expression.\n\nExamples\n\njulia> R\"int(sin(x), x)\" |> RExpr |> rcall\n - cos(x)\n\n\n\nrcall{T}(expr::T) Evaluate a Julia expression or string using the Reduce interpretor and convert output back into the input type\n\nExamples\n\njulia> rcall(\"int(sin(y)^2, y)\")\n\"( - cos(y)*sin(y) + y)/2\"\njulia> rcall(:(int(1/(1+x^2), x)))\n:(atan(x))\n\n\n\n"
+    "text": "rcall(r::RExpr)\n\nEvaluate a Reduce expression.\n\nExamples\n\njulia> R\"int(sin(x), x)\" |> RExpr |> rcall\n - cos(x)\n\n\n\nrcall{T}(expr::T) Evaluate a Julia expression or string using the Reduce interpretor and convert output back into the input type\n\nExamples\n\njulia> rcall(\"int(sin(y)^2, y)\")\n\"( - cos(y)*sin(y) + y)/2\"\njulia> rcall(:(int(1/(1+x^2), x)))\n:(atan(x))\n\n\n\n"
 },
 
 {
