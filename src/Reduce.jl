@@ -12,46 +12,37 @@ immutable PSL <: Base.AbstractPipe
     output::Pipe
     process::Base.Process
     function PSL()
+        # Setup pipes and reduce process
+        input = Pipe()
+        output = Pipe()
+        rsl = `$(split(rpsl))`
+        dirf = dirname(@__FILE__)
+        try
+            rsl = `$(split(ENV["REDUCE"]))`
+        end
         if !is_windows()
             try
-                # Setup pipes and reduce process
-                input = Pipe()
-                output = Pipe()
-                process = spawn(`$rpsl`, (input, output, STDERR))
-                # Close the unneeded ends of Pipes
-                close(input.out)
-                close(output.in)
-                return new(input, output, process)
+                process = spawn(rsl, (input, output, STDERR))
             catch
-                # Setup pipes and reduce process
-                input = Pipe()
-                output = Pipe()
-            if is_linux()
-                cmd = `$(joinpath(dirname(@__FILE__),"..","deps","usr","bin"))/$rpsl`
-            elseif is_apple()
-                cmd = `$(joinpath(dirname(@__FILE__),"..","deps","psl"))/$rpsl`
-            else
-                cmd = `$(joinpath(dirname(@__FILE__),"..",rsvn[ρ],"bin"))/$rpsl`
+                if is_linux()
+                    rsl = `$(joinpath(dirf,"..","deps","usr","bin"))/$rpsl`
+                elseif is_apple()
+                    rsl = `$(joinpath(dirf,"..","deps","psl"))/$rpsl`
+                else
+                    rsl = `$(joinpath(dirf,"..",rsvn[ρ],"bin"))/$rpsl`
+                end
+                process = spawn(rsl, (input, output, STDERR))
             end
-            process = spawn(cmd, (input, output, STDERR))
-            # Close the unneeded ends of Pipes
-            close(input.out)
-            close(output.in)
-            return new(input, output, process)
-        end
         else
-            # Setup pipes and reduce process
-            input = Pipe()
-            output = Pipe()
-            folder = dirname(@__FILE__)
-            folder = (contains(folder,"appveyor") ? joinpath(folder,"..","deps","psl") :
+            dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl") :
                 joinpath(folder,"..","deps","install","lib","psl"))
-            cmd = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
-            process = spawn(cmd, (input, output, STDERR))
-            # Close the unneeded ends of Pipes
-            close(input.out); close(output.in)
-            return new(input, output, process)
+            rsl = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+            process = spawn(rsl, (input, output, STDERR))
         end
+        # Close the unneeded ends of Pipes
+        close(input.out)
+        close(output.in)
+        return new(input, output, process)
   end; end
 
 Base.kill(rs::PSL) = kill(rs.process)
@@ -61,10 +52,11 @@ clear(rs::PSL) = (write(rs.input,";\n"); readavailable(rs.output))
 clears = (()->(c=true; return (tf=c)->(c≠tf && (c=tf); return c)))()
 
 const EOT = Char(4) # end of transmission character
+EOTstr = "symbolic write(string $(Int(EOT)))"
 
 function Base.write(rs::PSL, input::Compat.String)
     clears() && clear(rs)
-    write(rs.input,"$input; symbolic write(string $(Int(EOT)));\n")
+    write(rs.input,"$input; $EOTstr;\n")
 end
 
 function ReduceCheck(output) # check for REDUCE errors
@@ -126,6 +118,16 @@ include("switch.jl") # load switch operators
 
 const offlist = [:nat,:latex,:exp]
 
+"""
+    load_package(::Symbol)
+
+Loads the specified package into REDUCE
+
+# Examples
+```julia-repl
+julia> load_package(:rlfi)
+```
+"""
 function load_package(pkg::Union{String,Symbol},pkgs...)
     "load_package $pkg" |> rcall
     for extra in pkgs
@@ -140,10 +142,12 @@ function load_package(pkgs::Union{Array{String,1},Array{Symbol,1}})
 end
 
 """
-  Reduce.Reset()
+    Reduce.Reset()
+
 Kills the REDUCE process and starts a new instance.
-## Examples
-```julia
+
+# Examples
+```julia-repl
 julia> Reduce.Reset()
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
@@ -160,7 +164,7 @@ function Load()
         for o in offlist
             o != :nat && (offs = offs*"off $o; ")
         end
-        write(rs.input,"off nat; symbolic write(string $(Int(EOT)));\n")
+        write(rs.input,"off nat; $EOTstr;\n")
         banner = readuntil(rs.output,EOT) |> String
         readavailable(rs.output)
         is_windows() && (banner = replace(banner,r"\r",""))

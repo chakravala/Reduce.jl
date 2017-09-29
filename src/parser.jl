@@ -1,6 +1,9 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
+"""
+REDUCE begin and end marker counter for parsegen
+"""
 function bematch(js,sexpr,h,iter,state)
     sh = split(js,r"[ ]+")
     y = h
@@ -15,6 +18,11 @@ function bematch(js,sexpr,h,iter,state)
     return (y,state)
 end
 
+"""
+    parsegen(::Symbol,::Symbol)
+
+Parser generator that outputs code to walk and manipulate REDUCE expressions
+"""
 function parsegen(fun::Symbol,mode::Symbol)
     rfun = Symbol(:r,fun)
     arty = (mode == :expr) ? :Any : :(Compat.String)
@@ -59,9 +67,9 @@ function parsegen(fun::Symbol,mode::Symbol)
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state)
                     $(if mode == :expr
-                        :(ep[1] = $rfun(vcat(js,sexpr[y+1:h]...),be+1))
+                        :(push!(ep,$rfun(vcat(js,sexpr[y+1:h]...),be+1)))
                     else
-                        :(ep[1] = $rfun(vcat(js,sexpr[y+1:h]...),be+1) |> string)
+                        :(push!(ep,$rfun(vcat(js,sexpr[y+1:h]...),be+1) |> string))
                     end)
                     ep[1] == nothing && shift!(ep)
                     while !done(iter,state) & flag
@@ -80,7 +88,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                         end)
                         epr ≠ nothing && push!(ep,epr)
                     end
-                    push!(nsr,(mode == :expr) ? (Expr(:block,ep...)): (ep...))
+                    push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : :(ep...)))
                 elseif contains(sh[en],"return")
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h

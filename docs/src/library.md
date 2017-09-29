@@ -14,11 +14,19 @@ RExpr
 ```
 
 ```@docs
+rcall
+```
+
+```@docs
 parse
 ```
 
 ```@docs
-rcall
+parsegen
+```
+
+```@docs
+bematch
 ```
 
 ## Index

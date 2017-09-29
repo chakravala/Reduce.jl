@@ -90,9 +90,11 @@ end
 
 """
 A Reduce expression
-## Summary:
+
+# Summary:
 type RExpr <: Any
-## Fields:
+
+# Fields:
 str :: Array{Compat.String,1}
 """
 type RExpr
@@ -199,10 +201,12 @@ function JSymReplace(str::Compat.String)
 end
 
 """
-  RExpr(expr::Expr)
+    RExpr(e:Expr)
+
 Convert Julia expression to Reduce expression
-## Examples
-```julia
+
+# Examples
+```julia-repl
 julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
 
      sqrt(5)*y + y
@@ -224,11 +228,12 @@ include("parser.jl")
 parsegen(:parse,:expr) |> eval
 
 @doc """
-  parse(rexpr::RExpr)
+    parse(r::RExpr)
 
 Parse a Reduce expression into a Julia expression
-## Examples
-```julia
+
+# Examples
+```julia-repl
 julia> parse(R\"sin(i*x)\")
 :(sinh(x) * im)
 ```
@@ -240,11 +245,12 @@ convert(::Type{Compat.String}, r::RExpr) = join(r.str,"; ")
 convert{T}(::Type{T}, r::RExpr) = T <: Number ? eval(parse(r)) : parse(r)
 
 """
-  rcall(r::RExpr)
+    rcall(r::RExpr)
 
 Evaluate a Reduce expression.
-## Examples
-```julia
+
+# Examples
+```julia-repl
 julia> R\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
@@ -296,11 +302,13 @@ end
 rcall(r::RExpr,switches...) = rcall(r;on=[switches...])
 
 """
-  rcall{T}(expr::T)
+    rcall{T}(e::T)
+
 Evaluate a Julia expression or string using the Reduce interpretor and convert
 output back into the input type
-## Examples
-```julia
+
+# Examples
+```julia-repl
 julia> rcall(\"int(sin(y)^2, y)\")
 \"( - cos(y)*sin(y) + y)/2\"
 julia> rcall(:(int(1/(1+x^2), x)))
@@ -326,4 +334,4 @@ function ==(r::RExpr, s::RExpr)
     return b
 end
 
-getindex(r::RExpr, i) = "$r($i)" |> rcall
+#getindex(r::RExpr, i) = "$r($i)" |> rcall
