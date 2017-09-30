@@ -97,6 +97,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "library.html#Index-1",
+    "page": "Library",
+    "title": "Index",
+    "category": "section",
+    "text": ""
+},
+
+{
     "location": "library.html#Reduce.Reset",
     "page": "Library",
     "title": "Reduce.Reset",
@@ -129,19 +137,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "library.html#Reduce.load_package",
+    "page": "Library",
+    "title": "Reduce.load_package",
+    "category": "Function",
+    "text": "load_package(::Symbol)\n\nLoads the specified package into REDUCE\n\nExamples\n\njulia> load_package(:rlfi)\n\n\n\n"
+},
+
+{
+    "location": "library.html#Reduce.parsegen",
+    "page": "Library",
+    "title": "Reduce.parsegen",
+    "category": "Function",
+    "text": "parsegen(::Symbol,::Symbol)\n\nParser generator that outputs code to walk and manipulate REDUCE expressions\n\n\n\n"
+},
+
+{
+    "location": "library.html#Reduce.Rational",
+    "page": "Library",
+    "title": "Reduce.Rational",
+    "category": "Function",
+    "text": "Reduce.Rational(::Bool)\n\nToggle whether to use '/' or '//' for division in julia expressions\n\n\n\n"
+},
+
+{
+    "location": "library.html#Reduce.SubCall",
+    "page": "Library",
+    "title": "Reduce.SubCall",
+    "category": "Function",
+    "text": "Reduce.SubCall(::Bool)\n\nToggle whether to substitute additional expressions\n\n\n\n"
+},
+
+{
     "location": "library.html#Functions-1",
     "page": "Library",
     "title": "Functions",
     "category": "section",
-    "text": "Reduce.ResetRExprrcallparseparsegenbematch"
-},
-
-{
-    "location": "library.html#Index-1",
-    "page": "Library",
-    "title": "Index",
-    "category": "section",
-    "text": ""
+    "text": "Reduce.ResetRExprrcallparseload_packageReduce.parsegenReduce.RationalReduce.SubCall"
 },
 
 ]}
