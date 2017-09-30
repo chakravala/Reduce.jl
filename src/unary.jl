@@ -116,14 +116,14 @@ end
 for fun in [sbas;sdep;sfun;snum;scom;sint]
     for T in [:(Compat.String),:Expr]
         quote
-            function $fun(expr::$T,be=0)
-                convert($T, $fun(RExpr(expr),be))
+            function $fun(expr::$T;be=0)
+                convert($T, $fun(RExpr(expr);be=be))
             end
         end |> eval
     end
 end
 
-length(r::Expr,be=0) = r |> RExpr |> length |> parse |> eval
+length(r::Expr;be=0) = length(r |> RExpr;be=be) |> parse |> eval
 
 for fun in [sint;sran]
     quote
@@ -144,7 +144,7 @@ end
 for fun in scom
     quote
         function $fun{T<:Number}(x::T)
-            $fun(RExpr(x)) |> parse |> eval
+            "$x" |> parse |> RExpr |> $fun |> parse |> eval
         end
     end |> eval
 end

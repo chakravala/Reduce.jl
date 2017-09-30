@@ -45,6 +45,7 @@ julia> Pkg.add("Reduce"); Pkg.build("Reduce")
 julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
+In order to support Unicode / UTF8 characters, the CSL version of reduce is required. The automated build script currently only fetches the PSL version. However, if you have `redcsl` installed on your system it can be used by Reduce.jl by setting the environment variable `ENV["REDUCE"] = "redcsl -w"` in julia.
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
 

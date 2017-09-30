@@ -43,24 +43,34 @@ immutable PSL <: Base.AbstractPipe
         close(input.out)
         close(output.in)
         return new(input, output, process)
-  end; end
+    end
+end
 
 Base.kill(rs::PSL) = kill(rs.process)
 Base.process_exited(rs::PSL) = process_exited(rs.process)
+
+export error, ReduceError
+import Base: error
+
+type ReduceError <: Exception
+    errstr::Compat.String
+end
+
+Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce: "*chomp(err.errstr))
+
+function ReduceCheck(output) # check for REDUCE errors
+    contains(output,"***** ") && throw(ReduceError(output))
+end
 
 clear(rs::PSL) = (write(rs.input,";\n"); readavailable(rs.output))
 clears = (()->(c=true; return (tf=c)->(c≠tf && (c=tf); return c)))()
 
 const EOT = Char(4) # end of transmission character
-EOTstr = "symbolic write(string $(Int(EOT)))"
+EOTstr = "symbolic write(int2id $(Int(EOT)))"
 
 function Base.write(rs::PSL, input::Compat.String)
     clears() && clear(rs)
     write(rs.input,"$input; $EOTstr;\n")
-end
-
-function ReduceCheck(output) # check for REDUCE errors
-    contains(output,"***** ") && throw(ReduceError(output))
 end
 
 const SOS = "[0-9]+: " # REDUCE terminal prompt
@@ -78,45 +88,19 @@ end
 readsp(rs::PSL) = split(read(rs),"\n\n\n")
 
 include("rexpr.jl") # load RExpr features
-
-## io
-
-export string, show, load_package
-import Base: string, show
-
-string(r::RExpr) = convert(Compat.String,r)
-show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
-Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
-
-@compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-    length(r.str) > 1 && (show(string(r)); return nothing)
-    print(io,rcall(r;on=[:nat]) |> string |> chomp)
-end
-
-@compat function show(io::IO, ::MIME"text/latex", r::RExpr)
-    rcall(R"on latex")
-    write(rs,r)
-    rd = readsp(rs)
-    rcall(R"off latex")
-    sp = split(join(rd),"\n\n")
-    print(io,"\\begin{eqnarray}\n")
-    ct = 0 # add enumeration
-    for str ∈ sp
-        ct += 1
-        length(sp) ≠ 1 && print(io,"($ct)\&\\,")
-        print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})",""))
-        ct ≠ length(sp) && print(io,"\\\\\\\\")
-    end # new line
-    print(io,"\n\\end{eqnarray}")
-end
-
+include("parser.jl") # load parser generator
 include("repl.jl") # load repl features
 include("unary.jl") # load unary operators
 include("switch.jl") # load switch operators
+include("calculus.jl") # load calculus operators
+
+Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 ## Setup
 
 const offlist = [:nat,:latex,:exp]
+
+export load_package
 
 """
     load_package(::Symbol)
@@ -169,8 +153,9 @@ function Load()
         readavailable(rs.output)
         is_windows() && (banner = replace(banner,r"\r",""))
         ReduceCheck(banner)
+        rcsl = contains(banner," CSL ")
         !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
-            println(split(String(banner),'\n')[end-3])
+            println(split(String(banner),'\n')[rcsl ? 1 : end-3])
         load_package(:rlfi)
         offs |> RExpr |> rcall
     end

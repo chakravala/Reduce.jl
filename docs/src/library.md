@@ -3,6 +3,11 @@
 ```@contents
 ```
 
+## Index
+
+```@index
+```
+
 ## Functions
 
 ```@docs
@@ -22,14 +27,17 @@ parse
 ```
 
 ```@docs
-parsegen
+load_package
 ```
 
 ```@docs
-bematch
+Reduce.parsegen
 ```
 
-## Index
+```@docs
+Reduce.Rational
+```
 
-```@index
+```@docs
+Reduce.SubCall
 ```

@@ -31,8 +31,8 @@ end
 for fun in [switchbas;switches]
     for T in [:(Compat.String),:Expr]
         quote
-            function $fun(expr::$T,be=0)
-                convert($T, $fun(RExpr(expr),be))
+            function $fun(expr::$T;be=0)
+                convert($T, $fun(RExpr(expr);be=be))
             end
         end |> eval
     end
@@ -41,8 +41,8 @@ end
 for fun in switchtex
     for T in [:(Compat.String),:Expr]
         quote
-            function $fun(expr::$T,be=0)
-                convert(String, $fun(RExpr(expr),be))
+            function $fun(expr::$T;be=0)
+                convert(String, $fun(RExpr(expr);be=be))
             end
         end |> eval
     end
