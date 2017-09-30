@@ -64,7 +64,7 @@ end
 function split(r::RExpr)
     n = Array{Compat.String,1}(0)
     for h ∈ 1:length(r.str)
-        p = split(replace(r.str[h],r"\$",";"),r"(?<!\!#[0-9a-fA-F]{4});")
+        p = split(replace(r.str[h],r"(\$)|(;\n)",";"),r"(?<!\!#[0-9a-fA-F]{4});")
         for t ∈ 1:length(p)
             push!(n,p[t])
     end; end
@@ -75,7 +75,7 @@ string(r::RExpr) = convert(Compat.String,r)
 show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-    length(r.str) > 1 && (show(string(r)); return nothing)
+    length(r.str) > 1 && (print(io,string(r)*";"); return nothing)
     print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
@@ -190,7 +190,7 @@ end
 
 convert(::Type{RExpr}, r::RExpr) = r
 convert(::Type{Array{Compat.String,1}}, r::RExpr) = r.str
-convert(::Type{Compat.String}, r::RExpr) = join(r.str,"; ")
+convert(::Type{Compat.String}, r::RExpr) = join(r.str,";\n")
 convert{T}(::Type{T}, r::RExpr) = T <: Number ? eval(parse(r)) : parse(r)
 
 """

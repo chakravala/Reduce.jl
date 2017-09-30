@@ -33,9 +33,9 @@ function parsegen(fun::Symbol,mode::Symbol)
     elseif mode == :switch
         :(rcall("$js" |> RExpr, $(string(fun))))
     elseif mode == :calculus
-        :($(string(fun)) * "($js,$s)" |> RExpr |> rcall)
+        :($(string(fun)) * "($js,$(join(s,',')))" |> RExpr |> rcall)
     end
-    mode != :calculus ? (args = [:(r::RExpr)]) : (args = [:(r::RExpr),:(s::RExpr)])
+    mode != :calculus ? (args = [:(r::RExpr)]) : (args = [:(r::RExpr),Expr(:...,:s)])
     return quote
         function $fun($(args...);be=0)
             nsr = $arty[]
@@ -52,18 +52,13 @@ function parsegen(fun::Symbol,mode::Symbol)
                     (h,state) = next(iter, state)
                     y = h
                     (h,state) = bematch(sexpr[h],sexpr,h,iter,state)
+                    $(mode != :expr ? :(push!(nsr,Compat.String("procedure "*js))) : :(nothing))
                     $(if mode == :expr
                         :(push!(nsr,Expr(:function,parse(js),rparse(sexpr[y:h];be=be))))
                     elseif mode == :calculus
-                        quote
-                            push!(nsr,Compat.String("procedure "*js))
-                            push!(nsr,$rfun(sexpr[y:h],s;be=be) |> string)
-                        end
+                        :(push!(nsr,$rfun(sexpr[y:h],s;be=be) |> string))
                     else
-                        quote
-                            push!(nsr,Compat.String("procedure "*js))
-                            push!(nsr,$rfun(sexpr[y:h];be=be) |> string)
-                        end
+                        :(push!(nsr,$rfun(sexpr[y:h];be=be) |> string))
                     end)
                 elseif contains(sh[en], "begin")
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
@@ -108,16 +103,13 @@ function parsegen(fun::Symbol,mode::Symbol)
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state)
                     $(if mode == :expr
-                        quote
-                            rp = $rfun(vcat(js,sexpr[y+1:h]...);be=be)
-                            push!(nsr,Expr(:return,rp))
-                        end
+                        :(rp = $rfun(vcat(js,sexpr[y+1:h]...);be=be))
                     elseif mode == :calculus
                         :(rp = $rfun(vcat(js,sexpr[y+1:h]...),s;be=be) |> string)
                     else
                         :(rp = $rfun(vcat(js,sexpr[y+1:h]...);be=be) |> string)
                     end)
-                    $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(nothing))
+                    $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not supported"))
                 elseif contains(sh[en],"end")
@@ -161,8 +153,8 @@ function parsegen(fun::Symbol,mode::Symbol)
         end
         $(if mode == :calculus
             quote
-                $rfun(r::Array{Compat.String,1},s::RExpr;be=0) = $fun(RExpr(r),s;be=be)
-                $rfun(r,s;be=0) = $fun(r |> Compat.String |> RExpr,s;be=be)
+                $rfun(r::Array{Compat.String,1},s;be=0) = $fun(RExpr(r),s...;be=be)
+                $rfun(r,s;be=0) = $fun(r |> Compat.String |> RExpr,s...;be=be)
             end
         else
             quote

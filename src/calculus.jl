@@ -14,11 +14,11 @@ end
 
 for fun in calculus
     quote
-        function $fun(expr::Compat.String,s::Compat.String;be=0)
-            convert(Compat.String, $fun(RExpr(expr),RExpr(s);be=be))
+        function $fun(expr::Compat.String,s...;be=0)
+            convert(Compat.String, $fun(RExpr(expr),s...;be=be))
         end
-        function $fun(expr::Expr,s;be=0)
-            convert(Expr, $fun(RExpr(expr),RExpr(s);be=be))
+        function $fun(expr::Expr,s...;be=0)
+            convert(Expr, $fun(RExpr(expr),s...;be=be))
         end
     end |> eval
 end

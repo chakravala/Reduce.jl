@@ -27,7 +27,8 @@ Interface for applying symbolic manipulation on [Julia expressions](https://docs
 * reduce expressions are `RExpr` objects that can `parse` into julia `Expr` objects and vice versa;
 * interface link communicates and interprets via various reduce output modes using `rcall` method;
 * high-level reduce-julia syntax parser-generator walks arbitrary expression to rewrite mathematical code;
-* import operators from REDUCE using code generation to apply to arbitrary computational expressions.
+* import operators from REDUCE using code generation to apply to arbitrary computational expressions;
+* interactive `reduce>` REPL within the Julia terminal window activated by `}` key.
 
 ## Setup
 
@@ -49,7 +50,8 @@ Reduce expressions encapsulated into `RExpr` objects can be manipulated within j
 Sequences of reduce statements are automatically parsed into julia `quote` blocks using the `RExpr` constructor, which can `parse` back into a julia expression.
 ```Julia
 julia> :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr
-"**(+(x,1,pi),2); int(/(1,+(1,**(x,3))),x)"
+**(+(x,1,pi),2);
+int(/(1,+(1,**(x,3))),x);
 
 julia> rcall(ans,:expand) |> parse
 quote
