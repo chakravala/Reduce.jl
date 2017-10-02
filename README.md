@@ -111,6 +111,8 @@ julia> :(sin(x*im) + cos(y*φ)) |> latex |> print
 ```
 Internally, this command essentially expands to `rcall(:(sin(x*im) + cos(y*φ)),:latex) |> print`, which is equivalent.
 
+![latex-equation](https://latex.codecogs.com/svg.latex?\cos&space;\left(\left(\left(\sqrt&space;{5}&plus;1\right)&space;y\right)/2\right)&plus;\sinh&space;x\:&space;i)
+
 In `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.
 
 ### REPL interface

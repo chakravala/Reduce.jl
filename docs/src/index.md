@@ -70,7 +70,8 @@ Reduce expressions encapsulated into `RExpr` objects can be manipulated within j
 Sequences of reduce statements are automatically parsed into julia `quote` blocks using the `RExpr` constructor, which can `parse` back into a julia expression.
 ```Julia
 julia> :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr
-"**(+(x,1,pi),2); int(/(1,+(1,**(x,3))),x)"
+**(+(x,1,pi),2);
+int(/(1,+(1,**(x,3))),x);
 
 julia> rcall(ans,:expand) |> parse
 quote
@@ -129,6 +130,8 @@ julia> :(sin(x*im) + cos(y*φ)) |> latex |> print
 \end{document}
 ```
 Internally, this command essentially expands to `rcall(:(sin(x*im) + cos(y*φ)),:latex) |> print`, which is equivalent.
+
+![latex-equation](https://latex.codecogs.com/svg.latex?\cos&space;\left(\left(\left(\sqrt&space;{5}&plus;1\right)&space;y\right)/2\right)&plus;\sinh&space;x\:&space;i)
 
 In `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.
 
