@@ -121,7 +121,6 @@ const jl_to_r_utf = Dict(
     "π"             =>  "pi",
     "γ"             =>  "euler_gamma",
     "φ"             =>  "golden_ratio",
-    "^"             =>  "**",
     "//"            =>  "/"
 )
 

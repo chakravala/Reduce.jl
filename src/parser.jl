@@ -19,6 +19,24 @@ function bematch(js,sexpr,h,iter,state)
 end
 
 """
+REDUCE parenthesis marker counter for parsegen
+"""
+function pmatch(js,sexpr,h,iter,state)
+    y = h
+    c = count(z->z=='(',js)-count(z->z==')',js)
+    flag = c > 0
+    while !done(iter,state) & flag
+        (y,state) = next(iter, state)
+        c += count(z->z=='(',sexpr[y])-count(z->z==')',sexpr[y])
+        flag = c > 0
+    end
+    return (y,state)
+end
+
+const prefix = r"(?<!\))(([A-Za-z_][A-Za-z_0-9]*)|([\^+\/-])|([*]{1,2}))(?=\()"
+const parens = r"\(((?>[^\(\)]+)|(?R))*\)"
+
+"""
     parsegen(::Symbol,::Symbol)
 
 Parser generator that outputs code to walk and manipulate REDUCE expressions
@@ -47,7 +65,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                 sh = split(sexpr[h],r"[ ]+")
                 en = 1
                 isempty(replace(sh[en]," ","")) && (en = 2); #show(sh[en])
-                if contains(sh[en], "procedure")
+                if ismatch(r"^procedure",sh[en])
                     js = join(split(sexpr[h],"procedure")[2:end],"procedure")
                     (h,state) = next(iter, state)
                     y = h
@@ -60,13 +78,13 @@ function parsegen(fun::Symbol,mode::Symbol)
                     else
                         :(push!(nsr,$rfun(sexpr[y:h];be=be) |> string))
                     end)
-                elseif contains(sh[en], "begin")
+                elseif ismatch(r"^begin",sh[en])
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
                     ep = Array{$arty,1}(0)
                     sh1 = split(js,r"[ ]+")
                     c = sum(sh1.=="begin")-sum(sh1.=="end")
                     flag = c ≥ 0
-                    c ≤ -1 && (js = join(split(js,"end")[1:end+c],"end"))
+                    !flag && (js = join(split(js,"end")[1:end+c],"end"))
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state)
                     $(mode != :expr ? :(push!(nsr,Compat.String("begin "*js))) : :(nothing))
@@ -84,7 +102,10 @@ function parsegen(fun::Symbol,mode::Symbol)
                         js = sexpr[h]
                         sh2 = split(js,r"[ ]+")
                         c += sum(sh2.=="begin")-sum(sh2.=="end")
-                        c ≤ -1 && (js = join(split(js,"end")[1:end+c],"end"))
+                        if c ≤ -1
+                            js = join(split(js,"end")[1:end+c],"end")
+                            flag = false
+                        end
                         y = h
                         (h,state) = bematch(js,sexpr,h,iter,state)
                         $(if mode == :expr
@@ -98,7 +119,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                     end
                     push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
                     $(mode != :expr ? :(push!(nsr,Compat.String("end"))) : :(nothing))
-                elseif contains(sh[en],"return")
+                elseif ismatch(r"^return",sh[en])
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state)
@@ -112,6 +133,109 @@ function parsegen(fun::Symbol,mode::Symbol)
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not supported"))
+                elseif ismatch(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
+                    ts = sexpr[h]
+                    mp = Array{Compat.String,1}(0)
+                    c = count(z->z=='(',ts)-count(z->z==')',ts)
+                    flag = c ≥ 0
+                    !flag && (ts = join(split(ts,')')[1:end+c],')'))
+                    y = h
+                    (h,state) = pmatch(ts,sexpr,h,iter,state)
+                    push!(mp,ts,sexpr[y+1:h]...)
+                    mp[1] == nothing && shift!(mp)
+                    while !done(iter,state) & flag
+                        (h,state) = next(iter, state)
+                        cQ = c
+                        ts = sexpr[h]
+                        c += count(z->z=='(',ts)-count(z->z==')',ts)
+                        if c ≤ -1
+                            ts = join(split(ts,')')[1:end+c],')')
+                            flag = false
+                        end
+                        y = h
+                        (h,state) = pmatch(ts,sexpr,h,iter,state)
+                        mpr = vcat(ts,sexpr[y+1:h]...)
+                        mpr ≠ nothing && push!(mp,mpr...)
+                    end
+                    smp = join(mp,";\n")
+                    qr = ""
+                    while smp ≠ ""
+                        pf = match(prefix,smp).match |> Symbol
+                        sp = split(smp,prefix;limit=2)
+                        qr = qr * sp[1]
+                        smp = split(sp[2],parens;limit=2)[end]
+                        ls = split(match(parens,sp[2]).match[2:end-1],',')
+                        lsi = 1:length(ls)
+                        lss = start(lsi)
+                        args = Array{$arty,1}(0)
+                        while !done(lsi,lss)
+                            (lsh,lss) = next(lsi, lss)
+                            if ismatch(r"^begin",ls[lsh])
+                                js = join(split(ls[lsh],"begin")[2:end],"begin")
+                                ep = Array{$arty,1}(0)
+                                sh1 = split(js,r"[ ]+")
+                                c = sum(sh1.=="begin")-sum(sh1.=="end")
+                                flag = c ≥ 0
+                                !flag && (js = join(split(js,"end")[1:end+c],"end"))
+                                lsy = lsh
+                                (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
+                                push!(ep,js,ls[lsy+1:lsh]...)
+                                ep[1] == nothing && shift!(ep)
+                                while !done(lsi,lss) & flag
+                                    (lsh,lss) = next(lsi, lss)
+                                    cQ = c
+                                    js = ls[lsh]
+                                    sh2 = split(js,r"[ ]+")
+                                    c += sum(sh2.=="begin")-sum(sh2.=="end")
+                                    if c ≤ -1
+                                        js = join(split(js,"end")[1:end+c],"end")
+                                        flag = false
+                                    end
+                                    lsy = lsh
+                                    (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
+                                    epr = vcat(js,ls[lsy+1:lsh]...)
+                                    epr ≠ nothing && push!(ep,epr...)
+                                end
+                                sep = "begin "*join(ep,',')*" end"
+                                push!(args,$(if mode == :expr
+                                    :($rfun(sep;be=be))
+                                elseif mode == :calculus
+                                    :($rfun(sep,s;be=be) |> string)
+                                else
+                                    :($rfun(sep;be=be) |> string)
+                                end))
+                            elseif ismatch(prefix,ls[lsh])
+                                js = ls[lsh]
+                                ep = Array{$arty,1}(0)
+                                c = count(z->z=='(',js)-count(z->z==')',js)-1
+                                flag = c ≥ 0
+                                !flag && (js = join(split(js,')')[1:end+c],')'))
+                                lsy = lsh
+                                (lsh,lss) = pmatch(js,ls,lsh,lsi,lss)
+                                push!(ep,js,ls[lsy+1:lsh]...)
+                                ep[1] == nothing && shift!(ep)
+                                sep = join(ep,',')
+                                push!(args,$(if mode == :expr
+                                    :($rfun(sep;be=be))
+                                elseif mode == :calculus
+                                    :($rfun(sep,s;be=be) |> string)
+                                else
+                                    :($rfun(sep;be=be) |> string)
+                                end))
+                            else
+                                push!(args,$(if mode == :expr
+                                    :($rfun(ls[lsh];be=be))
+                                elseif mode == :calculus
+                                    :($rfun(ls[lsh],s;be=be) |> string)
+                                else
+                                    :($rfun(ls[lsh];be=be) |> string)
+                                end))
+                            end
+                        end
+                        qr = qr * $((mode == :expr) ? :("($(Expr(:call,pf,args...)))") : :("$pf($(join(args,',')))"))
+                        !ismatch(prefix,smp) && (qr = qr * smp; smp = "")
+                    end
+                    push!(nsr,$((mode == :expr) ? :(u = "("*qr*")" |> parse |> linefilter) : :qr))
                 elseif contains(sh[en],"end")
                     nothing
                 elseif isempty(sh[en])
@@ -148,7 +272,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                     return u==1 ? nsr[1] : (u==0 ? nothing : Expr(:block,nsr...))
                 end
             else
-                :(return RExpr(nsr))
+                :(return nsr |> RExpr |> split)
             end)
         end
         $(if mode == :calculus
@@ -163,6 +287,29 @@ function parsegen(fun::Symbol,mode::Symbol)
             end
         end)
     end
+end
+
+"""
+    linefilter(::Expr)
+
+Recursively filters out :line blocks from Expr objects
+"""
+function linefilter(e::Expr)
+    total = length(e.args)
+    i = 0
+    while i < total
+        i += 1
+        if e.args[i] |> typeof == Expr
+            if e.args[i].head == :line
+                deleteat!(e.args,i)
+                total -= 1
+                i -= 1
+            else
+                e.args[i] = linefilter(e.args[i])
+            end
+        end
+    end
+    return e
 end
 
 parsegen(:parse,:expr) |> eval
@@ -232,11 +379,12 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     end
 end
 
-const infix_ops = ["+", "-", "*", "/", "**"]
+const infix_ops = ["+", "-", "*", "/", "**", "^"]
 isinfix(args) = args in infix_ops
 
 #show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
 function show_expr(io::IO, ex)
+    ex == :nothing && (return nothing)
     edit = IOBuffer()
     print(edit, ex)
     print(io, edit |> String |> JSymReplace)

@@ -59,7 +59,7 @@ end
 Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce: "*chomp(err.errstr))
 
 function ReduceCheck(output) # check for REDUCE errors
-    contains(output,"***** ") && throw(ReduceError(output))
+    contains(output,"***** ")|contains(output,"+++ ") && throw(ReduceError(output))
 end
 
 clear(rs::PSL) = (write(rs.input,";\n"); readavailable(rs.output))
