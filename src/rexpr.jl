@@ -5,13 +5,13 @@ export RExpr, @R_str, parse, rcall, convert, ==, getindex, string, show
 import Base: parse, convert, ==, getindex, *, split, string, show
 
 """
-A Reduce expression
+Reduce expression
 
-# Summary:
+### Summary:
 type RExpr <: Any
 
-# Fields:
-str :: Array{Compat.String,1}
+### Fields:
+str::Array{Compat.String,1}
 """
 type RExpr
     str::Array{Compat.String,1}
@@ -26,7 +26,7 @@ RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
 
 Convert Julia expression to Reduce expression
 
-# Examples
+## Examples
 ```julia-repl
 julia> RExpr(:(sin(x*im) + cos(y*ϕ)))
 
@@ -170,7 +170,10 @@ function JSymReplace(str::Compat.String)
 end
 
 function RSymReplace(str::String)
-    SubCall() && (str = _subst(symrjl,str))
+    clean = replace(str,r"[ ;\n]","")
+    paren = ismatch(r"^\(((?>[^\(\)]+)|(?R))*\)$",clean)
+    (isempty(clean)|(clean=="()")) && (return str)
+    SubCall() && !isinfix(str) && (str = _subst(symrjl,str))
     if contains(str,"!#")
         rsp = split(str,';')
         for h in 1:length(rsp)
@@ -184,8 +187,10 @@ function RSymReplace(str::String)
     for key in keys(reprjl)
         str = replace(str,key,reprjl[key])
     end
-    return str
+    return paren ? "("*str*")" : str
 end
+
+RSymReplace(str::SubString{String}) = str |> String |> RSymReplace
 
 convert(::Type{RExpr}, r::RExpr) = r
 convert(::Type{Array{Compat.String,1}}, r::RExpr) = r.str
@@ -197,7 +202,7 @@ convert{T}(::Type{T}, r::RExpr) = T <: Number ? eval(parse(r)) : parse(r)
 
 Evaluate a Reduce expression.
 
-# Examples
+## Examples
 ```julia-repl
 julia> R\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
@@ -215,10 +220,14 @@ function rcall(r::RExpr;
     mode = true
     trim = false
     expo = false
+    rlfi = false
     for o in ona
         if o == :expand
             ons = ons*"on exp\$ "
             onr = onr*"; off exp "
+        elseif o == :latex
+            rcall(R"on latex")
+            rlfi = true
         else
             ons = ons*"on $o\$ "
             onr = onr*"; off $o "
@@ -240,6 +249,7 @@ function rcall(r::RExpr;
         sp[h] = replace(sp[h],r"\\","")
     end
     trim && (return join(split(sp,"\n")[2:end-1],'\n'))
+    rlfi && rcall(R"off latex")
     for o in offa
         o == :nat && (return join(sp))
         o == :latex && shift!(sp)
@@ -255,10 +265,11 @@ rcall(r::RExpr,switches...) = rcall(r;on=[switches...])
 Evaluate a Julia expression or string using the Reduce interpretor and convert
 output back into the input type
 
-# Examples
+## Examples
 ```julia-repl
 julia> rcall(\"int(sin(y)^2, y)\")
 \"( - cos(y)*sin(y) + y)/2\"
+
 julia> rcall(:(int(1/(1+x^2), x)))
 :(atan(x))
 ```

@@ -10,9 +10,6 @@ calculus = Symbol[
 
 for fun in calculus
     parsegen(fun,:calculus) |> eval
-end
-
-for fun in calculus
     quote
         function $fun(expr::Compat.String,s...;be=0)
             convert(Compat.String, $fun(RExpr(expr),s...;be=be))

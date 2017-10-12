@@ -42,8 +42,10 @@ using Base.Test
 @test Reduce.parsegen(:switchtest,:switch) |> typeof == Expr
 @test Reduce.parsegen(:unarytest,:unary) |> typeof == Expr
 !(VERSION < v"0.6.0") && is_linux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String
+@test :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr |> rcall |> parse |> typeof == Expr
+@test :(int(sin(im*x+pi)^2-1,x)) |> rcall |> typeof == Expr
 @test int(:(x^2+y),:x) |> RExpr == int("x^2+y","x") |> RExpr
-@test df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end)),:z) |> typeof == Expr
 @test R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> parse |> typeof == Expr
+@test df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z) |> typeof == RExpr
 println()
 #@test Reduce.repl_init(Base.active_repl)==nothing

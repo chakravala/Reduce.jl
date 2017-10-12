@@ -33,8 +33,11 @@ function pmatch(js,sexpr,h,iter,state)
     return (y,state)
 end
 
-const prefix = r"(?<!\))(([A-Za-z_][A-Za-z_0-9]*)|([\^+\/-])|([*]{1,2}))(?=\()"
+const prefix = r"(?<!\))(([A-Za-z_][A-Za-z_0-9]*)|([\^+\/-])|([*]{1,2})|(- ))(?=\()"
 const parens = r"\(((?>[^\(\)]+)|(?R))*\)"
+const infix1 = r"^(([\^\+\/])|([*]{1,2})|( -)|( \+)|( [*]{1,2})|( /)|( \^))"
+const infix2 = r"(([\^+\/])|([*]{1,2}))$"
+
 
 """
     parsegen(::Symbol,::Symbol)
@@ -134,6 +137,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not supported"))
                 elseif ismatch(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
+                    $(if mode == :expr; quote
                     ts = sexpr[h]
                     mp = Array{Compat.String,1}(0)
                     c = count(z->z=='(',ts)-count(z->z==')',ts)
@@ -160,14 +164,58 @@ function parsegen(fun::Symbol,mode::Symbol)
                     smp = join(mp,";\n")
                     qr = ""
                     while smp ≠ ""
-                        pf = match(prefix,smp).match |> Symbol
+                        args = Array{$arty,1}(0)
+                        if ismatch(r"^\(",smp)
+                            push!(args,$(if mode == :expr
+                                :($rfun(match(parens,smp).match[2:end-1];be=be))
+                            elseif mode == :calculus
+                                :($rfun(match(parens,smp).match[2:end-1],s;be=be) |> string)
+                            else
+                                :($rfun(match(parens,smp).match[2:end-1];be=be) |> string)
+                            end))
+                            smp = split(smp,parens;limit=2)[end]
+                            qr = qr * "($(args...))"
+                            if !ismatch(prefix,smp)
+                                $(if mode == :expr; quote
+                                    if ismatch(infix1,smp)
+                                        qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
+                                        smp = ""
+                                    else
+                                        qr = qr * RSymReplace(smp)
+                                        smp = ""
+                                    end; end
+                                else
+                                    :(qr = qr * smp; smp = "")
+                                end)
+                            elseif ismatch(infix1,smp)
+                                qr = qr * RSymReplace(match(infix1,smp).match)
+                                smp = split(smp,infix1)[end]
+                            end
+                            continue
+                        end
+                        pf = match(prefix,smp).match |> String
                         sp = split(smp,prefix;limit=2)
-                        qr = qr * sp[1]
+                        $(if mode == :expr; quote
+                            if ismatch(infix2,sp[1])
+                                rq = split(sp[1],infix2)[1]
+                                if ismatch(infix1,rq)
+                                    rq = RSymReplace(match(infix1,rq).match) * RSymReplace(split(rq,infix1)[end])
+                                else
+                                    rq = RSymReplace(rq)
+                                end
+                                qr = qr * rq * RSymReplace(match(infix2,sp[1]).match)
+                            elseif ismatch(infix1,sp[1])
+                                qr = qr * RSymReplace(match(infix1,sp[1]).match) * RSymReplace(split(sp[1],infix1)[end])
+                            else
+                                qr = qr * RSymReplace(sp[1])
+                            end; end
+                        else
+                            :(qr = qr * sp[1])
+                        end)
                         smp = split(sp[2],parens;limit=2)[end]
                         ls = split(match(parens,sp[2]).match[2:end-1],',')
                         lsi = 1:length(ls)
                         lss = start(lsi)
-                        args = Array{$arty,1}(0)
                         while !done(lsi,lss)
                             (lsh,lss) = next(lsi, lss)
                             if ismatch(r"^begin",ls[lsh])
@@ -208,7 +256,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                                 js = ls[lsh]
                                 ep = Array{$arty,1}(0)
                                 c = count(z->z=='(',js)-count(z->z==')',js)-1
-                                flag = c ≥ 0
+                                flag = c ≥ -1
                                 !flag && (js = join(split(js,')')[1:end+c],')'))
                                 lsy = lsh
                                 (lsh,lss) = pmatch(js,ls,lsh,lsi,lss)
@@ -232,10 +280,26 @@ function parsegen(fun::Symbol,mode::Symbol)
                                 end))
                             end
                         end
-                        qr = qr * $((mode == :expr) ? :("($(Expr(:call,pf,args...)))") : :("$pf($(join(args,',')))"))
-                        !ismatch(prefix,smp) && (qr = qr * smp; smp = "")
+                        rq = "$(RSymReplace(pf))($(join(args,',')))"
+                        qr = qr * $(if mode == :expr
+                            :(((isinfix(pf) && length(args) == 1) ? rq : "($rq)"))
+                        else
+                            :("$pf($(join(args,',')))")
+                        end)
+                        !ismatch(prefix,smp) && ($(if mode == :expr; quote
+                            if ismatch(infix1,smp)
+                                qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
+                                smp = ""
+                            else
+                                qr = qr * RSymReplace(smp)
+                                smp = ""
+                            end; end
+                        else
+                            :(qr = qr * smp; smp = "")
+                        end))
                     end
                     push!(nsr,$((mode == :expr) ? :(u = "("*qr*")" |> parse |> linefilter) : :qr))
+                    end; else; :(nothing); end)
                 elseif contains(sh[en],"end")
                     nothing
                 elseif isempty(sh[en])
@@ -271,6 +335,8 @@ function parsegen(fun::Symbol,mode::Symbol)
                     u = length(nsr)
                     return u==1 ? nsr[1] : (u==0 ? nothing : Expr(:block,nsr...))
                 end
+            elseif fun in [:nat,:latex]
+                :(return nsr |> RExpr |> split |> string)
             else
                 :(return nsr |> RExpr |> split)
             end)
@@ -322,7 +388,7 @@ Parse a Reduce expression into a Julia expression
 # Examples
 ```julia-repl
 julia> parse(R\"sin(i*x)\")
-:(sinh(x) * im)
+:(sin(im * x))
 ```
 """ parse
 
@@ -362,6 +428,8 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     elseif expr.head == :return
         print(io,"return ")
         show_expr(io,expr.args[1])
+    elseif expr.head == :(::)
+        show_expr(io,expr.args[1])
     elseif expr.head == :macrocall
         if expr.args[1] == Symbol("@big_str")
             print(io,expr.args[2])
@@ -380,7 +448,7 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
 end
 
 const infix_ops = ["+", "-", "*", "/", "**", "^"]
-isinfix(args) = args in infix_ops
+isinfix(args) = replace(args,' ',"") in infix_ops
 
 #show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
 function show_expr(io::IO, ex)

@@ -49,14 +49,14 @@ Reduce expressions encapsulated into `RExpr` objects can be manipulated within j
 
 Sequences of reduce statements are automatically parsed into julia `quote` blocks using the `RExpr` constructor, which can `parse` back into a julia expression.
 ```Julia
-julia> :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr
-**(+(x,1,pi),2);
-int(/(1,+(1,**(x,3))),x);
+julia> :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr
+^(+(x,i,pi),2);
+int(/(1,+(1,^(x,3))),x);
 
 julia> rcall(ans,:expand) |> parse
 quote
-    (2 * (x + 1) + π) * π + x ^ 2 + 2x + 1
-    -(((log((x ^ 2 - x) + 1) - 2 * log(x + 1)) - 2 * sqrt(3) * atan((2x - 1) // sqrt(3)))) // 6
+    (((π + 2x) * π + x ^ 2) - 1) + 2 * (π + x) * im
+    ((2 * sqrt(3) * atan((2x - 1) // sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) // 6
 end
 ```
 Call `split(::RExpr)` to create a new `RExpr` object with all expressions split into separate array elements.
@@ -75,8 +75,8 @@ Use `rcall(expr,switches...)` to evaluate `expr` using REDUCE mode `switches` li
 
 Mathematical operators and REDUCE modes can be applied directly to `Expr` and `RExpr` objects.
 ```Julia
-julia> Expr(:function,:fun,:(return a^3+3*a^2*b+3*a*b^2+b^3)) |> factor
-:(function fun
+julia> Expr(:function,:(fun(a,b)),:(return a^3+3*a^2*b+3*a*b^2+b^3)) |> factor
+:(function fun(a, b)
         return (a + b) ^ 3
     end)
 ```
@@ -100,14 +100,9 @@ This same output can also be printed to the screen by calling `print(nat(r))` me
 It is possible to direclty convert a julia expression object to LaTeX code using the `latex` method.
 ```Julia
 julia> :(sin(x*im) + cos(y*φ)) |> latex |> print
-\documentstyle{article}
-\begin{document}
-
 \begin{displaymath}
 \cos \left(\left(\left(\sqrt {5}+1\right) y\right)/2\right)+\sinh \,x\: i
 \end{displaymath}
-
-\end{document}
 ```
 Internally, this command essentially expands to `rcall(:(sin(x*im) + cos(y*φ)),:latex) |> print`, which is equivalent.
 

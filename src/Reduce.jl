@@ -107,7 +107,7 @@ export load_package
 
 Loads the specified package into REDUCE
 
-# Examples
+## Examples
 ```julia-repl
 julia> load_package(:rlfi)
 ```
@@ -130,7 +130,7 @@ end
 
 Kills the REDUCE process and starts a new instance.
 
-# Examples
+## Examples
 ```julia-repl
 julia> Reduce.Reset()
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
