@@ -99,33 +99,35 @@ function create_reduce_repl(repl, main)
 end
 
 function repl_init(repl)
-    rirepl = isdefined(repl, :ri) ? repl.ri : repl
-    main_mode = rirepl.interface.modes[1]
-    reduce_mode = create_reduce_repl(rirepl, main_mode)
-    push!(rirepl.interface.modes, reduce_mode)
-    const reduce_prompt_keymap = Dict{Any,Any}(
-        '}' => function (s,args...)
-            if isempty(s) || position(LineEdit.buffer(s)) == 0
-                buf = copy(LineEdit.buffer(s))
-                LineEdit.transition(s, reduce_mode) do
-                    LineEdit.state(s, reduce_mode).input_buffer = buf
-                end
-            else
-                if !isdefined(Main,:OhMyREPL) 
-                    LineEdit.edit_insert(s, '}')
-                else
-                    if Main.OhMyREPL.BracketInserter.AUTOMATIC_BRACKET_MATCH[] &&
-                      !eof(LineEdit.buffer(s)) &&
-                      Main.OhMyREPL.BracketInserter.peek(LineEdit.buffer(s)) == '}'
-                        LineEdit.edit_move_right(LineEdit.buffer(s))
-                    else
-                        LineEdit.edit_insert(LineEdit.buffer(s), '}')
+    try
+        rirepl = isdefined(repl, :ri) ? repl.ri : repl
+        main_mode = rirepl.interface.modes[1]
+        reduce_mode = create_reduce_repl(rirepl, main_mode)
+        push!(rirepl.interface.modes, reduce_mode)
+        const reduce_prompt_keymap = Dict{Any,Any}(
+            '}' => function (s,args...)
+                if isempty(s) || position(LineEdit.buffer(s)) == 0
+                    buf = copy(LineEdit.buffer(s))
+                    LineEdit.transition(s, reduce_mode) do
+                        LineEdit.state(s, reduce_mode).input_buffer = buf
                     end
-                    Main.OhMyREPL.Prompt.rewrite_with_ANSI(s)
+                else
+                    if !isdefined(Main,:OhMyREPL) 
+                        LineEdit.edit_insert(s, '}')
+                    else
+                        if Main.OhMyREPL.BracketInserter.AUTOMATIC_BRACKET_MATCH[] &&
+                        !eof(LineEdit.buffer(s)) &&
+                        Main.OhMyREPL.BracketInserter.peek(LineEdit.buffer(s)) == '}'
+                          LineEdit.edit_move_right(LineEdit.buffer(s))
+                        else
+                            LineEdit.edit_insert(LineEdit.buffer(s), '}')
+                        end
+                        Main.OhMyREPL.Prompt.rewrite_with_ANSI(s)
+                    end
                 end
-            end
-        end)
-    main_mode.keymap_dict = LineEdit.keymap_merge(
-        main_mode.keymap_dict, reduce_prompt_keymap)
+            end)
+        main_mode.keymap_dict = LineEdit.keymap_merge(
+            main_mode.keymap_dict, reduce_prompt_keymap)
+    end
     nothing
 end
