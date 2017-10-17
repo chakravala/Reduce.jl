@@ -1,4 +1,4 @@
-using Reduce
+using Reduce, Compat
 using Base.Test
 
 # write your own tests here

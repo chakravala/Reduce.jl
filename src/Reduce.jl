@@ -100,7 +100,7 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
 const offlist = [:nat,:latex,:exp]
 
-export load_package
+export load_package, @load_package
 
 """
     load_package(::Symbol)
@@ -123,6 +123,10 @@ function load_package(pkgs::Union{Array{String,1},Array{Symbol,1}})
     for pkg in pkgs
         load_package(pkg)
     end
+end
+
+macro load_package(pkg...)
+    load_package(pkg...)
 end
 
 """

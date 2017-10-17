@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @R_str, parse, rcall, convert, ==, getindex, string, show
+export RExpr, @RExpr, @R_str, parse, rcall, @rcall, convert, ==, getindex, string, show
 import Base: parse, convert, ==, getindex, *, split, string, show
 
 """
@@ -45,6 +45,10 @@ function RExpr(r::Any)
     return RExpr(y)
 end
 
+macro RExpr(r)
+    RExpr(r)
+end
+
 macro R_str(str)
     RExpr(str)
 end
@@ -79,6 +83,8 @@ show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
     print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
+showprintstr = (VERSION<v"0.6.9" ? string('&') : '&')*"\\,"
+
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
     rcall(R"on latex")
     write(rs,r)
@@ -88,8 +94,8 @@ end
     print(io,"\\begin{eqnarray}\n")
     ct = 0 # add enumeration
     for str ∈ sp
-        ct += 1
-        length(sp) ≠ 1 && print(io,"($ct)\&\\,")
+        ct += 1 
+        length(sp) ≠ 1 && print(io,"($ct)"*showprintstr)
         print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})",""))
         ct ≠ length(sp) && print(io,"\\\\\\\\")
     end # new line
@@ -245,8 +251,8 @@ function rcall(r::RExpr;
     mode ? (sp = readsp(rs)) : (sp = read(rs))
     expo && rcall(R"off exp")
     mode && for h ∈ 1:length(sp)
-        sp[h] = replace(sp[h],r"\n","")
-        sp[h] = replace(sp[h],r"\\","")
+        sp[h] = replace(sp[h],'\n',"")
+        sp[h] = replace(sp[h],'\\',"")
     end
     trim && (return join(split(sp,"\n")[2:end-1],'\n'))
     rlfi && rcall(R"off latex")
@@ -258,6 +264,10 @@ function rcall(r::RExpr;
 end
 
 rcall(r::RExpr,switches...) = rcall(r;on=[switches...])
+
+macro rcall(r)
+    :(eval(rcall($r)))
+end
 
 """
     rcall{T}(e::T)

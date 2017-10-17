@@ -38,6 +38,8 @@ for fun in [switchbas;switches]
     end
 end
 
+export @latex, @nat
+
 for fun in switchtex
     for T in [:(Compat.String),:Expr]
         quote
@@ -45,5 +47,10 @@ for fun in switchtex
                 convert(String, $fun(RExpr(expr);be=be))
             end
         end |> eval
+    end
+    quote
+        macro $fun(expr)
+            $fun(expr)
+        end
     end
 end

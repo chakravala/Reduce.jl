@@ -99,7 +99,7 @@ This same output can also be printed to the screen by calling `print(nat(r))` me
 
 It is possible to direclty convert a julia expression object to LaTeX code using the `latex` method.
 ```Julia
-julia> :(sin(x*im) + cos(y*φ)) |> latex |> print
+julia> print(@latex sin(x*im) + cos(y*φ))
 \begin{displaymath}
 \cos \left(\left(\left(\sqrt {5}+1\right) y\right)/2\right)+\sinh \,x\: i
 \end{displaymath}
