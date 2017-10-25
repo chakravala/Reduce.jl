@@ -431,7 +431,7 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     elseif expr.head == :(::)
         show_expr(io,expr.args[1])
     elseif expr.head == :macrocall
-        if expr.args[1] == Symbol("@big_str")
+        if expr.args[1] == Symbol("@big_str") || expr.args[1] == Symbol("@int128_str")
             print(io,expr.args[2])
         else
             throw(ReduceError("Macro $(expr.args[1]) block structure not supported"))
