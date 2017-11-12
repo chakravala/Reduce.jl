@@ -34,9 +34,12 @@ immutable PSL <: Base.AbstractPipe
                 process = spawn(rsl, (input, output, STDERR))
             end
         else
-            dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl") :
-                joinpath(folder,"..","deps","install","lib","psl"))
-            rsl = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+            osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
+            osbit = contains(readstring(osbitf),"32BIT") ? "i686-pc-windows" : "x86_64-pc-windows"
+            close(osbitf)
+            dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl"): #osbit):
+                joinpath(dirf,"..","deps","install","lib","psl"))
+            rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
             process = spawn(rsl, (input, output, STDERR))
         end
         # Close the unneeded ends of Pipes

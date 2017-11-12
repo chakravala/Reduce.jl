@@ -68,8 +68,13 @@ else
     if contains(wdir,"appveyor")
       println("Building redpsl...")
       download("https://github.com/chakravala/Reduce.jl/wiki/redpsl.cab",joinpath(wdir,"redpsl.cab"))
+      #download("http://codemist.dynu.com/red/winpsl.cab",joinpath(wdir,"winpsl.cab"))
       open("redpsl.bat","w") do f
-        write(f,"expand redpsl.cab \"$(wdir)\" -F:*"); end
+        #write(f,"expand redpsl.cab \"$(wdir)\" -F:*"); end
+        write(f,"expand winpsl.cab \"$(wdir)\" -F:*\n")
+        write(f,"reg Query \"HKLM\\Hardware\\Description\\System\\CentralProcessor\\0\" | find /i \"x86\" > NUL && set OSQ=32BIT || set OSQ=64BIT\n")
+        write(f,"echo %OSQ% > osbit.txt")
+      end
       run(`$(wdir)\\redpsl.bat`)
     else
       println("Downloading reduce binaries...")

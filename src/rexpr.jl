@@ -83,8 +83,6 @@ show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
     print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
-showprintstr = (VERSION<v"0.6.9" ? string('&') : '&')*"\\,"
-
 @compat function show(io::IO, ::MIME"text/latex", r::RExpr)
     rcall(R"on latex")
     write(rs,r)
@@ -95,7 +93,7 @@ showprintstr = (VERSION<v"0.6.9" ? string('&') : '&')*"\\,"
     ct = 0 # add enumeration
     for str ∈ sp
         ct += 1 
-        length(sp) ≠ 1 && print(io,"($ct)"*showprintstr)
+        length(sp) ≠ 1 && print(io,"($ct)"*'&'*"\\,")
         print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})",""))
         ct ≠ length(sp) && print(io,"\\\\\\\\")
     end # new line
