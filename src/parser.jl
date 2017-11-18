@@ -441,6 +441,22 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
         print(io,":")
         show_expr(io,expr.args[2])
         print(io," ")
+    elseif expr.head == :vcat
+        print(io,"mat(")
+        for i ∈ 1:length(expr.args)-1
+            show_expr(io,expr.args[i])
+            print(io,",")
+        end
+        show_expr(io,expr.args[end])
+        print(io,")")
+    elseif expr.head == :row
+        print(io,"(")
+        for i ∈ 1:length(expr.args)-1
+            show_expr(io,expr.args[i])
+            print(io,",")
+        end
+        print(io,expr.args[end])
+        print(io,")")
     elseif expr.head == :line; nothing
     else
         throw(ReduceError("Nested :$(expr.head) block structure not supported"))
@@ -454,8 +470,25 @@ isinfix(args) = replace(args,' ',"") in infix_ops
 function show_expr(io::IO, ex)
     ex == :nothing && (return nothing)
     edit = IOBuffer()
-    print(edit, ex)
-    print(io, edit |> String |> JSymReplace)
+    if typeof(ex) <: Matrix
+        print(io, "mat(")
+        li = size(ex)[1]
+        lj = size(ex)[2]
+        for i ∈ 1:li
+            print(io, "(")
+            for j ∈ 1:lj-1
+                print(io,ex[i,j])
+                print(io,",")
+            end
+            print(io,ex[i,lj])
+            print(io,")")
+            i ≠ li && print(io,",")
+        end
+        print(io,")")
+    else
+        print(edit, ex)
+        print(io, edit |> String |> JSymReplace)
+    end
 end
 
 function unparse(expr::Expr)
