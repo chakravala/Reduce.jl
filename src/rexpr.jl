@@ -37,6 +37,12 @@ cos(---------------) + sinh(x)*i
 """
 RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
+function RExpr(r::Matrix)
+    out = IOBuffer()
+    show_expr(out,r)
+    return out |> String |> RExpr
+end
+
 function RExpr(r::Any)
     y = "$r"
     for key ∈ keys(repjlr)

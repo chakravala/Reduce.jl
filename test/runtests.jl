@@ -47,5 +47,6 @@ using Base.Test
 @test int(:(x^2+y),:x) |> RExpr == int("x^2+y","x") |> RExpr
 @test R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> parse |> typeof == Expr
 @test df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z) |> typeof == RExpr
+@test :([1 2; 3 4]) |> RExpr |> parse |> RExpr == [1 2; 3 4] |> RExpr
 println()
 #@test Reduce.repl_init(Base.active_repl)==nothing

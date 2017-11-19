@@ -46,6 +46,7 @@ Parser generator that outputs code to walk and manipulate REDUCE expressions
 """
 function parsegen(fun::Symbol,mode::Symbol)
     rfun = Symbol(:r,fun)
+    argfun = Symbol(fun,"_args")
     arty = (mode == :expr) ? :Any : :(Compat.String)
     exec = if mode == :expr
         :(parse(RSymReplace(js)))
@@ -56,9 +57,10 @@ function parsegen(fun::Symbol,mode::Symbol)
     elseif mode == :calculus
         :($(string(fun)) * "($js,$(join(s,',')))" |> RExpr |> rcall)
     end
-    mode != :calculus ? (args = [:(r::RExpr)]) : (args = [:(r::RExpr),Expr(:...,:s)])
+    mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:s)])
+    mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
     return quote
-        function $fun($(args...);be=0)
+        function $fun($(fargs...);be=0)
             nsr = $arty[]
             sexpr = split(r).str
             iter = 1:length(sexpr)
@@ -195,7 +197,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                         end
                         pf = match(prefix,smp).match |> String
                         sp = split(smp,prefix;limit=2)
-                        $(if mode == :expr; quote
+                        $(if mode == :expr; quote 
                             if ismatch(infix2,sp[1])
                                 rq = split(sp[1],infix2)[1]
                                 if ismatch(infix1,rq)
@@ -213,79 +215,40 @@ function parsegen(fun::Symbol,mode::Symbol)
                             :(qr = qr * sp[1])
                         end)
                         smp = split(sp[2],parens;limit=2)[end]
-                        ls = split(match(parens,sp[2]).match[2:end-1],',')
-                        lsi = 1:length(ls)
-                        lss = start(lsi)
-                        while !done(lsi,lss)
-                            (lsh,lss) = next(lsi, lss)
-                            if ismatch(r"^begin",ls[lsh])
-                                js = join(split(ls[lsh],"begin")[2:end],"begin")
-                                ep = Array{$arty,1}(0)
-                                sh1 = split(js,r"[ ]+")
-                                c = sum(sh1.=="begin")-sum(sh1.=="end")
-                                flag = c ≥ 0
-                                !flag && (js = join(split(js,"end")[1:end+c],"end"))
-                                lsy = lsh
-                                (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
-                                push!(ep,js,ls[lsy+1:lsh]...)
-                                ep[1] == nothing && shift!(ep)
-                                while !done(lsi,lss) & flag
-                                    (lsh,lss) = next(lsi, lss)
-                                    cQ = c
-                                    js = ls[lsh]
-                                    sh2 = split(js,r"[ ]+")
-                                    c += sum(sh2.=="begin")-sum(sh2.=="end")
-                                    if c ≤ -1
-                                        js = join(split(js,"end")[1:end+c],"end")
-                                        flag = false
-                                    end
-                                    lsy = lsh
-                                    (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
-                                    epr = vcat(js,ls[lsy+1:lsh]...)
-                                    epr ≠ nothing && push!(ep,epr...)
-                                end
-                                sep = "begin "*join(ep,',')*" end"
+                        lsm = match(parens,sp[2]).match[2:end-1]
+                        if pf == "mat"
+                            mt = matchall(parens,lsm)
+                            for row ∈ mt
+                                elm = split(row[2:end-1],',')
                                 push!(args,$(if mode == :expr
-                                    :($rfun(sep;be=be))
+                                    :(Expr(:row,$argfun(elm,be)...))
                                 elseif mode == :calculus
-                                    :($rfun(sep,s;be=be) |> string)
+                                    :($argfun(elm,be,s) |> string)
                                 else
-                                    :($rfun(sep;be=be) |> string)
-                                end))
-                            elseif ismatch(prefix,ls[lsh])
-                                js = ls[lsh]
-                                ep = Array{$arty,1}(0)
-                                c = count(z->z=='(',js)-count(z->z==')',js)-1
-                                flag = c ≥ -1
-                                !flag && (js = join(split(js,')')[1:end+c],')'))
-                                lsy = lsh
-                                (lsh,lss) = pmatch(js,ls,lsh,lsi,lss)
-                                push!(ep,js,ls[lsy+1:lsh]...)
-                                ep[1] == nothing && shift!(ep)
-                                sep = join(ep,',')
-                                push!(args,$(if mode == :expr
-                                    :($rfun(sep;be=be))
-                                elseif mode == :calculus
-                                    :($rfun(sep,s;be=be) |> string)
-                                else
-                                    :($rfun(sep;be=be) |> string)
-                                end))
-                            else
-                                push!(args,$(if mode == :expr
-                                    :($rfun(ls[lsh];be=be))
-                                elseif mode == :calculus
-                                    :($rfun(ls[lsh],s;be=be) |> string)
-                                else
-                                    :($rfun(ls[lsh];be=be) |> string)
+                                    :($argfun(elm,be) |> string)
                                 end))
                             end
-                        end
-                        rq = "$(RSymReplace(pf))($(join(args,',')))"
-                        qr = qr * $(if mode == :expr
-                            :(((isinfix(pf) && length(args) == 1) ? rq : "($rq)"))
+                            qr = qr * $(if mode == :expr
+                                :(Expr(:vcat,args...) |> string)
+                            else
+                                :("$pf($(join(args,',')))")
+                            end)
                         else
-                            :("$pf($(join(args,',')))")
-                        end)
+                            ls = split(lsm,',')
+                            push!(args,$(if mode == :expr
+                                :($argfun(ls,be))
+                            elseif mode == :calculus
+                                :($argfun(ls,be,s) |> string)
+                            else
+                                :($argfun(ls,be) |> string)
+                            end)...)
+                            rq = "$(RSymReplace(pf))($(join(args,',')))"
+                            qr = qr * $(if mode == :expr
+                                :(((isinfix(pf) && length(args) == 1) ? rq : "($rq)"))
+                            else
+                                :("$pf($(join(args,',')))")
+                            end)
+                        end
                         !ismatch(prefix,smp) && ($(if mode == :expr; quote
                             if ismatch(infix1,smp)
                                 qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
@@ -352,6 +315,76 @@ function parsegen(fun::Symbol,mode::Symbol)
                 $rfun(r;be=0) = $fun(r |> Compat.String |> RExpr;be=be)
             end
         end)
+        function $argfun(ls::Array{SubString{String},1},$(aargs...))
+            args = Array{$arty,1}(0)
+            lsi = 1:length(ls)
+            lss = start(lsi)
+            while !done(lsi,lss)
+                (lsh,lss) = next(lsi, lss)
+                if ismatch(r"^begin",ls[lsh])
+                    js = join(split(ls[lsh],"begin")[2:end],"begin")
+                    ep = Array{$arty,1}(0)
+                    sh1 = split(js,r"[ ]+")
+                    c = sum(sh1.=="begin")-sum(sh1.=="end")
+                    flag = c ≥ 0
+                    !flag && (js = join(split(js,"end")[1:end+c],"end"))
+                    lsy = lsh
+                    (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
+                    push!(ep,js,ls[lsy+1:lsh]...)
+                    ep[1] == nothing && shift!(ep)
+                    while !done(lsi,lss) & flag
+                        (lsh,lss) = next(lsi, lss)
+                        cQ = c
+                        js = ls[lsh]
+                        sh2 = split(js,r"[ ]+")
+                        c += sum(sh2.=="begin")-sum(sh2.=="end")
+                        if c ≤ -1
+                            js = join(split(js,"end")[1:end+c],"end")
+                            flag = false
+                        end
+                        lsy = lsh
+                        (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
+                        epr = vcat(js,ls[lsy+1:lsh]...)
+                        epr ≠ nothing && push!(ep,epr...)
+                    end
+                    sep = "begin "*join(ep,',')*" end"
+                    push!(args,$(if mode == :expr
+                        :($rfun(sep;be=be))
+                    elseif mode == :calculus
+                        :($rfun(sep,s;be=be) |> string)
+                    else
+                        :($rfun(sep;be=be) |> string)
+                    end))
+                elseif ismatch(prefix,ls[lsh])
+                    js = ls[lsh]
+                    ep = Array{$arty,1}(0)
+                    c = count(z->z=='(',js)-count(z->z==')',js)-1
+                    flag = c ≥ -1
+                    !flag && (js = join(split(js,')')[1:end+c],')'))
+                    lsy = lsh
+                    (lsh,lss) = pmatch(js,ls,lsh,lsi,lss)
+                    push!(ep,js,ls[lsy+1:lsh]...)
+                    ep[1] == nothing && shift!(ep)
+                    sep = join(ep,',')
+                    push!(args,$(if mode == :expr
+                        :($rfun(sep;be=be))
+                    elseif mode == :calculus
+                        :($rfun(sep,s;be=be) |> string)
+                    else
+                        :($rfun(sep;be=be) |> string)
+                    end))
+                else
+                    push!(args,$(if mode == :expr
+                        :($rfun(ls[lsh];be=be))
+                    elseif mode == :calculus
+                        :($rfun(ls[lsh],s;be=be) |> string)
+                    else
+                        :($rfun(ls[lsh];be=be) |> string)
+                    end))
+                end
+            end
+            return args
+        end
     end
 end
 
