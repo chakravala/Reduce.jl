@@ -37,30 +37,26 @@ const prefix = r"(?<!\))(([A-Za-z_][A-Za-z_0-9]*)|([\^+\/-])|([*]{1,2})|(- ))(?=
 const parens = r"\(((?>[^\(\)]+)|(?R))*\)"
 const infix1 = r"^(([\^\+\/])|([*]{1,2})|( -)|( \+)|( [*]{1,2})|( /)|( \^))"
 const infix2 = r"(([\^+\/])|([*]{1,2}))$"
+const assign = r"^([A-Za-z_][A-Za-z_0-9]*)(:=)"
 
-
-"""
-    parsegen(::Symbol,::Symbol)
-
-Parser generator that outputs code to walk and manipulate REDUCE expressions
-"""
-function parsegen(fun::Symbol,mode::Symbol)
-    rfun = Symbol(:r,fun)
-    argfun = Symbol(fun,"_args")
+for mode ∈ [:expr,:unary,:switch,:calculus]
+    rfun = Symbol(:r,"_",mode)
+    modefun = Symbol(:parse,"_",mode)
+    argfun = Symbol(:args,"_",mode)
     arty = (mode == :expr) ? :Any : :(Compat.String)
     exec = if mode == :expr
         :(Meta.parse(RSymReplace(js)))
     elseif mode == :unary
-        :($(string(fun)) * "($js)" |> RExpr |> rcall)
+        :(fun * "($js)" |> RExpr |> rcall)
     elseif mode == :switch
-        :(rcall("$js" |> RExpr, $(string(fun))))
+        :(rcall("$js" |> RExpr, fun))
     elseif mode == :calculus
-        :($(string(fun)) * "($js,$(join(s,',')))" |> RExpr |> rcall)
+        :(fun * "($js,$(join(s,',')))" |> RExpr |> rcall)
     end
     mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:s)])
     mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
-    return quote
-        function $fun($(fargs...);be=0)
+    quote
+        function $modefun(fun::String,$(fargs...);be=0)
             nsr = $arty[]
             sexpr = split(r).str
             iter = 1:length(sexpr)
@@ -77,11 +73,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                     (h,state) = bematch(sexpr[h],sexpr,h,iter,state)
                     $(mode != :expr ? :(push!(nsr,Compat.String("procedure "*js))) : :(nothing))
                     $(if mode == :expr
-                        :(push!(nsr,Expr(:function,Meta.parse(js),rparse(sexpr[y:h];be=be))))
+                        :(push!(nsr,Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be))))
                     elseif mode == :calculus
-                        :(push!(nsr,$rfun(sexpr[y:h],s;be=be) |> string))
+                        :(push!(nsr,$rfun(fun,sexpr[y:h],s;be=be) |> string))
                     else
-                        :(push!(nsr,$rfun(sexpr[y:h];be=be) |> string))
+                        :(push!(nsr,$rfun(fun,sexpr[y:h];be=be) |> string))
                     end)
                 elseif ismatch(r"^begin",sh[en])
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
@@ -94,11 +90,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                     (h,state) = bematch(js,sexpr,h,iter,state)
                     $(mode != :expr ? :(push!(nsr,Compat.String("begin "*js))) : :(nothing))
                     $(if mode == :expr
-                        :(push!(ep,$rfun(vcat(js,sexpr[y+1:h]...);be=be+1)))
+                        :(push!(ep,$rfun(fun,vcat(js,sexpr[y+1:h]...);be=be+1)))
                     elseif mode == :calculus
-                        :(push!(ep,$rfun(vcat(js,sexpr[y+1:h]...),s;be=be+1) |> string))
+                        :(push!(ep,$rfun(fun,vcat(js,sexpr[y+1:h]...),s;be=be+1) |> string))
                     else
-                        :(push!(ep,$rfun(vcat(js,sexpr[y+1:h]...);be=be+1) |> string))
+                        :(push!(ep,$rfun(fun,vcat(js,sexpr[y+1:h]...);be=be+1) |> string))
                     end)
                     ep[1] == nothing && shift!(ep)
                     while !done(iter,state) & flag
@@ -114,11 +110,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                         y = h
                         (h,state) = bematch(js,sexpr,h,iter,state)
                         $(if mode == :expr
-                            :(epr = $rfun(vcat(js,sexpr[y+1:h]...);be=cQ))
+                            :(epr = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=cQ))
                         elseif mode == :calculus
-                            :(epr = $rfun(vcat(js,sexpr[y+1:h]...),s;be=cQ) |> string)
+                            :(epr = $rfun(fun,vcat(js,sexpr[y+1:h]...),s;be=cQ) |> string)
                         else
-                            :(epr = $rfun(vcat(js,sexpr[y+1:h]...);be=cQ) |> string)
+                            :(epr = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=cQ) |> string)
                         end)
                         epr ≠ nothing && push!(ep,epr)
                     end
@@ -129,13 +125,22 @@ function parsegen(fun::Symbol,mode::Symbol)
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state)
                     $(if mode == :expr
-                        :(rp = $rfun(vcat(js,sexpr[y+1:h]...);be=be))
+                        :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=be))
                     elseif mode == :calculus
-                        :(rp = $rfun(vcat(js,sexpr[y+1:h]...),s;be=be) |> string)
+                        :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...),s;be=be) |> string)
                     else
-                        :(rp = $rfun(vcat(js,sexpr[y+1:h]...);be=be) |> string)
+                        :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=be) |> string)
                     end)
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
+                elseif ismatch(assign,sh[en])
+                    sp = split(sexpr[h], ":=",limit=2)
+                    $(if mode == :expr
+                        :(push!(nsr,Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be))))
+                    elseif mode == :calculus
+                        :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr,s;be=be))))
+                    else
+                        :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr;be=be))))
+                    end)
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not supported"))
                 elseif ismatch(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
@@ -169,11 +174,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                         args = Array{$arty,1}(0)
                         if ismatch(r"^\(",smp)
                             push!(args,$(if mode == :expr
-                                :($rfun(match(parens,smp).match[2:end-1];be=be))
+                                :($rfun(fun,match(parens,smp).match[2:end-1];be=be))
                             elseif mode == :calculus
-                                :($rfun(match(parens,smp).match[2:end-1],s;be=be) |> string)
+                                :($rfun(fun,match(parens,smp).match[2:end-1],s;be=be) |> string)
                             else
-                                :($rfun(match(parens,smp).match[2:end-1];be=be) |> string)
+                                :($rfun(fun,match(parens,smp).match[2:end-1];be=be) |> string)
                             end))
                             smp = split(smp,parens;limit=2)[end]
                             qr = qr * "($(args...))"
@@ -221,11 +226,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                             for row ∈ mt
                                 elm = split(row[2:end-1],',')
                                 push!(args,$(if mode == :expr
-                                    :(Expr(:row,$argfun(elm,be)...))
+                                    :(Expr(:row,$argfun(fun,$(string(mode)),elm,be)...))
                                 elseif mode == :calculus
-                                    :($argfun(elm,be,s) |> string)
+                                    :($argfun(fun,$(string(mode)),elm,be,s) |> string)
                                 else
-                                    :($argfun(elm,be) |> string)
+                                    :($argfun(fun,$(string(mode)),elm,be) |> string)
                                 end))
                             end
                             qr = qr * $(if mode == :expr
@@ -236,11 +241,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                         else
                             ls = split(lsm,',')
                             push!(args,$(if mode == :expr
-                                :($argfun(ls,be))
+                                :($argfun(fun,$(string(mode)),ls,be))
                             elseif mode == :calculus
-                                :($argfun(ls,be,s) |> string)
+                                :($argfun(fun,$(string(mode)),ls,be,s) |> string)
                             else
-                                :($argfun(ls,be) |> string)
+                                :($argfun(fun,$(string(mode)),ls,be) |> string)
                             end)...)
                             rq = "$(RSymReplace(pf))($(join(args,',')))"
                             qr = qr * $(if mode == :expr
@@ -267,23 +272,14 @@ function parsegen(fun::Symbol,mode::Symbol)
                     nothing
                 elseif isempty(sh[en])
                     nothing
-                elseif contains(sexpr[h], ":=")
-                    sp = split(sexpr[h], ":=")
-                    $(if mode == :expr
-                        :(push!(nsr,Expr(:(=),Meta.parse(sp[1]),rparse(sp[2];be=be))))
-                    elseif mode == :calculus
-                        :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(sp[2] |> Compat.String |> RExpr,s;be=be))))
-                    else
-                        :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(sp[2] |> Compat.String |> RExpr;be=be))))
-                    end)
                 elseif contains(sexpr[h],":")
                     sp = split(sexpr[h],":")
                     $(if mode == :expr
-                        :(push!(nsr,Expr(:(:),rparse(sp[1];be=be),rparse(sp[2];be=be))))
+                        :(push!(nsr,Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be))))
                     elseif mode == :calculus
-                        :(push!(nsr,($rfun(sp[1];be=be)|>string)*":"*($rfun(sp[2],s;be=be)|>string)))
+                        :(push!(nsr,($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string)))
                     else
-                        :(push!(nsr,($rfun(sp[1];be=be)|>string)*":"*($rfun(sp[2];be=be)|>string)))
+                        :(push!(nsr,($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2];be=be)|>string)))
                     end)
                 else
                     js=sexpr[h]
@@ -298,24 +294,27 @@ function parsegen(fun::Symbol,mode::Symbol)
                     u = length(nsr)
                     return u==1 ? nsr[1] : (u==0 ? nothing : Expr(:block,nsr...))
                 end
-            elseif fun in [:nat,:latex]
-                :(return nsr |> RExpr |> split |> string)
             else
-                :(return nsr |> RExpr |> split)
+                :(if fun in ["nat","latex"]
+                    return nsr |> RExpr |> split |> string
+                else
+                    return nsr |> RExpr |> split
+                end)
             end)
         end
         $(if mode == :calculus
             quote
-                $rfun(r::Array{Compat.String,1},s;be=0) = $fun(RExpr(r),s...;be=be)
-                $rfun(r,s;be=0) = $fun(r |> Compat.String |> RExpr,s...;be=be)
+                $rfun(fun::String,r::Array{Compat.String,1},s;be=0) = $modefun(fun,RExpr(r),s...;be=be)
+                $rfun(fun::String,r,s;be=0) = $modefun(fun,r |> Compat.String |> RExpr,s...;be=be)
             end
         else
             quote
-                $rfun(r::Array{Compat.String,1};be=0) = $fun(RExpr(r);be=be)
-                $rfun(r;be=0) = $fun(r |> Compat.String |> RExpr;be=be)
+                $rfun(fun::String,r::Array{Compat.String,1};be=0) = $modefun(fun,RExpr(r);be=be)
+                $rfun(fun::String,r;be=0) = $modefun(fun,r |> Compat.String |> RExpr;be=be)
             end
         end)
-        function $argfun(ls::Array{SubString{String},1},$(aargs...))
+        function $argfun(fun::String,mod::String,ls::Array{SubString{String},1},$(aargs...))
+            mode = Symbol(mod)
             args = Array{$arty,1}(0)
             lsi = 1:length(ls)
             lss = start(lsi)
@@ -349,11 +348,11 @@ function parsegen(fun::Symbol,mode::Symbol)
                     end
                     sep = "begin "*join(ep,',')*" end"
                     push!(args,$(if mode == :expr
-                        :($rfun(sep;be=be))
+                        :($rfun(fun,sep;be=be))
                     elseif mode == :calculus
-                        :($rfun(sep,s;be=be) |> string)
+                        :($rfun(fun,sep,s;be=be) |> string)
                     else
-                        :($rfun(sep;be=be) |> string)
+                        :($rfun(fun,sep;be=be) |> string)
                     end))
                 elseif ismatch(prefix,ls[lsh])
                     js = ls[lsh]
@@ -367,25 +366,36 @@ function parsegen(fun::Symbol,mode::Symbol)
                     ep[1] == nothing && shift!(ep)
                     sep = join(ep,',')
                     push!(args,$(if mode == :expr
-                        :($rfun(sep;be=be))
+                        :($rfun(fun,sep;be=be))
                     elseif mode == :calculus
-                        :($rfun(sep,s;be=be) |> string)
+                        :($rfun(fun,sep,s;be=be) |> string)
                     else
-                        :($rfun(sep;be=be) |> string)
+                        :($rfun(fun,sep;be=be) |> string)
                     end))
                 else
                     push!(args,$(if mode == :expr
-                        :($rfun(ls[lsh];be=be))
+                        :($rfun(fun,ls[lsh];be=be))
                     elseif mode == :calculus
-                        :($rfun(ls[lsh],s;be=be) |> string)
+                        :($rfun(fun,ls[lsh],s;be=be) |> string)
                     else
-                        :($rfun(ls[lsh];be=be) |> string)
+                        :($rfun(fun,ls[lsh];be=be) |> string)
                     end))
                 end
             end
             return args
         end
-    end
+    end |> eval
+end
+
+"""
+    parsegen(::Symbol,::Symbol)
+
+Parser generator that outputs code to walk and manipulate REDUCE expressions
+"""
+function parsegen(fun::Symbol,mode::Symbol)
+    modefun = Symbol(:parse,"_",mode)
+    mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:s)])
+    return :($fun($(fargs...);be=0) = $modefun($(string(fun)),$(fargs...);be=0))
 end
 
 """
