@@ -53,7 +53,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Output mode",
     "category": "section",
-    "text": "Various output modes are supported. While in the REPL, the default nat output mode will be displayed for RExpr objects.julia> :(sin(x*im) + cos(y*φ)) |> RExpr\n\n      (sqrt(5) + 1)*y\n cos(-----------------) + sinh(x)*i\n             2This same output can also be printed to the screen by calling print(nat(r)) method.It is possible to direclty convert a julia expression object to LaTeX code using the latex method.julia> :(sin(x*im) + cos(y*φ)) |> latex |> print\n\\begin{displaymath}\n\\cos \\left(\\left(\\left(\\sqrt {5}+1\\right) y\\right)/2\\right)+\\sinh \\,x\\: i\n\\end{displaymath}Internally, this command essentially expands to rcall(:(sin(x*im) + cos(y*φ)),:latex) |> print, which is equivalent.(Image: latex-equation)In IJulia the display output of RExpr objects will be rendered LaTeX with the rlfi REDUCE package in latex mode."
+    "text": "Various output modes are supported. While in the REPL, the default nat output mode will be displayed for RExpr objects.julia> :(sin(x*im) + cos(y*φ)) |> RExpr\n\n      (sqrt(5) + 1)*y\n cos(-----------------) + sinh(x)*i\n             2This same output can also be printed to the screen by calling print(nat(r)) method.It is possible to direclty convert a julia expression object to LaTeX code using the latex method.julia> print(@latex sin(x*im) + cos(y*φ))\n\\begin{displaymath}\n\\cos \\left(\\left(\\left(\\sqrt {5}+1\\right) y\\right)/2\\right)+\\sinh \\,x\\: i\n\\end{displaymath}Internally, this command essentially expands to rcall(:(sin(x*im) + cos(y*φ)),:latex) |> print, which is equivalent.(Image: latex-equation)In IJulia the display output of RExpr objects will be rendered LaTeX with the rlfi REDUCE package in latex mode."
 },
 
 {
@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Base.parse",
     "category": "Function",
-    "text": "parse(r::RExpr)\n\nParse a Reduce expression into a Julia expression\n\nExamples\n\njulia> parse(R\"sin(i*x)\")\n:(sin(im * x))\n\n\n\n"
+    "text": "Reduce.parse(r::RExpr)\n\nParse a Reduce expression into a Julia expression\n\nExamples\n\njulia> Reduce.parse(R\"sin(i*x)\")\n:(sin(im * x))\n\n\n\n"
 },
 
 {
