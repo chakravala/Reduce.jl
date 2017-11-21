@@ -9,7 +9,7 @@ using Base.Test
 @test display(RExpr("(x+i)^3")) == nothing; print('\n')
 @test Reduce._syme(Reduce.r_to_jl) |> typeof == String
 @test R"x+2" == R"2+x-1+1"
-@test :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr |> parse |> typeof == Expr
+@test :((x+1+π)^2; int(1/(1+x^3),x)) |> RExpr |> Reduce.parse |> typeof == Expr
 @test !Base.process_exited(Reduce.rs)
 @test string(R"x+1") |> typeof == String
 @test RExpr(:x) == R"x"
@@ -22,13 +22,13 @@ using Base.Test
 @test "1"*R"1"*"1" == R"1;1;1"
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"
-@test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> parse |> typeof == Expr
+@test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr
 @test Expr(:for,:(i=2:34),:(product(i))) |> rcall |> eval |> typeof == BigInt
 @test try; Expr(:type,false,:x) |> RExpr; false; catch; true; end
 @test try; :(@time f(x)) |> RExpr; false; catch; true; end
 @test (x = Expr(:function,:fun,:(return y=a^3+3*a^2*b+3*a*b^2+b^3)); x==x |> Reduce.factor |> expand)
-@test try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> parse; false; catch; true; end
-@test R"begin; 1:2; end" |> parse |> RExpr |> string == "1:2 "
+@test try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> Reduce.parse; false; catch; true; end
+@test R"begin; 1:2; end" |> Reduce.parse |> RExpr |> string == "1:2 "
 @test latex(:(x+1)) |> typeof == String
 @test length(:(x+y)) |> typeof == Int
 @test log(:(e^x)) == :x
@@ -42,11 +42,11 @@ using Base.Test
 @test Reduce.parsegen(:switchtest,:switch) |> typeof == Expr
 @test Reduce.parsegen(:unarytest,:unary) |> typeof == Expr
 !(VERSION < v"0.6.0") && is_linux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String
-@test :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr |> rcall |> parse |> typeof == Expr
+@test :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr |> rcall |> Reduce.parse |> typeof == Expr
 @test :(int(sin(im*x+pi)^2-1,x)) |> rcall |> typeof == Expr
 @test int(:(x^2+y),:x) |> RExpr == int("x^2+y","x") |> RExpr
-@test R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> parse |> typeof == Expr
+@test R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> Reduce.parse |> typeof == Expr
 @test df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z) |> typeof == RExpr
-@test :([1 2; 3 4]) |> RExpr |> parse |> RExpr == [1 2; 3 4] |> RExpr
+@test :([1 2; 3 4]) |> RExpr |> Reduce.parse |> RExpr == [1 2; 3 4] |> RExpr
 println()
 #@test Reduce.repl_init(Base.active_repl)==nothing

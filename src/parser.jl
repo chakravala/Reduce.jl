@@ -49,7 +49,7 @@ function parsegen(fun::Symbol,mode::Symbol)
     argfun = Symbol(fun,"_args")
     arty = (mode == :expr) ? :Any : :(Compat.String)
     exec = if mode == :expr
-        :(parse(RSymReplace(js)))
+        :(Meta.parse(RSymReplace(js)))
     elseif mode == :unary
         :($(string(fun)) * "($js)" |> RExpr |> rcall)
     elseif mode == :switch
@@ -77,7 +77,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                     (h,state) = bematch(sexpr[h],sexpr,h,iter,state)
                     $(mode != :expr ? :(push!(nsr,Compat.String("procedure "*js))) : :(nothing))
                     $(if mode == :expr
-                        :(push!(nsr,Expr(:function,parse(js),rparse(sexpr[y:h];be=be))))
+                        :(push!(nsr,Expr(:function,Meta.parse(js),rparse(sexpr[y:h];be=be))))
                     elseif mode == :calculus
                         :(push!(nsr,$rfun(sexpr[y:h],s;be=be) |> string))
                     else
@@ -261,7 +261,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                             :(qr = qr * smp; smp = "")
                         end))
                     end
-                    push!(nsr,$((mode == :expr) ? :(u = "("*qr*")" |> parse |> linefilter) : :qr))
+                    push!(nsr,$((mode == :expr) ? :(u = "("*qr*")" |> Meta.parse |> linefilter) : :qr))
                     end; else; :(nothing); end)
                 elseif contains(sh[en],"end")
                     nothing
@@ -270,7 +270,7 @@ function parsegen(fun::Symbol,mode::Symbol)
                 elseif contains(sexpr[h], ":=")
                     sp = split(sexpr[h], ":=")
                     $(if mode == :expr
-                        :(push!(nsr,Expr(:(=),parse(sp[1]),rparse(sp[2];be=be))))
+                        :(push!(nsr,Expr(:(=),Meta.parse(sp[1]),rparse(sp[2];be=be))))
                     elseif mode == :calculus
                         :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(sp[2] |> Compat.String |> RExpr,s;be=be))))
                     else
@@ -414,16 +414,16 @@ end
 parsegen(:parse,:expr) |> eval
 
 @doc """
-    parse(r::RExpr)
+    Reduce.parse(r::RExpr)
 
 Parse a Reduce expression into a Julia expression
 
 # Examples
 ```julia-repl
-julia> parse(R\"sin(i*x)\")
+julia> Reduce.parse(R\"sin(i*x)\")
 :(sin(im * x))
 ```
-""" parse
+""" Reduce.parse
 
 function print_args(io::IO,a::Array{Any,1})
     print(io, "(")

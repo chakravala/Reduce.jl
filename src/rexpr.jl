@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @RExpr, @R_str, parse, rcall, @rcall, convert, ==, getindex, string, show
+export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, getindex, string, show
 import Base: parse, convert, ==, getindex, *, split, string, show
 
 """
