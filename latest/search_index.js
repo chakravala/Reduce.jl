@@ -133,7 +133,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Base.parse",
     "category": "Function",
-    "text": "parse(r::RExpr)\n\nParse a Reduce expression into a Julia expression\n\nExamples\n\njulia> parse(R\"sin(i*x)\")\n:(sin(im * x))\n\n\n\n"
+    "text": "Reduce.parse(r::RExpr)\n\nParse a Reduce expression into a Julia expression\n\nExamples\n\njulia> Reduce.parse(R\"sin(i*x)\")\n:(sin(im * x))\n\n\n\n"
 },
 
 {
