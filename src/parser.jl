@@ -53,11 +53,19 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
     elseif mode == :calculus
         :(fun * "($js,$(join(s,',')))" |> RExpr |> rcall)
     end
-    mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:s)])
+    mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
     mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
     quote
         function $modefun(fun::String,$(fargs...);be=0)
             nsr = $arty[]
+            $(if mode == :calculus
+                quote
+                    s = Array{Compat.String,1}()
+                    for rs ∈ sr
+                        push!(s,rs |> RExpr |> string)
+                    end
+                end
+            end)
             sexpr = split(r).str
             iter = 1:length(sexpr)
             state = start(iter); #show(sexpr)
@@ -512,6 +520,10 @@ isinfix(args) = replace(args,' ',"") in infix_ops
 #show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
 function show_expr(io::IO, ex)
     ex == :nothing && (return nothing)
+    if typeof(ex) <: AbstractFloat && isinf(ex)
+        println((r > 0 ? "" : "-")*"infinity")
+        return nothing
+    end
     edit = IOBuffer()
     if typeof(ex) <: Matrix
         print(io, "mat(")

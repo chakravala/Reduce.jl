@@ -44,6 +44,7 @@ function RExpr(r::Matrix)
 end
 
 function RExpr(r::Any)
+    typeof(r) <: AbstractFloat && isinf(r) && (return RExpr((r > 0 ? "" : "-")*"infinity"))
     y = "$r"
     for key ∈ keys(repjlr)
         y = replace(y,key,repjlr[key])
@@ -197,6 +198,8 @@ function RSymReplace(str::String)
     for key in keys(reprjl)
         str = replace(str,key,reprjl[key])
     end
+    str == "inf" && (str = "Inf")
+    str == " - inf" && (str = "-Inf")
     return paren ? "("*str*")" : str
 end
 
