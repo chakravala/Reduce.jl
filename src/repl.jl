@@ -62,7 +62,7 @@ end
 
 Basic completion provider, just latex completions
 """
-type ReduceCompletionProvider <: LineEdit.CompletionProvider
+mutable struct ReduceCompletionProvider <: LineEdit.CompletionProvider
     r::REPL.LineEditREPL
 end
 

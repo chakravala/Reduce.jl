@@ -1,6 +1,8 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
+#import LinearAlgebra: besseli, besselj, bessely, polygamma, zeta, factorize
+
 sbas = [
     :abs,
     :conj,
@@ -127,7 +129,7 @@ length(r::Expr;be=0) = length(r |> RExpr;be=be) |> parse |> eval
 
 for fun in [sint;sran]
     quote
-        function $fun{T<:Integer}(n::T)
+        function $fun(n::T) where T <: Integer
             convert(T, $fun(RExpr(n)) |> parse |> eval)
         end
     end |> eval
@@ -135,7 +137,7 @@ end
 
 for fun in snum
     quote
-        function $fun{T<:Real}(x::T)
+        function $fun(x::T) where T <: Real
             $fun(RExpr(x)) |> parse |> eval
         end
     end |> eval
@@ -143,12 +145,12 @@ end
 
 for fun in scom
     quote
-        function $fun{T<:Number}(x::T)
+        function $fun(x::T) where T <: Number
             "$x" |> parse |> RExpr |> $fun |> parse |> eval
         end
     end |> eval
 end
 
-function bernoulli{T<:Integer}(n::T)
+function bernoulli(n::T) where T <: Integer
     bernoulli(RExpr(n)) |> parse |> eval
 end

@@ -7,7 +7,7 @@ using Compat; import Compat.String
 
 include(joinpath(dirname(@__FILE__),"../deps/svn.jl"))
 
-immutable PSL <: Base.AbstractPipe
+struct PSL <: Base.AbstractPipe
     input::Pipe
     output::Pipe
     process::Base.Process
@@ -37,7 +37,7 @@ immutable PSL <: Base.AbstractPipe
             osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
             osbit = contains(readstring(osbitf),"32BIT") ? "i686-pc-windows" : "x86_64-pc-windows"
             close(osbitf)
-            dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl"): #osbit):
+            dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl") : #osbit):
                 joinpath(dirf,"..","deps","install","lib","psl"))
             rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
             process = spawn(rsl, (input, output, STDERR))
@@ -55,7 +55,7 @@ Base.process_exited(rs::PSL) = process_exited(rs.process)
 export error, ReduceError
 import Base: error
 
-type ReduceError <: Exception
+struct ReduceError <: Exception
     errstr::Compat.String
 end
 
@@ -81,9 +81,9 @@ const RES = Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)|(\n$SOS$EOT\n)|($EOT\n)")
 
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
     out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output))
-    is_windows() && (out = replace(out,r"\r",""))
-    out = replace(replace(out,r"\$\n\n","\n\n"),RES,"")
-    out = replace(out,Regex(SOS),"")
+    is_windows() && (out = replace(out,r"\r" => ""))
+    out = replace(replace(out,r"\$\n\n" => "\n\n"),RES=>"")
+    out = replace(out,Regex(SOS) => "")
     ReduceCheck(out)
     return out
 end
@@ -158,7 +158,7 @@ function Load()
         write(rs.input,"off nat; $EOTstr;\n")
         banner = readuntil(rs.output,EOT) |> String
         readavailable(rs.output)
-        is_windows() && (banner = replace(banner,r"\r",""))
+        is_windows() && (banner = replace(banner,r"\r" => ""))
         ReduceCheck(banner)
         rcsl = contains(banner," CSL ")
         !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&

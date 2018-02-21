@@ -73,8 +73,8 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                 (h,state) = next(iter, state)
                 sh = split(sexpr[h],r"[ ]+")
                 en = 1
-                isempty(replace(sh[en]," ","")) && (en = 2); #show(sh[en])
-                if ismatch(r"^procedure",sh[en])
+                isempty(replace(sh[en]," "=>"")) && (en = 2); #show(sh[en])
+                if contains(sh[en],r"^procedure")
                     js = join(split(sexpr[h],"procedure")[2:end],"procedure")
                     (h,state) = next(iter, state)
                     y = h
@@ -87,7 +87,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     else
                         :(push!(nsr,$rfun(fun,sexpr[y:h];be=be) |> string))
                     end)
-                elseif ismatch(r"^begin",sh[en])
+                elseif contains(sh[en],r"^begin")
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
                     ep = Array{$arty,1}(0)
                     sh1 = split(js,r"[ ]+")
@@ -128,7 +128,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     end
                     push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
                     $(mode != :expr ? :(push!(nsr,Compat.String("end"))) : :(nothing))
-                elseif ismatch(r"^return",sh[en])
+                elseif contains(sh[en],r"^return")
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state)
@@ -140,7 +140,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                         :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=be) |> string)
                     end)
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
-                elseif ismatch(assign,sh[en])
+                elseif contains(sh[en],assign)
                     sp = split(sexpr[h], ":=",limit=2)
                     $(if mode == :expr
                         :(push!(nsr,Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be))))
@@ -151,7 +151,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     end)
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not supported"))
-                elseif ismatch(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
+                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),prefix)
                     $(if mode == :expr; quote
                     ts = sexpr[h]
                     mp = Array{Compat.String,1}(0)
@@ -180,7 +180,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     qr = ""
                     while smp ≠ ""
                         args = Array{$arty,1}(0)
-                        if ismatch(r"^\(",smp)
+                        if contains(smp,r"^\(")
                             push!(args,$(if mode == :expr
                                 :($rfun(fun,match(parens,smp).match[2:end-1];be=be))
                             elseif mode == :calculus
@@ -190,9 +190,9 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                             end))
                             smp = split(smp,parens;limit=2)[end]
                             qr = qr * "($(args...))"
-                            if !ismatch(prefix,smp)
+                            if !contains(smp,prefix)
                                 $(if mode == :expr; quote
-                                    if ismatch(infix1,smp)
+                                    if contains(smp,infix1)
                                         qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
                                         smp = ""
                                     else
@@ -202,7 +202,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                 else
                                     :(qr = qr * smp; smp = "")
                                 end)
-                            elseif ismatch(infix1,smp)
+                            elseif contains(smp,infix1)
                                 qr = qr * RSymReplace(match(infix1,smp).match)
                                 smp = split(smp,infix1)[end]
                             end
@@ -211,15 +211,15 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                         pf = match(prefix,smp).match |> String
                         sp = split(smp,prefix;limit=2)
                         $(if mode == :expr; quote 
-                            if ismatch(infix2,sp[1])
+                            if contains(sp[1],infix2)
                                 rq = split(sp[1],infix2)[1]
-                                if ismatch(infix1,rq)
+                                if contains(rq,infix1)
                                     rq = RSymReplace(match(infix1,rq).match) * RSymReplace(split(rq,infix1)[end])
                                 else
                                     rq = RSymReplace(rq)
                                 end
                                 qr = qr * rq * RSymReplace(match(infix2,sp[1]).match)
-                            elseif ismatch(infix1,sp[1])
+                            elseif contains(sp[1],infix1)
                                 qr = qr * RSymReplace(match(infix1,sp[1]).match) * RSymReplace(split(sp[1],infix1)[end])
                             else
                                 qr = qr * RSymReplace(sp[1])
@@ -262,8 +262,8 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                 :("$pf($(join(args,',')))")
                             end)
                         end
-                        !ismatch(prefix,smp) && ($(if mode == :expr; quote
-                            if ismatch(infix1,smp)
+                        !contains(smp,prefix) && ($(if mode == :expr; quote
+                            if contains(smp,infix1)
                                 qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
                                 smp = ""
                             else
@@ -328,7 +328,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
             lss = start(lsi)
             while !done(lsi,lss)
                 (lsh,lss) = next(lsi, lss)
-                if ismatch(r"^begin",ls[lsh])
+                if contains(ls[lsh],r"^begin")
                     js = join(split(ls[lsh],"begin")[2:end],"begin")
                     ep = Array{$arty,1}(0)
                     sh1 = split(js,r"[ ]+")
@@ -362,7 +362,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     else
                         :($rfun(fun,sep;be=be) |> string)
                     end))
-                elseif ismatch(prefix,ls[lsh])
+                elseif contains(ls[lsh],prefix)
                     js = ls[lsh]
                     ep = Array{$arty,1}(0)
                     c = count(z->z=='(',js)-count(z->z==')',js)-1
@@ -515,7 +515,7 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
 end
 
 const infix_ops = ["+", "-", "*", "/", "**", "^"]
-isinfix(args) = replace(args,' ',"") in infix_ops
+isinfix(args) = replace(args,' '=>"") in infix_ops
 
 #show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
 function show_expr(io::IO, ex)
@@ -557,6 +557,6 @@ function unparse(expr::Expr)
         return rtrim(str)
     else
         show_expr(io, expr)
-        return push!(str,String(io))
+        return push!(str,String(take!(copy(io))))
     end
 end

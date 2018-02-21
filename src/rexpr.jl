@@ -13,7 +13,7 @@ type RExpr <: Any
 ### Fields:
 str::Array{Compat.String,1}
 """
-type RExpr
+struct RExpr
     str::Array{Compat.String,1}
     RExpr(r::Array{Compat.String,1}) = new(r)
 end
@@ -47,7 +47,7 @@ function RExpr(r::Any)
     typeof(r) <: AbstractFloat && isinf(r) && (return RExpr((r > 0 ? "" : "-")*"infinity"))
     y = "$r"
     for key ∈ keys(repjlr)
-        y = replace(y,key,repjlr[key])
+        y = replace(y, key => repjlr[key])
     end
     return RExpr(y)
 end
@@ -75,7 +75,7 @@ end
 function split(r::RExpr)
     n = Array{Compat.String,1}(0)
     for h ∈ 1:length(r.str)
-        p = split(replace(r.str[h],r"(\$)|(;\n)",";"),r"(?<!\!#[0-9a-fA-F]{4});")
+        p = split(replace(r.str[h],r"(\$)|(;\n)"=>";"),r"(?<!\!#[0-9a-fA-F]{4});")
         for t ∈ 1:length(p)
             push!(n,p[t])
     end; end
@@ -101,7 +101,7 @@ end
     for str ∈ sp
         ct += 1 
         length(sp) ≠ 1 && print(io,"($ct)"*'&'*"\\,")
-        print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})",""))
+        print(io,replace(str,r"(\\begin{displaymath})|(\\end{displaymath})"=>""))
         ct ≠ length(sp) && print(io,"\\\\\\\\")
     end # new line
     print(io,"\n\\end{eqnarray}")
@@ -144,7 +144,7 @@ function _syme(syme::Dict{String,String})
     return str[1:end-1]
 end
 
-_subst{T}(syme::String,expr::T) = convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
+_subst(syme::String,expr::T) where T = convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
 
 const symrjl = _syme(r_to_jl)
 reprjl = r_to_jl_utf
@@ -158,7 +158,7 @@ Toggle whether to use '/' or '//' for division in julia expressions
 """
 Rational = ( () -> begin
         gs = true
-        return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs?"//":"/"); return gs)
+        return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs ? "//" : "/"); return gs)
     end)()
 
 """
@@ -173,16 +173,16 @@ SubCall = ( () -> begin
 
 function JSymReplace(str::Compat.String)
     for key ∈ keys(repjlr)
-        str = replace(str,key,repjlr[key])
+        str = replace(str, key => repjlr[key])
     end
     SubCall() && !isinfix(str) && (str = _subst(symjlr,str))
-    contains(str,"!#") && (str = replace(rcall(str,:nat),r"\n",""))
+    contains(str,"!#") && (str = replace(rcall(str,:nat),r"\n"=>""))
     return str
 end
 
 function RSymReplace(str::String)
-    clean = replace(str,r"[ ;\n]","")
-    paren = ismatch(r"^\(((?>[^\(\)]+)|(?R))*\)$",clean)
+    clean = replace(str,r"[ ;\n]"=>"")
+    paren = contains(clean,r"^\(((?>[^\(\)]+)|(?R))*\)$")
     (isempty(clean)|(clean=="()")) && (return str)
     SubCall() && !isinfix(str) && (str = _subst(symrjl,str))
     if contains(str,"!#")
@@ -190,13 +190,13 @@ function RSymReplace(str::String)
         for h in 1:length(rsp)
             if contains(rsp[h],"!#")
                 sp = split(rsp[h],r"!#")
-                rsp[h] = join([sp[1],replace(rcall("!#"*sp[end]*";",:nat),r"\n","")])
+                rsp[h] = join([sp[1],replace(rcall("!#"*sp[end]*";",:nat),r"\n"=>"")])
             end
         end
         str = join(rsp)
     end
     for key in keys(reprjl)
-        str = replace(str,key,reprjl[key])
+        str = replace(str, key => reprjl[key])
     end
     str == "inf" && (str = "Inf")
     str == " - inf" && (str = "-Inf")
@@ -208,7 +208,7 @@ RSymReplace(str::SubString{String}) = str |> String |> RSymReplace
 convert(::Type{RExpr}, r::RExpr) = r
 convert(::Type{Array{Compat.String,1}}, r::RExpr) = r.str
 convert(::Type{Compat.String}, r::RExpr) = join(r.str,";\n")
-convert{T}(::Type{T}, r::RExpr) = T <: Number ? eval(parse(r)) : parse(r)
+convert(::Type{T}, r::RExpr) where T = T <: Number ? eval(parse(r)) : parse(r)
 
 """
     rcall(r::RExpr)
@@ -258,8 +258,8 @@ function rcall(r::RExpr;
     mode ? (sp = readsp(rs)) : (sp = read(rs))
     expo && rcall(R"off exp")
     mode && for h ∈ 1:length(sp)
-        sp[h] = replace(sp[h],'\n',"")
-        sp[h] = replace(sp[h],'\\',"")
+        sp[h] = replace(sp[h],'\n' => "")
+        sp[h] = replace(sp[h],'\\' => "")
     end
     trim && (return join(split(sp,"\n")[2:end-1],'\n'))
     rlfi && rcall(R"off latex")
@@ -291,7 +291,7 @@ julia> rcall(:(int(1/(1+x^2), x)))
 :(atan(x))
 ```
 """
-function rcall{T}(expr::T;on::Array{Symbol,1}=Symbol[],off::Array{Symbol,1}=Symbol[])
+function rcall(expr::T;on::Array{Symbol,1}=Symbol[],off::Array{Symbol,1}=Symbol[]) where T
     comp = rcall(RExpr(expr);on=on,off=off)
     (:latex in on) | (:nat in on) ? (return comp) : (return convert(T,comp))
 end

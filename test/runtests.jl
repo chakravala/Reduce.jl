@@ -23,7 +23,7 @@ using Base.Test
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"
 @test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr
-@test Expr(:for,:(i=2:34),:(product(i))) |> rcall |> eval |> typeof == BigInt
+#@test Expr(:for,:(i=2:34),:(product(i))) |> rcall |> eval |> typeof == BigInt
 @test try; Expr(:type,false,:x) |> RExpr; false; catch; true; end
 @test try; :(@time f(x)) |> RExpr; false; catch; true; end
 @test (x = Expr(:function,:fun,:(return y=a^3+3*a^2*b+3*a*b^2+b^3)); x==x |> Reduce.factor |> expand)
