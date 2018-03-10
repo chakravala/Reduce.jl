@@ -39,7 +39,7 @@ Interface for applying symbolic manipulation on [Julia expressions](https://docs
 
 ## Setup
 
-The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary of `redpsl` for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic download on Windows is now supported.
+The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary of `redpsl` for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic download on Windows is supported, although any **appveyor** build tests for Windows will fail due to absent software distribution infrastructure. However, the automated testing for **Travis CI** using Linux and OSX are fully operational `using Reduce`.
 
 ```Julia
 julia> Pkg.add("Reduce"); Pkg.build("Reduce")
@@ -47,6 +47,8 @@ julia> using Reduce
 Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
 In order to support Unicode / UTF8 characters, the CSL version of reduce is required. The automated build script currently only fetches the PSL version. However, if you have `redcsl` installed on your system it can be used by Reduce.jl by setting the environment variable `ENV["REDUCE"] = "redcsl -w"` in julia.
+
+For users who wish to experiment with precomplation, it is possible to enable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "1"` in julia (only effective when `Reduce` is being compiled).
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
 

@@ -32,4 +32,4 @@ build_script:
       Pkg.clone(pwd(), \"Reduce\"); Pkg.build(\"Reduce\")"
 
 test_script:
-#  - C:\projects\julia\bin\julia -e "Pkg.test(\"Reduce\")"
+  - C:\projects\julia\bin\julia -e "Pkg.test(\"Reduce\")"

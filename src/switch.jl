@@ -29,25 +29,23 @@ for fun in [switchbas;switches;switchtex]
 end
 
 for fun in [switchbas;switches]
-    for T in [:(Compat.String),:Expr]
-        quote
-            function $fun(expr::$T;be=0)
-                convert($T, $fun(RExpr(expr);be=be))
-            end
-        end |> eval
-    end
+    quote
+        function $fun(expr::Compat.String;be=0)
+            convert(Compat.String, $fun(RExpr(expr);be=be))
+        end
+    end |> eval
+    unfoldgen(fun,:switch) |> eval
 end
 
 export @latex, @nat
 
 for fun in switchtex
-    for T in [:(Compat.String),:Expr]
-        quote
-            function $fun(expr::$T;be=0)
-                convert(String, $fun(RExpr(expr);be=be))
-            end
-        end |> eval
-    end
+    quote
+        function $fun(expr::Compat.String;be=0)
+            convert(String, $fun(RExpr(expr);be=be))
+        end
+    end |> eval
+    unfoldgen(fun,:switch) |> eval
     quote
         macro $fun(expr)
             $fun(expr)

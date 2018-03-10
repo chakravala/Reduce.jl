@@ -560,3 +560,75 @@ function unparse(expr::Expr)
         return push!(str,String(take!(copy(io))))
     end
 end
+
+"""
+    unfoldgen(::Symbol,::Symbol)
+
+Parser generator that outputs code to walk and manipulate REDUCE expressions
+"""
+function unfoldgen(fun::Symbol,mode::Symbol)
+    modefun = Symbol(:parse,"_",mode)
+    mode != :calculus ? (fargs = [:(r::Expr)]) : (fargs = [:(r::Expr),Expr(:...,:s)])
+    return :($fun($(fargs...)) = unfold(Symbol.($(string.([mode,fun])))...,$(fargs...)))
+end
+
+function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
+    force && return unfold_expr_force(mode,fun,expr,s...)
+    if expr.head in [:call,:block,:(:)]
+        unfold_expr_force(mode,fun,expr,s...)
+    elseif expr.head == :block
+        return Expr(expr.head,unfold_expr.(mode,fun,expr.args,s...)...)
+    elseif expr.head == :(:)
+        return Expr(expr.head,unfold_expr_force.(mode,fun,expr.args,s...)...)
+    elseif expr.head == :return
+        return Expr(expr.head,unfold_expr.(mode,fun,expr.args,s...)...)
+    elseif expr.head == :for
+        return Expr(expr.head,expr.args[1],unfold_expr.(mode,fun,expr.args[2:end],s...)...)
+    elseif expr.head == :(=)
+        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
+            return Expr(expr.head,expr.args[1],unfold_expr_force.(mode,fun,expr.args[2:end],s...)...)
+        else
+            return Expr(expr.head,expr.args[1],unfold_expr(mode,fun,expr.args[2],s...;force=true)...)
+        end
+    elseif expr.head == :function
+        return Expr(expr.head,expr.args[1],unfold_expr_force.(mode,fun,expr.args[2:end],s...)...)
+    elseif expr.head == :(::)
+        return Expr(:(::),unfold_expr(mode,fun,expr.args[1],s...),expr.args[2])
+    elseif expr.head ∈ [:macrocall,:vcat,:row]
+        return unfold_expr_force(mode,fun,expr,s...)
+    elseif expr.head == :line
+        return nothing
+    else
+        throw(ReduceError("Nested :$(expr.head) block structure not supported"))
+    end
+end
+
+function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
+    out = nothing
+    if mode == :unary
+        out = parse_unary(string(fun),RExpr(ex);be=0)
+    elseif mode == :switch
+        out = parse_switch(string(fun),RExpr(ex);be=0)
+    elseif mode ==:calculus
+        out = parse_calculus(string(fun),RExpr(ex),s...;be=0)
+    else
+        throw(ReduceError("Parse mode not supported."))
+    end
+    return (fun ∈ switchtex) ? out : convert(Expr, out)
+end
+
+function unfold_expr(mode::Symbol, fun::Symbol, ex, s...; force=true)
+    typeof(ex) in [Void] ? ex : unfold_expr_force(mode,fun,ex,s...)
+end
+
+function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
+    if expr.head == :block
+        out = Any[]
+        for line ∈ expr.args # block structure
+            push!(out,unfold_expr(mode,fun,line,s...))
+        end
+        return Expr(:block,out...)
+    else
+        return unfold_expr(mode,fun,expr,s...)
+    end
+end

@@ -116,13 +116,12 @@ for fun in [sbas;sdep;sfun;snum;scom;sint;sran;[:length]]
 end
 
 for fun in [sbas;sdep;sfun;snum;scom;sint]
-    for T in [:(Compat.String),:Expr]
-        quote
-            function $fun(expr::$T;be=0)
-                convert($T, $fun(RExpr(expr);be=be))
-            end
-        end |> eval
-    end
+    quote
+        function $fun(expr::Compat.String;be=0)
+            convert(Compat.String, $fun(RExpr(expr);be=be))
+        end
+    end |> eval
+    unfoldgen(fun,:unary) |> eval
 end
 
 length(r::Expr;be=0) = length(r |> RExpr;be=be) |> parse |> eval

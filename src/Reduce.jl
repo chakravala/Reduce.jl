@@ -183,4 +183,6 @@ function Load()
     return nothing
 end
 
+include("precomp.jl")
+
 end # module
