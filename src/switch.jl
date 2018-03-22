@@ -23,32 +23,34 @@ switchtex = [
 
 Expr(:toplevel,[:(import Base: $i) for i ∈ switchbas]...) |> eval
 :(export $([switchbas;switches;switchtex]...)) |> eval
+:(export $(Symbol.("@",[switches;switchtex])...)) |> eval
 
 for fun in [switchbas;switches;switchtex]
     parsegen(fun,:switch) |> eval
 end
 
 for fun in [switchbas;switches]
-    quote
+    unfoldgen(fun,:switch) |> eval
+    @eval begin
         function $fun(expr::Compat.String;be=0)
             convert(Compat.String, $fun(RExpr(expr);be=be))
         end
-    end |> eval
-    unfoldgen(fun,:switch) |> eval
+    end
 end
 
-export @latex, @nat
-
 for fun in switchtex
-    quote
+    unfoldgen(fun,:switch) |> eval
+    @eval begin
         function $fun(expr::Compat.String;be=0)
             convert(String, $fun(RExpr(expr);be=be))
         end
-    end |> eval
-    unfoldgen(fun,:switch) |> eval
-    quote
+    end
+end
+
+for fun in [switches;switchtex]
+    @eval begin
         macro $fun(expr)
-            $fun(expr)
+            :($$(QuoteNode(fun))($(esc(expr))))
         end
     end
 end

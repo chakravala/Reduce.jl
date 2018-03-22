@@ -79,7 +79,7 @@ end
 
 function create_reduce_repl(repl, main)
     reduce_mode = LineEdit.Prompt("reduce> ";
-        prompt_prefix = Base.text_colors[:blue],
+        prompt_prefix = Base.text_colors[:cyan],
         prompt_suffix = main.prompt_suffix,
         on_enter = finished,
         on_done = respond(repl, main),

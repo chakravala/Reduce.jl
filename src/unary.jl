@@ -110,44 +110,48 @@ sran = [
 
 Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;[:length]]]...) |> eval
 :(export $([sbas;sdep;sfun;snum;scom;sint;sran;[:length]]...)) |> eval
+:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval
 
 for fun in [sbas;sdep;sfun;snum;scom;sint;sran;[:length]]
     parsegen(fun,:unary) |> eval
 end
 
 for fun in [sbas;sdep;sfun;snum;scom;sint]
-    quote
+    unfoldgen(fun,:unary) |> eval
+    @eval begin
         function $fun(expr::Compat.String;be=0)
             convert(Compat.String, $fun(RExpr(expr);be=be))
         end
-    end |> eval
-    unfoldgen(fun,:unary) |> eval
+        macro $fun(expr)
+            :($$(QuoteNode(fun))($(esc(expr))))
+        end
+    end
 end
 
 length(r::Expr;be=0) = length(r |> RExpr;be=be) |> parse |> eval
 
 for fun in [sint;sran]
-    quote
+    @eval begin
         function $fun(n::T) where T <: Integer
             convert(T, $fun(RExpr(n)) |> parse |> eval)
         end
-    end |> eval
+    end
 end
 
 for fun in snum
-    quote
+    @eval begin
         function $fun(x::T) where T <: Real
             $fun(RExpr(x)) |> parse |> eval
         end
-    end |> eval
+    end
 end
 
 for fun in scom
-    quote
+    @eval begin
         function $fun(x::T) where T <: Number
             "$x" |> parse |> RExpr |> $fun |> parse |> eval
         end
-    end |> eval
+    end
 end
 
 function bernoulli(n::T) where T <: Integer

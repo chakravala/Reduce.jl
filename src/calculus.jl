@@ -7,13 +7,17 @@ calculus = Symbol[
 ]
 
 :(export $(calculus...)) |> eval
+:(export $(Symbol.("@",calculus)...)) |> eval
 
 for fun in calculus
     parsegen(fun,:calculus) |> eval
     unfoldgen(fun,:calculus) |> eval
-    quote
+    @eval begin
         function $fun(expr::Compat.String,s...;be=0)
             convert(Compat.String, $fun(RExpr(expr),s...;be=be))
-        end 
-    end |> eval
+        end
+        macro $fun(expr)
+            :($$(QuoteNode(fun))($(esc(expr))))
+        end
+    end
 end
