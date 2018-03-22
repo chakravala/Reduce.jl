@@ -4,7 +4,7 @@
 """
 REDUCE begin and end marker counter for parsegen
 """
-function bematch(js,sexpr,h,iter,state)
+@noinline function bematch(js,sexpr,h,iter,state)
     sh = split(js,r"[ ]+")
     y = h
     c = sum(sh.=="begin")-sum(sh.=="end")
@@ -21,7 +21,7 @@ end
 """
 REDUCE parenthesis marker counter for parsegen
 """
-function pmatch(js,sexpr,h,iter,state)
+@noinline function pmatch(js,sexpr,h,iter,state)
     y = h
     c = count(z->z=='(',js)-count(z->z==')',js)
     flag = c > 0
@@ -56,7 +56,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
     mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
     mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
     quote
-        function $modefun(fun::String,$(fargs...);be=0)
+        @noinline function $modefun(fun::String,$(fargs...);be=0)
             nsr = $arty[]
             $(if mode == :calculus
                 quote
@@ -321,7 +321,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                 $rfun(fun::String,r;be=0) = $modefun(fun,r |> Compat.String |> RExpr;be=be)
             end
         end)
-        function $argfun(fun::String,mod::String,ls::Array{SubString{String},1},$(aargs...))
+        @noinline function $argfun(fun::String,mod::String,ls::Array{SubString{String},1},$(aargs...))
             mode = Symbol(mod)
             args = Array{$arty,1}(0)
             lsi = 1:length(ls)
@@ -557,7 +557,7 @@ function unparse(expr::Expr)
         return rtrim(str)
     else
         show_expr(io, expr)
-        return push!(str,String(take!(copy(io))))
+        return push!(str,String(take!(io)))
     end
 end
 
@@ -568,8 +568,21 @@ Parser generator that outputs code to walk and manipulate REDUCE expressions
 """
 function unfoldgen(fun::Symbol,mode::Symbol)
     modefun = Symbol(:parse,"_",mode)
-    mode != :calculus ? (fargs = [:(r::Expr)]) : (fargs = [:(r::Expr),Expr(:...,:s)])
-    return :($fun($(fargs...)) = unfold(Symbol.($(string.([mode,fun])))...,$(fargs...)))
+    fargs = if mode != :calculus
+        [:(r::Union{<:Expr,<:Symbol})]
+    else
+        [:(r::Union{<:Expr,<:Symbol}),Expr(:...,:s)]
+    end
+    sargs = mode != :calculus ? [:(RExpr(r))] : [:(RExpr(r)),Expr(:...,:s)]
+    return quote
+        function $fun($(fargs...))
+            if typeof(r) == Symbol
+                convert(Expr,$fun($(sargs...)))
+            else
+                unfold(Symbol.($(string.([mode,fun])))...,$(fargs...))
+            end
+        end
+    end
 end
 
 function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
