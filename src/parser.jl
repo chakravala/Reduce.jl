@@ -456,21 +456,30 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
         show_expr(io, expr.args[1])
         print_args(io,expr.args[2:end])
     elseif expr.head == :(=)
-        show_expr(io,expr.args[1])
-        print(io,":=")
-        show_expr(io,expr.args[2])
+        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
+            show_expr(io,Expr(:function,expr.args[1],expr.args[2]))
+        else
+            show_expr(io,expr.args[1])
+            print(io,":=")
+            show_expr(io,expr.args[2])
+        end
     elseif expr.head == :for
         print(io,"for ")
         show_expr(io,expr.args[1])
         show_expr(io,expr.args[2])
     elseif expr.head == :block
-        print(io,"begin ")
-        show_expr(io,expr.args[1])
-        for k ∈ 2:length(expr.args[2:end])+1
-            print(io,";")
-            show_expr(io,expr.args[k])
+        lxpr = linefilter(expr)
+        if length(lxpr.args) == 1
+            show_expr(io,lxpr.args[1])
+        else
+            print(io,"begin ")
+            show_expr(io,lxpr.args[1])
+            for k ∈ 2:length(lxpr.args[2:end])+1
+                print(io,";")
+                show_expr(io,lxpr.args[k])
+            end
+            print(io," end")
         end
-        print(io," end")
     elseif expr.head == :function
         print(io,"procedure ")
         show_expr(io,expr.args[1])

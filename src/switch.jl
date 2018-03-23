@@ -13,7 +13,8 @@ switches = [
     :precise,
     :combineexpt,
     :rounded,
-    :evallhseq
+    :evallhseq,
+    :horner
 ]
 
 switchtex = [
