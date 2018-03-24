@@ -19,7 +19,7 @@ struct RExpr
 end
 
 RExpr(r::Array{SubString{String},1}) = RExpr(convert(Array{Compat.String,1},r))
-RExpr(str::Compat.String) = RExpr(push!(Array{Compat.String,1}(0),str))
+RExpr(str::Compat.String) = RExpr([str])
 
 """
     RExpr(e::Expr)
@@ -40,7 +40,7 @@ RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 function RExpr(r::Matrix)
     out = IOBuffer()
     show_expr(out,r)
-    return out |> String |> RExpr
+    return out |> take! |> String |> RExpr
 end
 
 function RExpr(r::Any)
@@ -65,15 +65,17 @@ end
 *(x::RExpr,y::RExpr) = RExpr(vcat(x.str...,y.str...))
 
 function rtrim(r::Array{Compat.String,1})
-    n = Array{Compat.String,1}(0)
-    for h ∈ 1:length(r)
-        !isempty(r[h]) && push!(n,r[h])
+    n = deepcopy(r)
+    h = 1
+    l = length(r)
+    while h ≤ l
+        isempty(r[h]) ? (deleteat!(n,h); l -= 1) : (h += 1)
     end
     return n
 end
 
 function split(r::RExpr)
-    n = Array{Compat.String,1}(0)
+    n = Compat.String[]
     for h ∈ 1:length(r.str)
         p = split(replace(r.str[h],r"(\$)|(;\n)"=>";"),r"(?<!\!#[0-9a-fA-F]{4});")
         for t ∈ 1:length(p)
@@ -86,7 +88,7 @@ string(r::RExpr) = convert(Compat.String,r)
 show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
-    length(r.str) > 1 && (print(io,string(r)*";"); return nothing)
+    length(r.str) > 1 && (print(io,string(r),";"); return nothing)
     print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
@@ -137,11 +139,11 @@ const jl_to_r_utf = Dict(
 
 # convert substitution dictionary into SUB parameter string
 function _syme(syme::Dict{String,String})
-    str = ""
+    str = IOBuffer()
     for key in keys(syme)
-        str = str*"($key => $(syme[key])),"
+        write(str,"($key => $(syme[key])),")
     end
-    return str[1:end-1]
+    return String(take!(str)[1:end-1])
 end
 
 _subst(syme::String,expr::T) where T = convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
@@ -221,29 +223,29 @@ julia> R\"int(sin(x), x)\" |> RExpr |> rcall
  - cos(x)
 ```
 """
-function rcall(r::RExpr;
+@noinline function rcall(r::RExpr;
         on::Union{Array{Symbol,1},Array{String,1}}=Symbol[],
         off::Union{Array{Symbol,1},Array{String,1}}=Symbol[])
     typeof(on) == Array{String,1} ? (ona = convert(Array{Symbol,1},on)) : (ona = on)
     typeof(off) == Array{String,1} ? (offa = convert(Array{Symbol,1},off)) : (offa = off)
-    ons = ""
-    onr = ""
-    offs = ""
-    offr = ""
+    ons = IOBuffer()
+    onr = IOBuffer()
+    offs = IOBuffer()
+    offr = IOBuffer()
     mode = true
     trim = false
     expo = false
     rlfi = false
     for o in ona
         if o == :expand
-            ons = ons*"on exp\$ "
-            onr = onr*"; off exp "
+            write(ons,"on exp\$ ")
+            write(onr,"; off exp ")
         elseif o == :latex
             rcall(R"on latex")
             rlfi = true
         else
-            ons = ons*"on $o\$ "
-            onr = onr*"; off $o "
+            write(ons,"on $o\$ ")
+            write(onr,"; off $o ")
         end
         o == :factor && (expo = true)
         o in offa && throw(ReduceError("Invalid: switch on and off at once"))
@@ -251,10 +253,12 @@ function rcall(r::RExpr;
         o == :nat && (trim = true)
     end
     for o in offa
-        !(o == :factor) && (offs = offs*"off $o\$ ")
-        !(o in [offlist;[:factor]]) && (offr = offr*"; on $o")
+        !(o == :factor) && write(offs,"off $o\$ ")
+        !(o in [offlist;[:factor]]) && write(offr,"; on $o")
     end
-    write(rs,ons*offs*string(r)*onr*offr)
+    write(rs,String(UInt8[take!(ons)...,take!(offs)...]) *
+          string(r) *
+          String(UInt8[take!(onr)...,take!(offr)...]))
     mode ? (sp = readsp(rs)) : (sp = read(rs))
     expo && rcall(R"off exp")
     mode && for h ∈ 1:length(sp)

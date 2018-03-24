@@ -5,7 +5,7 @@ using Compat; import Compat.String
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-include(joinpath(dirname(@__FILE__),"../deps/svn.jl"))
+include(joinpath(@__DIR__,"../deps/svn.jl"))
 
 struct PSL <: Base.AbstractPipe
     input::Pipe
@@ -16,7 +16,7 @@ struct PSL <: Base.AbstractPipe
         input = Pipe()
         output = Pipe()
         rsl = `$(split(rpsl))`
-        dirf = dirname(@__FILE__)
+        dirf = @__DIR__
         try
             rsl = `$(split(ENV["REDUCE"]))`
         end
@@ -165,6 +165,7 @@ function Load()
             println(split(String(banner),'\n')[rcsl ? 1 : end-3])
         load_package(:rlfi)
         offs |> RExpr |> rcall
+        show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
     end
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)

@@ -117,7 +117,7 @@ Internally, this command essentially expands to `rcall(:(sin(x*im) + cos(y*φ)),
 In `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.
 
 ### REPL interface
-Similar to `?` help and `;` shell modes in Julia, `Reduce` provides a `reduce>` REPL mode by pressing the `}` key as the first character in the julia terminal repl. The output is in `nat` mode.
+Similar to <kbd>?</kbd> help and <kbd>;</kbd> shell modes in Julia, `Reduce` provides a `reduce>` REPL mode by pressing <kbd>shift</kbd>+<kbd>]</kbd> as the first character in the julia terminal prompt. The output is in `nat` mode.
 ```Julia
 reduce> df(atan(golden_ratio*x),x);
 
