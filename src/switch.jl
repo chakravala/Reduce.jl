@@ -45,13 +45,17 @@ for fun in switchtex
         function $fun(expr::Compat.String;be=0)
             convert(String, $fun(RExpr(expr);be=be))
         end
+        macro $fun(expr)
+            $fun(expr)
+        end
     end
 end
 
-for fun in [switches;switchtex]
+for fun in switches
     @eval begin
         macro $fun(expr)
             :($$(QuoteNode(fun))($(esc(expr))))
         end
+        $fun(expr;be=0) = expr
     end
 end

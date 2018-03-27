@@ -173,11 +173,19 @@ SubCall = ( () -> begin
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
+function SubReplace(sym::String,str::String)
+    a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
+    for s ∈ 1:length(a)
+        !isinfix(a[s]) && (a[s] ∉ ["(",")"]) && (a[s] = _subst(sym,a[s]))
+    end
+    return join(a)
+end
+
 function JSymReplace(str::Compat.String)
     for key ∈ keys(repjlr)
         str = replace(str, key => repjlr[key])
     end
-    SubCall() && !isinfix(str) && (str = _subst(symjlr,str))
+    SubCall() && !isinfix(str) && (str = SubReplace(symjlr,str))
     contains(str,"!#") && (str = replace(rcall(str,:nat),r"\n"=>""))
     return str
 end
@@ -186,7 +194,7 @@ function RSymReplace(str::String)
     clean = replace(str,r"[ ;\n]"=>"")
     paren = contains(clean,r"^\(((?>[^\(\)]+)|(?R))*\)$")
     (isempty(clean)|(clean=="()")) && (return str)
-    SubCall() && !isinfix(str) && (str = _subst(symrjl,str))
+    SubCall() && !isinfix(str) && (str = SubReplace(symrjl,str))
     if contains(str,"!#")
         rsp = split(str,';')
         for h in 1:length(rsp)
