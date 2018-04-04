@@ -59,3 +59,18 @@ for fun in switches
         $fun(expr;be=0) = expr
     end
 end
+
+export countops
+
+function countops(expr)
+    c = 0
+    if typeof(expr) == Expr
+        if expr.head == :call
+            c += 1
+        end
+        for arg ∈ expr.args
+            c += countops(arg)
+        end
+    end
+    return c
+end

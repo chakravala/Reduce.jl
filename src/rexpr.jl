@@ -149,9 +149,11 @@ end
 _subst(syme::String,expr::T) where T = convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
 
 const symrjl = _syme(r_to_jl)
-reprjl = r_to_jl_utf
 const symjlr = _syme(jl_to_r)
+reprjl = r_to_jl_utf
 const repjlr = jl_to_r_utf
+const gexrjl = Regex("($(join(keys(r_to_jl),")|(")))")
+const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
 
 """
     Reduce.Rational(::Bool)
@@ -173,10 +175,45 @@ SubCall = ( () -> begin
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
-function SubReplace(sym::String,str::String)
+"""
+    Reduce.SubHold(::Real)
+
+Sleep timer in case of clogged Reduce pipe on SubCall
+"""
+SubHold = ( () -> begin
+        gs = 1/17
+        return (tf=gs)->(gs≠tf && (gs=tf); return gs)
+    end)()
+
+"""
+    Reduce.SubFail(::Integer)
+
+Failure limit in case of clogged Reduce pipe on SubCall
+"""
+SubFail = ( () -> begin
+        gs = 17
+        return (tf=gs)->(gs≠tf && (gs=tf); return gs)
+    end)()
+ 
+function SubReplace(sym::Symbol,str::String)
     a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
     for s ∈ 1:length(a)
-        !isinfix(a[s]) && (a[s] ∉ ["(",")"]) && (a[s] = _subst(sym,a[s]))
+        if !isinfix(a[s]) && !contains(a[s],r"[()]") && 
+            ismatch(sym == :r ? gexrjl : gexjlr, a[s])
+            w = _subst(sym == :r ? symrjl : symjlr, a[s])
+            if w == ""
+                c = 1
+                f = SubFail()
+                h = SubHold()
+                while w == "" && c < f
+                    sleep(sqrt(c)*h)
+                    w = _subst(sym == :r ? symrjl : symjlr, a[s])
+                    c += 1
+                end
+                warn("Reduce pipe clogged, $(w ≠ "" ? "success" : "failure") after $c tries")
+            end
+            w ≠ "" && (a[s] = w)
+        end
     end
     return join(a)
 end
@@ -185,7 +222,7 @@ function JSymReplace(str::Compat.String)
     for key ∈ keys(repjlr)
         str = replace(str, key => repjlr[key])
     end
-    SubCall() && !isinfix(str) && (str = SubReplace(symjlr,str))
+    SubCall() && !isinfix(str) && (str = SubReplace(:jl,str))
     contains(str,"!#") && (str = replace(rcall(str,:nat),r"\n"=>""))
     return str
 end
@@ -194,7 +231,7 @@ function RSymReplace(str::String)
     clean = replace(str,r"[ ;\n]"=>"")
     paren = contains(clean,r"^\(((?>[^\(\)]+)|(?R))*\)$")
     (isempty(clean)|(clean=="()")) && (return str)
-    SubCall() && !isinfix(str) && (str = SubReplace(symrjl,str))
+    SubCall() && !isinfix(str) && (str = SubReplace(:r,str))
     if contains(str,"!#")
         rsp = split(str,';')
         for h in 1:length(rsp)
