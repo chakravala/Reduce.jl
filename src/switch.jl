@@ -60,8 +60,6 @@ for fun in switches
     end
 end
 
-export countops
-
 function countops(expr)
     c = 0
     if typeof(expr) == Expr
@@ -73,4 +71,52 @@ function countops(expr)
         end
     end
     return c
+end
+
+function averageint(expr)
+    cs = 0
+    s = 0.0
+    cp = 0
+    p = 0.0
+    if typeof(expr) == Expr
+        if expr.head == :call && expr.args[1] == :^ &&
+            expr.args[3] |> typeof <: Number
+            cp += 1
+            p  += expr.args[3]
+            (cst,st,cpt,pt) = averageint(expr.args[2])
+            cs += cst
+            s  += cst*st
+            cp += cpt
+            p  += cpt*pt
+        else
+            for arg ∈ expr.args
+                (cst,st,cpt,pt) = averageint(arg)
+                cs += cst
+                s  += cst*st
+                cp += cpt
+                p  += cpt*pt
+            end
+        end
+    elseif typeof(expr) <: Number
+        cs += 1
+        s  += expr
+    end
+    return (cs,cs == 0 ? 0.0 : s/cs,cp,cp == 0 ? 1.0 : p/cp)
+end
+
+function exprval(expr)
+    val = averageint(expr)
+    val[2]*val[4]*countops(expr)
+end
+
+export optimal
+
+function optimal(expr)
+    f = factor(expr)
+    h = horner(expr)
+    if exprval(h) ≤ exprval(f)
+        return h
+    else
+        return f
+    end
 end
