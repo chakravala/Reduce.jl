@@ -195,11 +195,11 @@ SubFail = ( () -> begin
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
  
-function SubReplace(sym::Symbol,str::String)
+@inline function SubReplace(sym::Symbol,str::String)
     a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
     for s ∈ 1:length(a)
         if !isinfix(a[s]) && !contains(a[s],r"[()]") && 
-            ismatch(sym == :r ? gexrjl : gexjlr, a[s])
+            contains(a[s], sym == :r ? gexrjl : gexjlr)
             w = _subst(sym == :r ? symrjl : symjlr, a[s])
             if w == ""
                 c = 1
@@ -218,7 +218,7 @@ function SubReplace(sym::Symbol,str::String)
     return join(a)
 end
 
-function JSymReplace(str::Compat.String)
+@noinline function JSymReplace(str::Compat.String)
     for key ∈ keys(repjlr)
         str = replace(str, key => repjlr[key])
     end
@@ -227,7 +227,7 @@ function JSymReplace(str::Compat.String)
     return str
 end
 
-function RSymReplace(str::String)
+@noinline function RSymReplace(str::String)
     clean = replace(str,r"[ ;\n]"=>"")
     paren = contains(clean,r"^\(((?>[^\(\)]+)|(?R))*\)$")
     (isempty(clean)|(clean=="()")) && (return str)

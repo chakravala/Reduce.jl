@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-#import LinearAlgebra: besseli, besselj, bessely, polygamma, zeta, factorize
+VERSION >= v"0.7.0-DEV.4445" && (import LinearAlgebra: factorize)
 
 sbas = [
     :abs,

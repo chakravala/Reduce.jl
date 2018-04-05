@@ -28,7 +28,7 @@ end
 if !is_windows()
     try
         try
-            process = spawn(`$rpsl`)
+            process = _spawn(`$rpsl`)
             kill(process)
         catch
             if is_linux()
@@ -38,7 +38,7 @@ if !is_windows()
             else
                 cmd = `$(joinpath(wdir,rsvn[ρ],"bin"))/$rpsl`
             end
-            process = spawn(cmd)
+            process = _spawn(cmd)
             kill(process)
             !isfile("ver") && writever(0)
         end
@@ -82,7 +82,7 @@ else
     try
         folder = joinpath(wdir," ..","deps","install","lib","psl")
         cmd = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
-        process = spawn(cmd)
+        process = _spawn(cmd)
         kill(process)
     catch
         cd(wdir)

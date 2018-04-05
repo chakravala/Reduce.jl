@@ -7,6 +7,14 @@ using Compat; import Compat.String
 
 include(joinpath(@__DIR__,"../deps/svn.jl"))
 
+if VERSION >= v"0.7.0-DEV.4445"
+    function _spawn(cmd, input=devnull, output=devnull)
+        run(pipeline(cmd, stdin=input, stdout=output, stderr=stderr), wait=false)
+    end
+else
+    _spawn(cmd, input=DevNull, output=DevNull) = spawn(cmd, (input, output, STDERR))
+end
+
 struct PSL <: Base.AbstractPipe
     input::Pipe
     output::Pipe
@@ -22,7 +30,7 @@ struct PSL <: Base.AbstractPipe
         end
         if !is_windows()
             try
-                process = spawn(rsl, (input, output, STDERR))
+                process = _spawn(rsl, input, output)
             catch
                 if is_linux()
                     rsl = `$(joinpath(dirf,"..","deps","usr","bin"))/$rpsl`
@@ -31,7 +39,7 @@ struct PSL <: Base.AbstractPipe
                 else
                     rsl = `$(joinpath(dirf,"..",rsvn[ρ],"bin"))/$rpsl`
                 end
-                process = spawn(rsl, (input, output, STDERR))
+                process = _spawn(rsl, input, output)
             end
         else
             osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
@@ -40,7 +48,7 @@ struct PSL <: Base.AbstractPipe
             dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl") : #osbit):
                 joinpath(dirf,"..","deps","install","lib","psl"))
             rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
-            process = spawn(rsl, (input, output, STDERR))
+            process = _spawn(rsl, input, output)
         end
         # Close the unneeded ends of Pipes
         close(input.out)
@@ -151,7 +159,7 @@ __init__() = (Load(); atexit(() -> kill(rs)))
 function Load()
     global rs = PSL()
     s = quote; #global rs = PSL()
-        offs = ""
+        global offs = ""
         for o in offlist
             o != :nat && (offs = offs*"off $o; ")
         end

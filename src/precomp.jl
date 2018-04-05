@@ -1,4 +1,4 @@
-preload = false
+global preload = false
 try
     (ENV["REDPRE"] == "1") && (preload = true)
 end

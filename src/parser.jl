@@ -285,7 +285,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     $(if mode == :expr
                         :(push!(nsr,Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be))))
                     elseif mode == :calculus
-                        :(push!(nsr,($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string)))
+                        :(push!(nsr,($rfun(fun,sp[1],[];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string)))
                     else
                         :(push!(nsr,($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2];be=be)|>string)))
                     end)
@@ -424,6 +424,10 @@ function linefilter(e::Expr)
             else
                 e.args[i] = linefilter(e.args[i])
             end
+        elseif e.args[i] |> typeof == LineNumberNode
+            deleteat!(e.args,i)
+            total -= 1
+            i -= 1
         end
     end
     return e
@@ -453,8 +457,15 @@ end
 
 function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     if expr.head == :call
-        show_expr(io, expr.args[1])
-        print_args(io,expr.args[2:end])
+        if VERSION >= v"0.7.0-DEV.4445" && expr.args[1] == :(:)
+            show_expr(io,expr.args[2])
+            print(io,":")
+            show_expr(io,expr.args[3])
+            print(io," ")
+        else
+            show_expr(io, expr.args[1])
+            print_args(io,expr.args[2:end])
+        end
     elseif expr.head == :(=)
         if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
             show_expr(io,Expr(:function,expr.args[1],expr.args[2]))
@@ -526,9 +537,8 @@ end
 const infix_ops = ["+", "-", "*", "/", "**", "^"]
 isinfix(args) = replace(args,' '=>"") in infix_ops
 
-#show_expr(io::IO, ex) = print(io, ex |> string |> JSymReplace)
 function show_expr(io::IO, ex)
-    ex == :nothing && (return nothing)
+    ((ex == :nothing) | (typeof(ex) == LineNumberNode)) && (return nothing)
     if typeof(ex) <: AbstractFloat && isinf(ex)
         println((r > 0 ? "" : "-")*"infinity")
         return nothing
@@ -551,7 +561,7 @@ function show_expr(io::IO, ex)
         print(io,")")
     else
         print(edit, ex)
-        print(io, edit |> String |> JSymReplace)
+        print(io, edit |> take! |> String |> JSymReplace)
     end
 end
 
@@ -627,6 +637,7 @@ end
 
 function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
     out = nothing
+    (typeof(ex) == LineNumberNode) && (return ex)
     if mode == :unary
         out = parse_unary(string(fun),RExpr(ex);be=0)
     elseif mode == :switch
@@ -640,7 +651,7 @@ function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
 end
 
 function unfold_expr(mode::Symbol, fun::Symbol, ex, s...; force=true)
-    typeof(ex) in [Void] ? ex : unfold_expr_force(mode,fun,ex,s...)
+    typeof(ex) in [Void,LineNumberNode] ? ex : unfold_expr_force(mode,fun,ex,s...)
 end
 
 function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
