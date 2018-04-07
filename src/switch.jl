@@ -60,18 +60,14 @@ for fun in switches
     end
 end
 
-function countops(expr)
-    c = 0
-    if typeof(expr) == Expr
-        if expr.head == :call
-            c += 1
-        end
-        for arg ∈ expr.args
-            c += countops(arg)
-        end
-    end
-    return c
-end
+horner(x,a) = horner(x,a,1)
+horner(x,a::Array{<:Any,1},k) = k == length(a) ? a[k] : a[k] + x*horner(x,a,k+1)
+
+factor(x,a) = factor(x,a,1)
+factor(x,a::Array{<:Any,1},k) = k == length(a) ? x-a[k] : (x-a[k])*factor(x,a,k+1)
+
+expand(x,a) = expand(x,a,length(a))
+expand(x,a::Array{<:Any,1},k) = k == 1 ? a[k] : a[k]*x^(k-1) + expand(x,a,k-1)
 
 function expravg(expr)
     cs = 0
@@ -106,41 +102,18 @@ end
 
 function exprval(expr)
     val = expravg(expr)
-    val[2]*val[4]*countops(expr)
+    val[2]*val[4]*callcount(expr)
 end
 
 export optimal
 
 function optimal(expr)
-    f = factor(expr)
     h = horner(expr)
+    f = factor(h)
     if exprval(h) ≤ exprval(f)
         return h
     else
         return f
     end
-end
-
-function sub(T::DataType,ixpr)
-    if typeof(ixpr) == Expr
-        expr = deepcopy(ixpr)
-        if expr.head == :call && expr.args[1] == :^
-            expr.args[2] = sub(T,expr.args[2])
-            if typeof(expr.args[3]) == Expr
-                expr.args[3] = sub(T,expr.args[3])
-            end
-        elseif expr.head == :macrocall &&
-                expr.args[1] ∈ [Symbol("@int128_str"), Symbol("@big_str")]
-            return convert(T,eval(expr))
-        else
-            for a ∈ 1:length(expr.args)
-                expr.args[a] = sub(T,expr.args[a])
-            end
-        end
-        return expr
-    elseif typeof(ixpr) <: Number
-        return convert(T,ixpr)
-    end
-    return ixpr
 end
 

@@ -51,7 +51,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
     elseif mode == :switch
         :(rcall("$js" |> RExpr, fun))
     elseif mode == :calculus
-        :(fun * "($js,$(join(s,',')))" |> RExpr |> rcall)
+        :(fun * "($(join([js,s...],',')))" |> RExpr |> rcall)
     end
     mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
     mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
@@ -474,6 +474,18 @@ function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
             print(io,":=")
             show_expr(io,expr.args[2])
         end
+    elseif contains(string(expr.head),r"[*\/+-^]=$")
+        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
+            throw(ReduceError("function assignment for $(expr.head) not supported"))
+        else
+            show_expr(io,expr.args[1])
+            print(io,":=")
+            print(io,match(r"[^(=$)]",string(expr.head)).match*"(")
+            show_expr(io,expr.args[1])
+            print(io,",")
+            show_expr(io,expr.args[2])
+            print(io,")")
+        end
     elseif expr.head == :for
         print(io,"for ")
         show_expr(io,expr.args[1])
@@ -604,7 +616,8 @@ function unfoldgen(fun::Symbol,mode::Symbol)
     end
 end
 
-function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
+function unfold_expr(mode::Symbol, fun::Symbol, ixpr::Expr, s...; force=false)
+    expr = mode == :unary ? squash(ixpr) : ixpr
     force && return unfold_expr_force(mode,fun,expr,s...)
     if expr.head in [:call,:block,:(:)]
         unfold_expr_force(mode,fun,expr,s...)
@@ -616,7 +629,7 @@ function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
         return Expr(expr.head,unfold_expr.(mode,fun,expr.args,s...)...)
     elseif expr.head == :for
         return Expr(expr.head,expr.args[1],unfold_expr.(mode,fun,expr.args[2:end],s...)...)
-    elseif expr.head == :(=)
+    elseif contains(string(expr.head),r"=$")
         if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
             return Expr(expr.head,expr.args[1],unfold_expr_force.(mode,fun,expr.args[2:end],s...)...)
         else

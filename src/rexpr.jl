@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, getindex, string, show
+export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, sub, squash
 import Base: parse, convert, ==, getindex, *, split, string, show
 
 """
@@ -150,7 +150,12 @@ function _subst(syme::String,expr::T) where T
     convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
 end
 
-export sub
+const symrjl = _syme(r_to_jl)
+const symjlr = _syme(jl_to_r)
+reprjl = r_to_jl_utf
+const repjlr = jl_to_r_utf
+const gexrjl = Regex("($(join(keys(r_to_jl),")|(")))")
+const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
 
 sub(syme::String,expr::RExpr) = "sub($syme,$expr)" |> rcall |> RExpr
 sub(syme::String,expr::T) where T = convert(T,sub(syme,RExpr(expr)))
@@ -159,12 +164,28 @@ sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(RExpr.([b[1],b[2]]))...) f
 sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
 sub(s::Array{Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
 
-const symrjl = _syme(r_to_jl)
-const symjlr = _syme(jl_to_r)
-reprjl = r_to_jl_utf
-const repjlr = jl_to_r_utf
-const gexrjl = Regex("($(join(keys(r_to_jl),")|(")))")
-const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
+function sub(T::DataType,ixpr)
+    if typeof(ixpr) == Expr
+        expr = deepcopy(ixpr)
+        if expr.head == :call && expr.args[1] == :^
+            expr.args[2] = sub(T,expr.args[2])
+            if typeof(expr.args[3]) == Expr
+                expr.args[3] = sub(T,expr.args[3])
+            end
+        elseif expr.head == :macrocall &&
+                expr.args[1] ∈ [Symbol("@int128_str"), Symbol("@big_str")]
+            return convert(T,eval(expr))
+        else
+            for a ∈ 1:length(expr.args)
+                expr.args[a] = sub(T,expr.args[a])
+            end
+        end
+        return expr
+    elseif typeof(ixpr) <: Number
+        return convert(T,ixpr)
+    end
+    return ixpr
+end
 
 """
     Reduce.Rational(::Bool)
@@ -371,3 +392,51 @@ function ==(r::RExpr, s::RExpr)
 end
 
 #getindex(r::RExpr, i) = "$r($i)" |> rcall
+
+function callcount(expr)
+    c = 0
+    if typeof(expr) == Expr
+        if expr.head == :call
+            c += 1
+        end
+        for arg ∈ expr.args
+            c += callcount(arg)
+        end
+    end
+    return c
+end
+
+# regroup parens * add feature
+
+@noinline function squash(expr)
+    if typeof(expr) == Expr && expr.head ∈ [:block,:function]
+        nex = deepcopy(expr)
+        k = expr.head ≠ :function ? 1 : 2
+        while k ≤ length(nex.args)
+            found = false
+            if typeof(nex.args[k]) == Expr &&
+                    contains(string(nex.args[k].head),r"[*\/+-^]=$")
+                var = nex.args[k].args[1]
+                for h ∈ 1:k-1
+                    if typeof(nex.args[h]) == Expr &&
+                            nex.args[h].head == :(=) &&
+                            nex.args[h].args[1] == var
+                        nex.args[h].args[2] = eval(Expr(:call,
+                            Symbol(match(r"[^(=$)]",string(nex.args[k].head)).match),
+                            QuoteNode(nex.args[h].args[2]),
+                            QuoteNode(nex.args[k].args[2])))
+                        deleteat!(nex.args,k)
+                        found = true
+                        break
+                    end
+                end
+            else
+                typeof(nex.args[k]) == Expr && (nex.args[k] = squash(nex.args[k]))
+            end
+            !found && (k += 1)
+        end
+        return nex
+    else
+        return expr
+    end
+end
