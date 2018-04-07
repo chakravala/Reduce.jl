@@ -73,7 +73,7 @@ function countops(expr)
     return c
 end
 
-function averageint(expr)
+function expravg(expr)
     cs = 0
     s = 0.0
     cp = 0
@@ -82,15 +82,15 @@ function averageint(expr)
         if expr.head == :call && expr.args[1] == :^ &&
             expr.args[3] |> typeof <: Number
             cp += 1
-            p  += expr.args[3]
-            (cst,st,cpt,pt) = averageint(expr.args[2])
+            p  += abs(expr.args[3])
+            (cst,st,cpt,pt) = expravg(expr.args[2])
             cs += cst
             s  += cst*st
             cp += cpt
             p  += cpt*pt
         else
             for arg ∈ expr.args
-                (cst,st,cpt,pt) = averageint(arg)
+                (cst,st,cpt,pt) = expravg(arg)
                 cs += cst
                 s  += cst*st
                 cp += cpt
@@ -99,13 +99,13 @@ function averageint(expr)
         end
     elseif typeof(expr) <: Number
         cs += 1
-        s  += expr
+        s  += log(abs(expr))
     end
     return (cs,cs == 0 ? 0.0 : s/cs,cp,cp == 0 ? 1.0 : p/cp)
 end
 
 function exprval(expr)
-    val = averageint(expr)
+    val = expravg(expr)
     val[2]*val[4]*countops(expr)
 end
 
@@ -120,3 +120,27 @@ function optimal(expr)
         return f
     end
 end
+
+function sub(T::DataType,ixpr)
+    if typeof(ixpr) == Expr
+        expr = deepcopy(ixpr)
+        if expr.head == :call && expr.args[1] == :^
+            expr.args[2] = sub(T,expr.args[2])
+            if typeof(expr.args[3]) == Expr
+                expr.args[3] = sub(T,expr.args[3])
+            end
+        elseif expr.head == :macrocall &&
+                expr.args[1] ∈ [Symbol("@int128_str"), Symbol("@big_str")]
+            return convert(T,eval(expr))
+        else
+            for a ∈ 1:length(expr.args)
+                expr.args[a] = sub(T,expr.args[a])
+            end
+        end
+        return expr
+    elseif typeof(ixpr) <: Number
+        return convert(T,ixpr)
+    end
+    return ixpr
+end
+

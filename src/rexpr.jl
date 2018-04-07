@@ -146,14 +146,18 @@ function _syme(syme::Dict{String,String})
     return String(take!(str)[1:end-1])
 end
 
-_subst(syme::String,expr::T) where T = convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
+function _subst(syme::String,expr::T) where T
+    convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
+end
 
 export sub
+
 sub(syme::String,expr::RExpr) = "sub($syme,$expr)" |> rcall |> RExpr
 sub(syme::String,expr::T) where T = convert(T,sub(syme,RExpr(expr)))
 sub(s::Dict{String,String},expr) = sub(_syme(s),expr)
-sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(b)...) for b ∈ collect(s)]...),expr)
+sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...),expr)
 sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
+sub(s::Array{Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
 
 const symrjl = _syme(r_to_jl)
 const symjlr = _syme(jl_to_r)
