@@ -616,8 +616,8 @@ function unfoldgen(fun::Symbol,mode::Symbol)
     end
 end
 
-function unfold_expr(mode::Symbol, fun::Symbol, ixpr::Expr, s...; force=false)
-    expr = mode == :unary ? squash(ixpr) : ixpr
+function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
+    #expr = mode == :unary ? squash(ixpr) : ixpr
     force && return unfold_expr_force(mode,fun,expr,s...)
     if expr.head in [:call,:block,:(:)]
         unfold_expr_force(mode,fun,expr,s...)
@@ -633,7 +633,7 @@ function unfold_expr(mode::Symbol, fun::Symbol, ixpr::Expr, s...; force=false)
         if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
             return Expr(expr.head,expr.args[1],unfold_expr_force.(mode,fun,expr.args[2:end],s...)...)
         else
-            return Expr(expr.head,expr.args[1],unfold_expr(mode,fun,expr.args[2],s...;force=true)...)
+            return Expr(expr.head,expr.args[1],unfold_expr(mode,fun,expr.args[2],s...;force=true))
         end
     elseif expr.head == :function
         return Expr(expr.head,expr.args[1],unfold_expr_force.(mode,fun,expr.args[2:end],s...)...)
@@ -668,6 +668,7 @@ function unfold_expr(mode::Symbol, fun::Symbol, ex, s...; force=true)
 end
 
 function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
+    #expr = mode == :unary ? squash(ixpr) : ixpr
     if expr.head == :block
         out = Any[]
         for line ∈ expr.args # block structure

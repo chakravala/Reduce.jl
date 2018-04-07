@@ -3,7 +3,8 @@
 
 calculus = Symbol[
     :df,
-    :int
+    :int,
+    :limit
 ]
 
 alg = Symbol[

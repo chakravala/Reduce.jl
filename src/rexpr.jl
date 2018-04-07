@@ -406,7 +406,7 @@ function callcount(expr)
     return c
 end
 
-# regroup parens * add feature
+#= regroup parens * add feature
 
 @noinline function squash(expr)
     if typeof(expr) == Expr && expr.head ∈ [:block,:function]
@@ -435,7 +435,20 @@ end
             end
             !found && (k += 1)
         end
-        return nex
+        return length(nex.args) > 1 ? nex : nex.args[end]
+    elseif typeof(expr)
+    else
+        return expr
+    end
+end=#
+
+function squash(expr)
+    typeof(expr) == Expr && if expr.head == :block
+        return @eval $expr
+    elseif expr.head == :function
+        out = deepcopy(expr)
+        out.args[2] = @eval $(Expr(:block,expr.args[2:end]...))
+        return out
     else
         return expr
     end
