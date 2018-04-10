@@ -18,8 +18,8 @@ using Base.Test
 @test load_package([:rlfi]) == load_package(:rlfi,:rlfi)
 @test show(STDOUT, R"") == nothing
 @test show(STDOUT,"text/latex",R"int(sinh(e**i*z),z)") == nothing
-@test Base.write(Reduce.rs, R"") |> typeof == Int
-@test "1"*R"1"*"1" == R"1;1;1"
+@test Base.write(Reduce.rs, R"") |> typeof == Int; rcall(1)
+@test "1"*R"1"*"1" == split(R"1;1;1")
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"
 @test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr

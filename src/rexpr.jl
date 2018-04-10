@@ -380,8 +380,8 @@ end
 rcall(r,switches...) = rcall(r;on=Symbol[switches...])
 
 function ==(r::RExpr, s::RExpr)
-    n = split(r).str
-    m = split(s).str
+    n = expand(r).str
+    m = expand(s).str
     l=length(n)
     l≠length(m) && (return false)
     b = true
@@ -447,9 +447,9 @@ function squash(expr)
         return @eval $expr
     elseif expr.head == :function
         out = deepcopy(expr)
-        out.args[2] = @eval $(Expr(:block,expr.args[2:end]...))
+        out.args[2] = @eval $(Expr(:block,expr.args[2]))
         return out
     else
-        return expr
+        return rcall(expr)
     end
 end

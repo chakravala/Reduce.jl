@@ -401,9 +401,10 @@ end
 Parser generator that outputs code to walk and manipulate REDUCE expressions
 """
 function parsegen(fun::Symbol,mode::Symbol)
-    modefun = Symbol(:parse,"_",mode)
-    mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:s)])
-    return :($fun($(fargs...);be=0) = $modefun($(string(fun)),$(fargs...);be=0))
+    mf = Symbol(:parse,"_",mode)
+    a = mode != :calculus ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
+    return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fun)),$(a...);be=0)) :
+    :($fun($(a...);be=0) = $mf($(string(fun)),$(a...);be=0) |> treecombine!)
 end
 
 """
@@ -432,6 +433,61 @@ function linefilter(e::Expr)
     end
     return e
 end
+
+"""
+    treefork!(::Expr)
+
+Recursively simplifies out extra edges from Expr objects
+"""
+function treecombine!(e::Expr,redo=[false])
+    for i ∈ 1:length(e.args)
+        if e.args[i] |> typeof == Expr && e.args[i].head == :call
+            if e.head == :call
+                s = e.args[i].args[1]
+                if s ∈ [://,:/]
+                    if e.args[1] == :*
+                        d = e.args[i].args[3]
+                        e.args[i] = e.args[i].args[2]
+                        e.args = [s,deepcopy(e),d]
+                        redo[1] = true
+                        return treecombine!(e)
+                    elseif e.args[1] ∈ [://,:/]
+                        if i == 2
+                            e.args[3] = e.args[3]*e.args[i].args[3]
+                            e.args[2] = deepcopy(e.args[i].args[2])
+                        elseif i == 3
+                            e.args[2] = e.args[2]*e.args[i].args[3]
+                            e.args[3] = deepcopy(e.args[i].args[2])
+                        end
+                        redo[1] = true
+                        return treecombine!(e)
+                    end
+                elseif s == :-
+                    if e.args[1] == :-
+                        if length(e.args) == 2
+                            if length(e.args[i].args) == 3
+                                push!(e.args,deepcopy(e.args[i].args[2]))
+                                e.args[2] = deepcopy(e.args[i].args[3])
+                                redo[1] = true
+                                return treecombine!(e)
+                            end
+                        #elseif i == 2 && length(e.args) > 2
+                        #    push!(e.args[i].args,e.args[3:end]...)
+                        #    e.args = deepcopy(e.args[i].args)
+                        #    redo[1] = true
+                        #    return treecombine!(e)
+                        end
+                    end
+                end
+            end
+            treecombine!(e.args[i],redo)
+        else
+            typeof(e.args[i]) == Expr && treecombine!(e.args[i],redo)
+        end
+    end
+    return redo[1] ? treecombine!(e) : e
+end
+treecombine!(e,redo=[false]) = e
 
 parsegen(:parse,:expr) |> eval
 

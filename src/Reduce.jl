@@ -174,6 +174,7 @@ function Load()
         load_package(:rlfi)
         offs |> RExpr |> rcall
         show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
+        R"x" == R"x"
     end
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)
