@@ -61,7 +61,20 @@ end
 //(a::T,expr::ExprSymbol;be=0) where T <: AbstractFloat = //(RExpr(a),RExpr(expr);be=be) |> parse
 function //(a::T,b::T;be=0) where T <: AbstractFloat
     isnan(a) | isnan(b) | (isinf(a) & isinf(b)) && return NaN
-    return //(RExpr(a),RExpr(b);be=be) |> parse |> eval
+    out = //(RExpr(a),RExpr(b);be=be) |> parse |> eval
+    if out == nothing
+        c = 1
+        f = SubFail()
+        h = SubHold()
+        while out == nothing && c < f
+            sleep(sqrt(c)*h)
+            out = //(RExpr(a),RExpr(b);be=be) |> parse |> eval
+            c += 1
+        end
+        PipeClogged(out ≠ nothing, c, "rational division")
+        out == nothing && throw(ReduceError("If generated code relies on many floating point divisions, try setting `Reduce.Rational(false)` and use `Reduce.Reset()`, since rational division is the default."))
+    end
+    return out
 end
 
 export ∑, ∏

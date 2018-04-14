@@ -259,9 +259,9 @@ ColCheck = ( () -> begin
                     w = _subst(sym == :r ? symrjl : symjlr, a[s])
                     c += 1
                 end
-                warn("Reduce pipe clogged, $(w ≠ "" ? "success" : "failure") after $c tries")
+                PipeClogged(w ≠ "", c, "substitution")
             end
-            w ≠ "" && (a[s] = w)
+            w ≠ "" ? (a[s] = w) : info("If this is a recurring problem, try with `Reduce.SubCall(false)`.")
         end
         if sym == :r
             a[s] == "inf" && (a[s] = "Inf")

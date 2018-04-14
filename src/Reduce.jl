@@ -73,6 +73,10 @@ function ReduceCheck(output) # check for REDUCE errors
     contains(output,"***** ")|contains(output,"+++ ") && throw(ReduceError(output))
 end
 
+function PipeClogged(tf::Bool,c::Int,info::String)
+    warn("Reduce pipe clogged by $info, $(tf ? "success" : "failure") after $c tries")
+end
+
 clear(rs::PSL) = (write(rs.input,";\n"); readavailable(rs.output))
 clears = (()->(c=true; return (tf=c)->(c≠tf && (c=tf); return c)))()
 
@@ -171,9 +175,11 @@ function Load()
             !contains(dirname(@__FILE__),"appveyor") &&
                 println(split(String(banner),'\n')[rcsl ? 1 : end-3])
             ColCheck(false)
+        else
+            ReduceCheck(banner)
+            rcsl = contains(banner," CSL ")
+            println(split(String(banner),'\n')[rcsl ? 1 : end-3])
         end
-        ReduceCheck(banner)
-        rcsl = contains(banner," CSL ")
         load_package(:rlfi)
         offs |> RExpr |> rcall
         show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
