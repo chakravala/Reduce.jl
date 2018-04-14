@@ -45,16 +45,24 @@ end
 
 for fun in iops
     @eval begin
-        function $fun(a,expr::Union{<:Expr,<:Symbol},s...;be=0)
+        function $fun(a,expr::ExprSymbol,s...;be=0)
             $fun(RExpr(a),RExpr(expr),s...;be=be) |> parse
         end
-        function $fun(expr::Union{<:Expr,<:Symbol},b::Union{<:Expr,<:Symbol},s...;be=0)
+        function $fun(expr::ExprSymbol,b::ExprSymbol,s...;be=0)
             $fun(RExpr.([expr,b,s...])...;be=be) |> parse
         end
     end
 end
 
-^(expr::Union{<:Expr,<:Symbol},s::Integer;be=0) = ^(RExpr(expr),s;be=be) |> parse
+^(expr::ExprSymbol,s::Integer;be=0) = ^(RExpr(expr),s;be=be) |> parse
+//(expr,b::T;be=0) where T <: AbstractFloat = //(RExpr(expr),RExpr(b);be=be) |> parse
+//(a::T,expr;be=0) where T <: AbstractFloat = //(RExpr(a),RExpr(expr);be=be) |> parse
+//(expr::ExprSymbol,b::T;be=0) where T <: AbstractFloat = //(RExpr(expr),RExpr(b);be=be) |> parse
+//(a::T,expr::ExprSymbol;be=0) where T <: AbstractFloat = //(RExpr(a),RExpr(expr);be=be) |> parse
+function //(a::T,b::T;be=0) where T <: AbstractFloat
+    isnan(a) | isnan(b) | (isinf(a) & isinf(b)) && return NaN
+    return //(RExpr(a),RExpr(b);be=be) |> parse |> eval
+end
 
 export ∑, ∏
 

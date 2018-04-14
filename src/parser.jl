@@ -401,10 +401,11 @@ end
 Parser generator that outputs code to walk and manipulate REDUCE expressions
 """
 function parsegen(fun::Symbol,mode::Symbol)
+    fune = fun == :// ? :/ : fun
     mf = Symbol(:parse,"_",mode)
     a = mode != :calculus ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
-    return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fun)),$(a...);be=0)) :
-    :($fun($(a...);be=0) = $mf($(string(fun)),$(a...);be=0) |> treecombine!)
+    return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0)) :
+    :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0) |> treecombine! |> num)
 end
 
 """
@@ -481,13 +482,54 @@ function treecombine!(e::Expr,redo=[false])
                 end
             end
             treecombine!(e.args[i],redo)
+            d = detectinf(e)
+            d ≠ nothing && (e.args[i] = d)
         else
             typeof(e.args[i]) == Expr && treecombine!(e.args[i],redo)
         end
     end
-    return redo[1] ? treecombine!(e) : e
+    d = detectinf(e)
+    return redo[1] ? treecombine!(e) : d ≠ nothing ? d : e
 end
 treecombine!(e,redo=[false]) = e
+
+function detectinf(e)
+    if typeof(e) == Expr && e.head == :call
+        if e.args[1] ∈ [://,:/]
+            if (e.args[2] == :NaN) | (e.args[3] == :NaN)
+                return :NaN
+            elseif e.args[2] == :Inf
+                if typeof(e.args[3]) <: Number
+                    if e.args[3] == :Inf
+                        return :NaN
+                    else
+                        return :Inf
+                    end
+                elseif (typeof(e.args[3]) == Expr) && (e.args[3].head == :macrocall)
+                    if e.args[3].args[1] == Symbol("@big_str") || e.args[3].args[1] == Symbol("@int128_str")
+                        return :Inf
+                    end
+                end
+            elseif e.args[3] == :Inf
+                if typeof(e.args[2]) <: Number
+                    return 0
+                elseif (typeof(e.args[2]) == Expr) && (e.args[2].head == :macrocall)
+                    if e.args[2].args[1] == Symbol("@big_str") || e.args[2].args[1] == Symbol("@int128_str")
+                        return 0
+                    end
+                end
+            end
+        elseif e.args[1] ∈ [:*,:+,:-]
+            found = false
+            for arg ∈ e.args[2:end]
+                arg == :NaN && (found = true; return :NaN)
+            end
+        end
+    end
+    return nothing
+end
+
+num(expr) = expr ∈ [:e,:π,:Inf,:NaN] ? eval(expr) : expr
 
 parsegen(:parse,:expr) |> eval
 
@@ -608,7 +650,10 @@ isinfix(args) = replace(args,' '=>"") in infix_ops
 function show_expr(io::IO, ex)
     ((ex == :nothing) | (typeof(ex) == LineNumberNode)) && (return nothing)
     if typeof(ex) <: AbstractFloat && isinf(ex)
-        println((r > 0 ? "" : "-")*"infinity")
+        print(io,(r > 0 ? "" : "-")*"infinity")
+        return nothing
+    elseif typeof(ex) <: Irrational
+        print(io,unparse_irrational(ex))
         return nothing
     end
     edit = IOBuffer()
@@ -630,6 +675,16 @@ function show_expr(io::IO, ex)
     else
         print(edit, ex)
         print(io, edit |> take! |> String |> JSymReplace)
+    end
+end
+
+function unparse_irrational(ex::T) where T <: Irrational
+    if ex == e
+        return "e"
+    elseif ex == π
+        return "pi"
+    else
+        throw(ReduceError("$(typeof(ex)) not yet supported"))
     end
 end
 

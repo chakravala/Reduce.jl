@@ -166,11 +166,14 @@ function Load()
         write(rs.input,"off nat; $EOTstr;\n")
         banner = readuntil(rs.output,EOT) |> String
         readavailable(rs.output)
-        is_windows() && (banner = replace(banner,r"\r" => ""))
+        if is_windows()
+            banner = replace(banner,r"\r" => "")
+            !contains(dirname(@__FILE__),"appveyor") &&
+                println(split(String(banner),'\n')[rcsl ? 1 : end-3])
+            ColCheck(false)
+        end
         ReduceCheck(banner)
         rcsl = contains(banner," CSL ")
-        !(is_windows() && contains(dirname(@__FILE__),"appveyor")) &&
-            println(split(String(banner),'\n')[rcsl ? 1 : end-3])
         load_package(:rlfi)
         offs |> RExpr |> rcall
         show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")

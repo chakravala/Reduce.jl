@@ -2,7 +2,9 @@
 #   Copyright (C) 2017 Michael Reed
 
 export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, sub, squash
-import Base: parse, convert, ==, getindex, *, split, string, show
+import Base: parse, convert, ==, getindex, *, split, string, show, join
+
+const ExprSymbol = Union{<:Expr,<:Symbol}
 
 """
 Reduce expression
@@ -45,6 +47,7 @@ end
 
 function RExpr(r::Any)
     typeof(r) <: AbstractFloat && isinf(r) && (return RExpr((r > 0 ? "" : "-")*"infinity"))
+    typeof(r) <: Irrational && (return RExpr(unparse_irrational(r)))
     y = "$r"
     for key ∈ keys(repjlr)
         y = replace(y, key => repjlr[key])
@@ -85,10 +88,14 @@ function split(r::RExpr)
 end
 
 string(r::RExpr) = convert(Compat.String,r)
+join(r::RExpr) = RExpr(string(r))
 show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
+
+linelength() = (c=readstring(`tput cols`)|>parse; rcall("linelength($c)"); c)
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
     length(r.str) > 1 && (print(io,string(r),";"); return nothing)
+    ColCheck() && linelength()
     print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
@@ -226,7 +233,17 @@ SubFail = ( () -> begin
         gs = 17
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
- 
+
+"""
+    Reduce.ColCheck(::Bool)
+
+Toggle whether to reset REPL linewidth on each show
+"""
+ColCheck = ( () -> begin
+        gs = true
+        return (tf=gs)->(gs≠tf && (gs=tf); return gs)
+    end)()
+
 @inline function SubReplace(sym::Symbol,str::String)
     a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
     for s ∈ 1:length(a)
@@ -245,6 +262,11 @@ SubFail = ( () -> begin
                 warn("Reduce pipe clogged, $(w ≠ "" ? "success" : "failure") after $c tries")
             end
             w ≠ "" && (a[s] = w)
+        end
+        if sym == :r
+            a[s] == "inf" && (a[s] = "Inf")
+            a[s] == " - inf" && (a[s] = "-Inf")
+            (a[s] == "nan") | (a[s] == " - nan") && (a[s] = "NaN")
         end
     end
     return join(a)
@@ -279,6 +301,7 @@ end
     end
     str == "inf" && (str = "Inf")
     str == " - inf" && (str = "-Inf")
+    (str == "nan") | (str == " - nan") && (str = "NaN")
     return paren ? "("*str*")" : str
 end
 
