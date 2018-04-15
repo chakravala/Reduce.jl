@@ -436,7 +436,7 @@ function linefilter(e::Expr)
 end
 
 """
-    treefork!(::Expr)
+    treecombine!(::Expr)
 
 Recursively simplifies out extra edges from Expr objects
 """

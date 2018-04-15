@@ -72,7 +72,7 @@ function rtrim(r::Array{Compat.String,1})
     h = 1
     l = length(r)
     while h ≤ l
-        isempty(r[h]) ? (deleteat!(n,h); l -= 1) : (h += 1)
+        isempty(n[h]) ? (deleteat!(n,h); l -= 1) : (h += 1)
     end
     return n
 end
@@ -244,6 +244,17 @@ ColCheck = ( () -> begin
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
+"""
+    Reduce.DisplayLog(::Bool)
+
+Toggle whether to display the log of REDUCE commands
+"""
+DisplayLog = ( () -> begin
+        gs = false
+        return (tf=gs)->(gs≠tf && (gs=tf); return gs)
+    end)()
+
+
 @inline function SubReplace(sym::Symbol,str::String)
     a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
     for s ∈ 1:length(a)
@@ -356,10 +367,12 @@ julia> R\"int(sin(x), x)\" |> RExpr |> rcall
         !(o == :factor) && write(offs,"off $o\$ ")
         !(o in [offlist;[:factor]]) && write(offr,"; on $o")
     end
-    write(rs,String(UInt8[take!(ons)...,take!(offs)...]) *
+    wrs = String(UInt8[take!(ons)...,take!(offs)...]) *
           string(r) *
-          String(UInt8[take!(onr)...,take!(offr)...]))
-    mode ? (sp = readsp(rs)) : (sp = read(rs))
+          String(UInt8[take!(onr)...,take!(offr)...])
+    DisplayLog() && println(wrs)
+    write(rs,wrs)
+    sp = mode ? readsp(rs) : read(rs)
     expo && rcall(R"off exp")
     mode && for h ∈ 1:length(sp)
         sp[h] = replace(sp[h],'\n' => "")
@@ -415,19 +428,6 @@ function ==(r::RExpr, s::RExpr)
 end
 
 #getindex(r::RExpr, i) = "$r($i)" |> rcall
-
-function callcount(expr)
-    c = 0
-    if typeof(expr) == Expr
-        if expr.head == :call
-            c += 1
-        end
-        for arg ∈ expr.args
-            c += callcount(arg)
-        end
-    end
-    return c
-end
 
 #= regroup parens * add feature
 
