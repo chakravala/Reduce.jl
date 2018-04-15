@@ -50,3 +50,19 @@ using Base.Test
 @test :([1 2; 3 4]) |> RExpr |> Reduce.parse |> RExpr == [1 2; 3 4] |> RExpr
 println()
 #@test Reduce.repl_init(Base.active_repl)==nothing
+
+@test nextprime("3") == "5"
+@test expand("(x-2)^2") |> RExpr == R"(x-2)^2"
+@test nat("x+1") == "\nx + 1\n"
+@test macroexpand(@factor(:(x^2+2x+1))) == :((x+1)^2)
+@test :x^2 == :(x^2)
+@test NaN//NaN |> isnan
+@test join(split(R"x+1;x+2"))|> string == "x+1;\nx+2"
+@test sub(:x=>7,:x+7) == sub([:x=>7,:z=>21],:z-:x)
+@test sub(Float64,prod((:x-:n)^:n,:n,1,7)|>horner) |> typeof == Expr
+@test squash(Expr(:function,:(fun(x)),:(z=3;z+=:x))).args[2] == squash(:(y=:x;y+=3))
+@test Expr(:block,:(x+1)) |> RExpr == R"1+x"
+@test limit((1-1/:n)^-:n,:n,Inf) == e
+@test log(exp(:pi)) == π
+@test 2//Inf == 0
+@test Inf//2 == Inf

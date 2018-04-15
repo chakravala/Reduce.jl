@@ -706,7 +706,7 @@ end
 """
     unfoldgen(::Symbol,::Symbol)
 
-Parser generator that outputs code to walk and manipulate REDUCE expressions
+Parser generator that outputs code to walk and manipulate Julia expressions
 """
 function unfoldgen(fun::Symbol,mode::Symbol)
     modefun = Symbol(:parse,"_",mode)

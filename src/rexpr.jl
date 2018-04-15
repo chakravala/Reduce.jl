@@ -164,13 +164,23 @@ const repjlr = jl_to_r_utf
 const gexrjl = Regex("($(join(keys(r_to_jl),")|(")))")
 const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
 
+"""
+    sub(::Union{Dict,Pair},expr)
+
+Make variable substitutions using Reduce's native sub command
+"""
 sub(syme::String,expr::RExpr) = "sub($syme,$expr)" |> rcall |> RExpr
 sub(syme::String,expr::T) where T = convert(T,sub(syme,RExpr(expr)))
 sub(s::Dict{String,String},expr) = sub(_syme(s),expr)
 sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...),expr)
 sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
-sub(s::Array{Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
+sub(s::Array{<:Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
 
+"""
+    sub(T::DataType,expr::Expr)
+
+Make a substitution to conver numerical values to type T
+"""
 function sub(T::DataType,ixpr)
     if typeof(ixpr) == Expr
         expr = deepcopy(ixpr)
@@ -465,6 +475,11 @@ end
     end
 end=#
 
+"""
+    squash(expr)
+
+Reduces an entire program statement block using symbolic rewriting
+"""
 function squash(expr)
     typeof(expr) == Expr && if expr.head == :block
         return @eval $expr

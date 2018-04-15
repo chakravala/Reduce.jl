@@ -32,7 +32,9 @@ Interface for applying symbolic manipulation on [Julia expressions](https://docs
 * interface link communicates and interprets via various reduce output modes using `rcall` method;
 * high-level reduce-julia syntax parser-generator walks arbitrary expression to rewrite mathematical code;
 * import operators from REDUCE using code generation to apply to arbitrary computational expressions;
-* interactive `reduce>` REPL within the Julia terminal window activated by `}` key.
+* interactive `reduce>` REPL within the Julia terminal window activated by `}` key;
+* extended arithmetic operators `+`,`-`,`*`,`^`,`/`,`//` compute on `Symbol` and `Expr` types;
+* provides over 330 internal and external methods each supporting many argument types.
 
 ## Setup
 
@@ -53,24 +55,27 @@ View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) /
 
 Reduce expressions encapsulated into `RExpr` objects can be manipulated within julia using the standard syntax. Create an expression object either using the `RExpr("expression")` string constructor or `R"expression"`. Additionally, arbitrary julia expressions can also be parsed directly using the `RExpr(expr)` constructor. Internally `RExpr` objects are represented as an array that can be accessed by calling `*.str[n]` on the object.
 
-Sequences of reduce statements are automatically parsed into julia `quote` blocks using the `RExpr` constructor, which can `parse` back into a julia expression.
+When `Reduce` is used in Julia, all of the standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
 ```Julia
-julia> :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr
-^(+(x,i,pi),2);
-int(/(1,+(1,^(x,3))),x);
+julia> 1-1/:n
+:((n - 1) // n)
 
-julia> rcall(ans,:expand) |> parse
-quote
-    (((π + 2x) * π + x ^ 2) - 1) + 2 * (π + x) * im
-    ((2 * sqrt(3) * atan((2x - 1) // sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) // 6
-end
+julia> ans^-:n
+:(1 // ((n - 1) // n) ^ n)
+
+julia> limit(ans,:n,Inf)
+e = 2.7182818284590...
 ```
-Call `split(::RExpr)` to create a new `RExpr` object with all expressions split into separate array elements.
-
+Julia abstract syntax trees are automatically converted into sequences of reduce statements that are in return parsed into julia `quote` blocks using the `RExpr` constructor.
 The `rcall` method is used to evaluate any type of expression.
 ```Julia
 julia> :(int(sin(im*x+pi)^2-1,x)) |> rcall
-:(-(((e ^ (4x) + 4 * e ^ (2x) * x) - 1)) // (8 * e ^ (2x)))
+:((1 - (e ^ (4x) + 4 * e ^ (2x) * x)) // (8 * e ^ (2x)))
+```
+However, there are often multiple equivalent ways of achieving the same result:
+```Julia
+julia> int(sin(im*:x+π)^2-1,:x)
+:((1 - (e ^ (4x) + 4 * e ^ (2x) * x)) // (8 * e ^ (2x)))
 ```
 The output of `rcall` will be the same as its input type.
 ```Julia
@@ -78,6 +83,18 @@ julia> "int(sin(y)^2, y)" |> rcall
 "( - cos(y)*sin(y) + y)/2"
 ```
 Use `rcall(expr,switches...)` to evaluate `expr` using REDUCE mode `switches` like `:expand`, `:factor`, and `:latex`.
+```Julia
+julia> :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr
+^(+(x,i,pi),2);
+int(/(1,+(1,^(x,3))),x);
+
+julia> rcall(ans,:horner) |> parse
+quote
+    ((π + 2x) * π + 2 * (π + x) * im + x ^ 2) - 1
+    ((2 * sqrt(3) * atan((2x - 1) // sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) // 6
+end
+```
+Call `split(::RExpr)` to create a new `RExpr` object with all expressions internally split into separate array elements.
 
 Mathematical operators and REDUCE modes can be applied directly to `Expr` and `RExpr` objects.
 ```Julia
@@ -91,11 +108,23 @@ Although not all language features have been implemented yet, it is possible to 
 julia> Expr(:for,:(i=2:34),:(product(i))) |> rcall
 :(@big_str "295232799039604140847618609643520000000")
 ```
+The `squash` function provides a way to reduce full program blocks into simplified functions,
+```Julia
+julia> Expr(:function,:(example(a,b)),quote
+           z = 3
+           target = z * :a * :b
+           z -= 1
+           target += z*(1-:a)*(1-:b)
+       end) |> squash |> factor
+:(function example(a, b)
+        (5b - 2) * a - 2 * (b - 1)
+    end)
+```
 
 ### Output mode
  Various output modes are supported. While in the REPL, the default `nat` output mode will be displayed for `RExpr` objects.
- ```Julia
- julia> :(sin(x*im) + cos(y*φ)) |> RExpr
+```Julia
+julia> :(sin(x*im) + cos(y*φ)) |> RExpr
 
      (sqrt(5) + 1)*y
 cos(-----------------) + sinh(x)*i
@@ -105,14 +134,14 @@ This same output can also be printed to the screen by calling `print(nat(r))` me
 
 It is possible to direclty convert a julia expression object to LaTeX code using the `latex` method.
 ```Julia
-julia> print(@latex sin(x*im) + cos(y*φ))
+julia> print(@latex sin(x) + cos(y*φ))
 \begin{displaymath}
-\cos \left(\left(\left(\sqrt {5}+1\right) y\right)/2\right)+\sinh \,x\: i
+\cos \left(\left(\left(\sqrt {5}+1\right) y\right)/2\right)+\sin \,x
 \end{displaymath}
 ```
-Internally, this command essentially expands to `rcall(:(sin(x*im) + cos(y*φ)),:latex) |> print`, which is equivalent.
+Internally, this command essentially expands to `rcall(:(sin(x) + cos(y*φ)),:latex) |> print`, which is equivalent.
 
-![latex-equation](https://latex.codecogs.com/svg.latex?\cos&space;\left(\left(\left(\sqrt&space;{5}&plus;1\right)&space;y\right)/2\right)&plus;\sinh&space;x\:&space;i)
+![latex-equation](https://latex.codecogs.com/svg.latex?\cos&space;\left(\left(\left(\sqrt&space;{5}&plus;1\right)&space;y\right)/2\right)&plus;\sin&space;x)
 
 In `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.
 
@@ -144,6 +173,8 @@ Releases of `Reduce.jl` enable the general application of various REDUCE functio
 ## Troubleshooting
 
 If the `reduce>` REPL is not appearing when `}` is pressed or the `Reduce.PSL` pipe is broken, the session can be restored by simply calling `Reduce.Reset()`, without requiring a restart of `julia` or reloading the package. This kills the currently running `redpsl` session and then re-initializes it for new use.
+
+Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
 
 ### OhMyREPL Compatibility
 
