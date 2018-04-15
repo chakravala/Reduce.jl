@@ -53,15 +53,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Output mode",
     "category": "section",
-    "text": "Various output modes are supported. While in the REPL, the default nat output mode will be displayed for RExpr objects.julia> :(sin(x*im) + cos(y*φ)) |> RExpr\n\n     (sqrt(5) + 1)*y\ncos(-----------------) + sinh(x)*i\n            2\n ```\nThis same output can also be printed to the screen by calling `print(nat(r))` method.\n\nIt is possible to direclty convert a julia expression object to LaTeX code using the `latex` method.Julia julia> print(@latex sin(x) + cos(y*φ)) \\begin{displaymath} \\cos \\left(\\left(\\left(\\sqrt {5}+1\\right) y\\right)/2\\right)+\\sin \\,x \\end{displaymath}Internally, this command essentially expands to `rcall(:(sin(x) + cos(y*φ)),:latex) |> print`, which is equivalent.\n\n![latex-equation](https://latex.codecogs.com/svg.latex?\\cos&space;\\left(\\left(\\left(\\sqrt&space;{5}&plus;1\\right)&space;y\\right)/2\\right)&plus;\\sin&space;x)\n\nIn `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.\n\n### REPL interface\nSimilar to <kbd>?</kbd> help and <kbd>;</kbd> shell modes in Julia, `Reduce` provides a `reduce>` REPL mode by pressing <kbd>shift</kbd>+<kbd>]</kbd> as the first character in the julia terminal prompt. The output is in `nat` mode.Julia reduce> df(atan(golden_ratio*x),x);      2              2"
+    "text": "Various output modes are supported. While in the REPL, the default nat output mode will be displayed for RExpr objects.julia> :(sin(x*im) + cos(y*φ)) |> RExpr\n\n     (sqrt(5) + 1)*y\ncos(-----------------) + sinh(x)*i\n            2This same output can also be printed to the screen by calling print(nat(r)) method.It is possible to direclty convert a julia expression object to LaTeX code using the latex method.julia> print(@latex sin(x) + cos(y*φ))\n\\begin{displaymath}\n\\cos \\left(\\left(\\left(\\sqrt {5}+1\\right) y\\right)/2\\right)+\\sin \\,x\n\\end{displaymath}Internally, this command essentially expands to rcall(:(sin(x) + cos(y*φ)),:latex) |> print, which is equivalent.(Image: latex-equation)In IJulia the display output of RExpr objects will be rendered LaTeX with the rlfi REDUCE package in latex mode."
 },
 
 {
-    "location": "index.html#sqrt(5)*x-sqrt(5)-x-1-1",
+    "location": "index.html#REPL-interface-1",
     "page": "Home",
-    "title": "sqrt(5)*x  + sqrt(5) - x  + 1",
+    "title": "REPL interface",
     "category": "section",
-    "text": "       4      2\n   2*(x  + 3*x  + 1)```"
+    "text": "Similar to <kbd>?</kbd> help and <kbd>;</kbd> shell modes in Julia, Reduce provides a reduce> REPL mode by pressing <kbd>shift</kbd>+<kbd>]</kbd> as the first character in the julia terminal prompt. The output is in nat mode.reduce> df(atan(golden_ratio*x),x);\n\n          2              2\n sqrt(5)*x  + sqrt(5) - x  + 1\n-------------------------------\n           4      2\n       2*(x  + 3*x  + 1)"
 },
 
 {
