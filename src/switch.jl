@@ -24,7 +24,7 @@ switchtex = [
 
 Expr(:toplevel,[:(import Base: $i) for i ∈ switchbas]...) |> eval
 :(export $([switchbas;switches;switchtex]...)) |> eval
-:(export $(Symbol.("@",[switches;switchtex])...)) |> eval
+:(export $(Symbol.("@",switchtex)...)) |> eval
 
 for fun in [switchbas;switches;switchtex]
     parsegen(fun,:switch) |> eval
@@ -53,9 +53,9 @@ end
 
 for fun in switches
     @eval begin
-        macro $fun(expr)
+        #=macro $fun(expr)
             :($$(QuoteNode(fun))($(esc(expr))))
-        end
+        end=#
         $fun(expr;be=0) = expr
     end
 end

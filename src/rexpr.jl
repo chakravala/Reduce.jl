@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, sub, squash
+export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, sub, squash, list
 import Base: parse, convert, ==, getindex, *, split, string, show, join
 
 const ExprSymbol = Union{<:Expr,<:Symbol}
@@ -39,7 +39,7 @@ cos(---------------) + sinh(x)*i
 """
 RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
-function RExpr(r::Matrix)
+function RExpr(r::T) where T <: Array
     out = IOBuffer()
     show_expr(out,r)
     return out |> take! |> String |> RExpr
@@ -65,7 +65,6 @@ end
 
 *(x::RExpr,y::Compat.String) = RExpr(push!(deepcopy(x.str),y))
 *(x::Compat.String,y::RExpr) = RExpr(unshift!(deepcopy(y.str),x))
-*(x::RExpr,y::RExpr) = RExpr(vcat(x.str...,y.str...))
 
 function rtrim(r::Array{Compat.String,1})
     n = deepcopy(r)
@@ -89,9 +88,22 @@ end
 
 string(r::RExpr) = convert(Compat.String,r)
 join(r::RExpr) = RExpr(string(r))
+join(r::Array{RExpr,1}) = vcat(convert.(Array{Compat.String,1},r)...) |> RExpr
 show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 
-linelength() = (c=readstring(`tput cols`)|>parse; rcall("linelength($c)"); c)
+cols = 80
+
+function linelength()
+    c = readstring(`tput cols`) |> parse
+    global cols
+    if c ≠ cols
+        ws = rcall("ws")
+        rcall("linelength($c)")
+        rcall(ws)
+        cols = c
+    end
+    return c
+end
 
 @compat function show(io::IO, ::MIME"text/plain", r::RExpr)
     length(r.str) > 1 && (print(io,string(r),";"); return nothing)
@@ -126,7 +138,8 @@ const r_to_jl_utf = Dict(
     "pi"            =>  "π",
     "golden_ratio"  =>  "φ",
     "**"            =>  "^",
-    "/"             =>  "//"
+    "/"             =>  "//",
+    "~"             =>  "\""
 )
 
 const jl_to_r = Dict(
@@ -141,8 +154,13 @@ const jl_to_r_utf = Dict(
     "π"             =>  "pi",
     "γ"             =>  "euler_gamma",
     "φ"             =>  "golden_ratio",
-    "//"            =>  "/"
+    "//"            =>  "/",
+    "\""            =>  "~"
 )
+
+list(r::Array{RExpr,1}) = "{$(join(split(join(r)).str,','))}" |> RExpr
+list(a::T) where T <: Vector = length(a) ≠ 0 ? list(lister.(a)) : R"{}"
+lister(expr) = typeof(expr) <: Vector ? list(expr) : RExpr(expr)
 
 # convert substitution dictionary into SUB parameter string
 function _syme(syme::Dict{String,String})

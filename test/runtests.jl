@@ -13,7 +13,7 @@ using Base.Test
 @test !Base.process_exited(Reduce.rs)
 @test string(R"x+1") |> typeof == String
 @test RExpr(:x) == R"x"
-@test RExpr(:x)*R"x" == R"x;x"
+@test RExpr(:x)*R"x" == R"x^2"
 @test convert(RExpr,R"x").str == convert(Array{Compat.String,1},R"x")
 @test load_package([:rlfi]) == load_package(:rlfi,:rlfi)
 @test show(STDOUT, R"") == nothing
@@ -54,7 +54,7 @@ println()
 @test nextprime("3") == "5"
 @test expand("(x-2)^2") |> RExpr == R"(x-2)^2"
 @test nat("x+1") == "\nx + 1\n"
-@test macroexpand(@factor(:(x^2+2x+1))) == :((x+1)^2)
+#@test macroexpand(@factor(:(x^2+2x+1))) == :((x+1)^2)
 @test :x^2 == :(x^2)
 @test NaN//NaN |> isnan
 @test join(split(R"x+1;x+2"))|> string == "x+1;\nx+2"

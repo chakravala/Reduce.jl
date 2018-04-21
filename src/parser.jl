@@ -4,30 +4,25 @@
 """
 REDUCE begin and end marker counter for parsegen
 """
-@noinline function bematch(js,sexpr,h,iter,state)
-    sh = split(js,r"[ ]+")
-    y = h
-    c = sum(sh.=="begin")-sum(sh.=="end")
-    flag = c > 0
-    while !done(iter,state) & flag
-        (y,state) = next(iter, state)
-        sh2 = split(sexpr[y],r"[ ]+")
-        c += sum(sh2.=="begin")-sum(sh2.=="end")
-        flag = c > 0
+@inline function becount(js,openpar,closepar)
+    if typeof(openpar) == String
+        sh = split(js,r"[ ]+")
+        sum(sh.==openpar)-sum(sh.==closepar)
+    else
+        count(z->z==openpar,js)-count(z->z==closepar,js)
     end
-    return (y,state)
 end
 
 """
-REDUCE parenthesis marker counter for parsegen
+REDUCE begin and end marker match for parsegen
 """
-@noinline function pmatch(js,sexpr,h,iter,state)
+@noinline function bematch(js,sexpr,h,iter,state,openpar,closepar)
     y = h
-    c = count(z->z=='(',js)-count(z->z==')',js)
+    c = becount(js,openpar,closepar)
     flag = c > 0
     while !done(iter,state) & flag
         (y,state) = next(iter, state)
-        c += count(z->z=='(',sexpr[y])-count(z->z==')',sexpr[y])
+        c += becount(sexpr[y],openpar,closepar)
         flag = c > 0
     end
     return (y,state)
@@ -35,9 +30,46 @@ end
 
 const prefix = r"(?<!\))(([A-Za-z_][A-Za-z_0-9]*)|([\^+\/-])|([*]{1,2})|(- ))(?=\()"
 const parens = r"\(((?>[^\(\)]+)|(?R))*\)"
+const braces = r"{((?>[^{}]+)|(?R))*}"
 const infix1 = r"^(([\^\+\/])|([*]{1,2})|( -)|( \+)|( [*]{1,2})|( /)|( \^))"
 const infix2 = r"(([\^+\/])|([*]{1,2}))$"
 const assign = r"^([A-Za-z_][A-Za-z_0-9]*)(:=)"
+
+@inline function argrfun(mode::Symbol,rfun::Symbol,sep,be=:be)
+    if mode == :expr
+        :($rfun(fun,$sep;be=$be))
+    elseif mode == :calculus
+        :($rfun(fun,$sep,s;be=$be) |> string)
+    else
+        :($rfun(fun,$sep;be=$be) |> string)
+    end
+end
+
+function loopshift(js,openpar,closepar,T,sexpr,h,iter,state)
+    ep = Array{T,1}(0)
+    c = becount(js,openpar,closepar)
+    flag = c ≥ 0
+    !flag && (js = join(split(js,closepar)[1:end+c],closepar))
+    y = h
+    (h,state) = bematch(js,sexpr,h,iter,state,openpar,closepar)
+    push!(ep,js,sexpr[y+1:h]...)
+    ep[1] == nothing && shift!(ep)
+    while !done(iter,state) & flag
+        (h,state) = next(iter, state)
+        cQ = c
+        js = sexpr[h]
+        c += becount(js,openpar,closepar)
+        if c ≤ -1
+            js = join(split(js,closepar)[1:end+c],closepar)
+            flag = false
+        end
+        y = h
+        (h,state) = bematch(js,sexpr,h,iter,state,openpar,closepar)
+        epr = vcat(js,sexpr[y+1:h]...)
+        epr ≠ nothing && push!(ep,epr...)
+    end
+    return (h,state,ep)
+end
 
 for mode ∈ [:expr,:unary,:switch,:calculus]
     rfun = Symbol(:r,"_",mode)
@@ -47,11 +79,11 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
     exec = if mode == :expr
         :(Meta.parse(RSymReplace(js)))
     elseif mode == :unary
-        :(fun * "($js)" |> RExpr |> rcall)
+        :("$fun($js)" |> RExpr |> rcall)
     elseif mode == :switch
         :(rcall("$js" |> RExpr, fun))
     elseif mode == :calculus
-        :(fun * "($(join([js,s...],',')))" |> RExpr |> rcall)
+        :("$fun($(join([js,s...],',')))" |> RExpr |> rcall)
     end
     mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
     mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
@@ -78,52 +110,38 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     js = join(split(sexpr[h],"procedure")[2:end],"procedure")
                     (h,state) = next(iter, state)
                     y = h
-                    (h,state) = bematch(sexpr[h],sexpr,h,iter,state)
+                    (h,state) = bematch(sexpr[h],sexpr,h,iter,state,"begin","end")
                     $(mode != :expr ? :(push!(nsr,Compat.String("procedure "*js))) : :(nothing))
-                    $(if mode == :expr
-                        :(push!(nsr,Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be))))
+                    push!(nsr,$(if mode == :expr
+                        :(Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be)))
                     elseif mode == :calculus
-                        :(push!(nsr,$rfun(fun,sexpr[y:h],s;be=be) |> string))
+                        :($rfun(fun,sexpr[y:h],s;be=be) |> string)
                     else
-                        :(push!(nsr,$rfun(fun,sexpr[y:h];be=be) |> string))
-                    end)
+                        :($rfun(fun,sexpr[y:h];be=be) |> string)
+                    end))
                 elseif contains(sh[en],r"^begin")
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
                     ep = Array{$arty,1}(0)
-                    sh1 = split(js,r"[ ]+")
-                    c = sum(sh1.=="begin")-sum(sh1.=="end")
+                    c = becount(js,"begin","end")
                     flag = c ≥ 0
                     !flag && (js = join(split(js,"end")[1:end+c],"end"))
                     y = h
-                    (h,state) = bematch(js,sexpr,h,iter,state)
+                    (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
                     $(mode != :expr ? :(push!(nsr,Compat.String("begin "*js))) : :(nothing))
-                    $(if mode == :expr
-                        :(push!(ep,$rfun(fun,vcat(js,sexpr[y+1:h]...);be=be+1)))
-                    elseif mode == :calculus
-                        :(push!(ep,$rfun(fun,vcat(js,sexpr[y+1:h]...),s;be=be+1) |> string))
-                    else
-                        :(push!(ep,$rfun(fun,vcat(js,sexpr[y+1:h]...);be=be+1) |> string))
-                    end)
+                    push!(ep,$(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:(be+1))))
                     ep[1] == nothing && shift!(ep)
                     while !done(iter,state) & flag
                         (h,state) = next(iter, state)
                         cQ = c
                         js = sexpr[h]
-                        sh2 = split(js,r"[ ]+")
-                        c += sum(sh2.=="begin")-sum(sh2.=="end")
+                        c += becount(js,"begin","end")
                         if c ≤ -1
                             js = join(split(js,"end")[1:end+c],"end")
                             flag = false
                         end
                         y = h
-                        (h,state) = bematch(js,sexpr,h,iter,state)
-                        $(if mode == :expr
-                            :(epr = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=cQ))
-                        elseif mode == :calculus
-                            :(epr = $rfun(fun,vcat(js,sexpr[y+1:h]...),s;be=cQ) |> string)
-                        else
-                            :(epr = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=cQ) |> string)
-                        end)
+                        (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
+                        epr = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:cQ))
                         epr ≠ nothing && push!(ep,epr)
                     end
                     push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
@@ -131,79 +149,72 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                 elseif contains(sh[en],r"^return")
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
-                    (h,state) = bematch(js,sexpr,h,iter,state)
-                    $(if mode == :expr
-                        :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=be))
-                    elseif mode == :calculus
-                        :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...),s;be=be) |> string)
-                    else
-                        :(rp = $rfun(fun,vcat(js,sexpr[y+1:h]...);be=be) |> string)
-                    end)
+                    (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
+                    rp = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...))))
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
                 elseif contains(sh[en],assign)
                     sp = split(sexpr[h], ":=",limit=2)
-                    $(if mode == :expr
-                        :(push!(nsr,Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be))))
+                    push!(nsr,$(if mode == :expr
+                        :(Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be)))
                     elseif mode == :calculus
-                        :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr,s;be=be))))
+                        :(Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr,s;be=be)))
                     else
-                        :(push!(nsr, Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr;be=be))))
-                    end)
+                        :(Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr;be=be)))
+                    end))
                 elseif contains(sh[en],"for")
-                    throw(ReduceError("for block parsing not supported"))
+                    throw(ReduceError("for block parsing not yet supported"))
+                elseif contains($((mode == :expr) ? :(sh[en]) : :("")),braces)
+                    $(if mode == :expr; quote
+                        ts = sexpr[h]
+                        (h,state,mp) = loopshift(ts,'{','}',Compat.String,sexpr,h,iter,state)
+                        smp = match(braces,join(mp,";\n")).match[2:end-1]
+                        args = Array{$arty,1}(0)
+                        while smp ≠ ""
+                            lsM = match(braces,smp)
+                            lsm = lsM ≠ nothing ? lsM.match[2:end-1] : smp
+                            lsd = split(smp,braces;limit=2)
+                            pre = length(lsd)≠1 ? lsd[1][1:end-1] : ""
+                            lsM == nothing && (pre = join([pre,lsm],','))
+                            if pre ≠ ""
+                                af = $argfun(fun,$(string(mode)),split(pre,','),be)
+                                for k ∈ af
+                                    k≠nothing && push!(args, k≠[nothing] ? k : Array{Any,1}(0))
+                                end
+                            end
+                            smp = length(lsd)≠1 ? lsd[end][2:end] : ""
+                            if lsM ≠ nothing
+                                af = $(argrfun(mode,rfun,:(lsM.match)))
+                                push!(args, af≠[nothing] ? af : Array{Any,1}(0))
+                            end
+                        end
+                        push!(nsr,args)
+                    end; else; :(nothing); end)
                 elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),prefix)
                     $(if mode == :expr; quote
                     ts = sexpr[h]
-                    mp = Array{Compat.String,1}(0)
-                    c = count(z->z=='(',ts)-count(z->z==')',ts)
-                    flag = c ≥ 0
-                    !flag && (ts = join(split(ts,')')[1:end+c],')'))
-                    y = h
-                    (h,state) = pmatch(ts,sexpr,h,iter,state)
-                    push!(mp,ts,sexpr[y+1:h]...)
-                    mp[1] == nothing && shift!(mp)
-                    while !done(iter,state) & flag
-                        (h,state) = next(iter, state)
-                        cQ = c
-                        ts = sexpr[h]
-                        c += count(z->z=='(',ts)-count(z->z==')',ts)
-                        if c ≤ -1
-                            ts = join(split(ts,')')[1:end+c],')')
-                            flag = false
-                        end
-                        y = h
-                        (h,state) = pmatch(ts,sexpr,h,iter,state)
-                        mpr = vcat(ts,sexpr[y+1:h]...)
-                        mpr ≠ nothing && push!(mp,mpr...)
-                    end
+                    (h,state,mp) = loopshift(ts,'(',')',Compat.String,sexpr,h,iter,state)
                     smp = join(mp,";\n")
-                    qr = ""
+                    qr = IOBuffer()
                     while smp ≠ ""
                         args = Array{$arty,1}(0)
                         if contains(smp,r"^\(")
-                            push!(args,$(if mode == :expr
-                                :($rfun(fun,match(parens,smp).match[2:end-1];be=be))
-                            elseif mode == :calculus
-                                :($rfun(fun,match(parens,smp).match[2:end-1],s;be=be) |> string)
-                            else
-                                :($rfun(fun,match(parens,smp).match[2:end-1];be=be) |> string)
-                            end))
+                            push!(args,$(argrfun(mode,rfun,:(match(parens,smp).match[2:end-1]))))
                             smp = split(smp,parens;limit=2)[end]
-                            qr = qr * "($(args...))"
+                            print(qr,"($(args...))")
                             if !contains(smp,prefix)
                                 $(if mode == :expr; quote
                                     if contains(smp,infix1)
-                                        qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
+                                        print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
                                         smp = ""
                                     else
-                                        qr = qr * RSymReplace(smp)
+                                        print(qr, RSymReplace(smp))
                                         smp = ""
                                     end; end
                                 else
-                                    :(qr = qr * smp; smp = "")
+                                    :(print(qr, smp); smp = "")
                                 end)
                             elseif contains(smp,infix1)
-                                qr = qr * RSymReplace(match(infix1,smp).match)
+                                print(qr, RSymReplace(match(infix1,smp).match))
                                 smp = split(smp,infix1)[end]
                             end
                             continue
@@ -218,14 +229,14 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                 else
                                     rq = RSymReplace(rq)
                                 end
-                                qr = qr * rq * RSymReplace(match(infix2,sp[1]).match)
+                                print(qr, rq * RSymReplace(match(infix2,sp[1]).match))
                             elseif contains(sp[1],infix1)
-                                qr = qr * RSymReplace(match(infix1,sp[1]).match) * RSymReplace(split(sp[1],infix1)[end])
+                                print(qr, RSymReplace(match(infix1,sp[1]).match) * RSymReplace(split(sp[1],infix1)[end]))
                             else
-                                qr = qr * RSymReplace(sp[1])
+                                print(qr, RSymReplace(sp[1]))
                             end; end
                         else
-                            :(qr = qr * sp[1])
+                            :(print(qr, sp[1]))
                         end)
                         smp = split(sp[2],parens;limit=2)[end]
                         lsm = match(parens,sp[2]).match[2:end-1]
@@ -241,11 +252,11 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                     :($argfun(fun,$(string(mode)),elm,be) |> string)
                                 end))
                             end
-                            qr = qr * $(if mode == :expr
+                            print(qr, $(if mode == :expr
                                 :(Expr(:vcat,args...) |> string)
                             else
                                 :("$pf($(join(args,',')))")
-                            end)
+                            end))
                         else
                             ls = split(lsm,',')
                             push!(args,$(if mode == :expr
@@ -256,25 +267,25 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                 :($argfun(fun,$(string(mode)),ls,be) |> string)
                             end)...)
                             rq = "$(RSymReplace(pf))($(join(args,',')))"
-                            qr = qr * $(if mode == :expr
+                            print(qr, $(if mode == :expr
                                 :(((isinfix(pf) && length(args) == 1) ? rq : "($rq)"))
                             else
                                 :("$pf($(join(args,',')))")
-                            end)
+                            end))
                         end
                         !contains(smp,prefix) && ($(if mode == :expr; quote
                             if contains(smp,infix1)
-                                qr = qr * RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end])
+                                print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
                                 smp = ""
                             else
-                                qr = qr * RSymReplace(smp)
+                                print(qr, RSymReplace(smp))
                                 smp = ""
                             end; end
                         else
-                            :(qr = qr * smp; smp = "")
+                            :(print(qr, smp); smp = "")
                         end))
                     end
-                    push!(nsr,$((mode == :expr) ? :(u = "("*qr*")" |> Meta.parse |> linefilter) : :qr))
+                    push!(nsr,$((mode == :expr) ? :(u = "("*String(take!(qr))*")" |> Meta.parse |> linefilter) : :qr))
                     end; else; :(nothing); end)
                 elseif contains(sh[en],"end")
                     nothing
@@ -282,19 +293,39 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     nothing
                 elseif contains(sexpr[h],":")
                     sp = split(sexpr[h],":")
-                    $(if mode == :expr
-                        :(push!(nsr,Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be))))
+                    push!(nsr,$(if mode == :expr
+                        :(Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))
                     elseif mode == :calculus
-                        :(push!(nsr,($rfun(fun,sp[1],[];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string)))
+                        :(($rfun(fun,sp[1],[];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string))
                     else
-                        :(push!(nsr,($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2];be=be)|>string)))
-                    end)
+                        :(($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2];be=be)|>string))
+                    end))
                 else
                     js=sexpr[h]
                     se=sum(sh.=="end")
                     0<se≤be ? (js=replace(js,"end","")) :
                         (se>be && (js=join(split(js,"end")[1:end-be],"end")))
-                    push!(nsr, $exec)
+                    exc = $exec
+                    $(if mode ≠ :expr
+                        :(if string(exc) == ""
+                            c = 1
+                            f = SubFail()
+                            h = SubHold()
+                            while string(exc) == "" && c < f
+                                sleep(sqrt(c)*h)
+                                exc = $exec
+                                c += 1
+                            end
+                            PipeClogged(string(exc) ≠ "", c, "$fun function")
+                            string(exc) == "" && throw(ReduceError(if fun == "//"
+                                "If generated code has many calls to $fun, try setting `Reduce.Rational(false)` in code, since rational division is the default; or try `Reduce.Reset()`."
+                            else
+                                "If generated code has many calls to $fun, try to minimize the number of calls with REDUCE switches and use `Reduce.Reset()` if you'd like to start a new pipe."
+                            end))
+                        end)
+                    else; nothing
+                    end)
+                    push!(nsr, exc)
                 end
             end
             $(if mode == :expr
@@ -330,38 +361,9 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                 (lsh,lss) = next(lsi, lss)
                 if contains(ls[lsh],r"^begin")
                     js = join(split(ls[lsh],"begin")[2:end],"begin")
-                    ep = Array{$arty,1}(0)
-                    sh1 = split(js,r"[ ]+")
-                    c = sum(sh1.=="begin")-sum(sh1.=="end")
-                    flag = c ≥ 0
-                    !flag && (js = join(split(js,"end")[1:end+c],"end"))
-                    lsy = lsh
-                    (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
-                    push!(ep,js,ls[lsy+1:lsh]...)
-                    ep[1] == nothing && shift!(ep)
-                    while !done(lsi,lss) & flag
-                        (lsh,lss) = next(lsi, lss)
-                        cQ = c
-                        js = ls[lsh]
-                        sh2 = split(js,r"[ ]+")
-                        c += sum(sh2.=="begin")-sum(sh2.=="end")
-                        if c ≤ -1
-                            js = join(split(js,"end")[1:end+c],"end")
-                            flag = false
-                        end
-                        lsy = lsh
-                        (lsh,lss) = bematch(js,ls,lsh,lsi,lss)
-                        epr = vcat(js,ls[lsy+1:lsh]...)
-                        epr ≠ nothing && push!(ep,epr...)
-                    end
-                    sep = "begin "*join(ep,',')*" end"
-                    push!(args,$(if mode == :expr
-                        :($rfun(fun,sep;be=be))
-                    elseif mode == :calculus
-                        :($rfun(fun,sep,s;be=be) |> string)
-                    else
-                        :($rfun(fun,sep;be=be) |> string)
-                    end))
+                    (lsh,lss,ep) = loopshift(js,"begin","end",$arty,ls,lsh,lsi,lss)
+                    sep = "begin $(join(ep,',')) end"
+                    push!(args,$(argrfun(mode,rfun,:sep)))
                 elseif contains(ls[lsh],prefix)
                     js = ls[lsh]
                     ep = Array{$arty,1}(0)
@@ -369,25 +371,13 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     flag = c ≥ -1
                     !flag && (js = join(split(js,')')[1:end+c],')'))
                     lsy = lsh
-                    (lsh,lss) = pmatch(js,ls,lsh,lsi,lss)
+                    (lsh,lss) = bematch(js,ls,lsh,lsi,lss,'(',')')
                     push!(ep,js,ls[lsy+1:lsh]...)
                     ep[1] == nothing && shift!(ep)
                     sep = join(ep,',')
-                    push!(args,$(if mode == :expr
-                        :($rfun(fun,sep;be=be))
-                    elseif mode == :calculus
-                        :($rfun(fun,sep,s;be=be) |> string)
-                    else
-                        :($rfun(fun,sep;be=be) |> string)
-                    end))
+                    push!(args,$(argrfun(mode,rfun,:sep)))
                 else
-                    push!(args,$(if mode == :expr
-                        :($rfun(fun,ls[lsh];be=be))
-                    elseif mode == :calculus
-                        :($rfun(fun,ls[lsh],s;be=be) |> string)
-                    else
-                        :($rfun(fun,ls[lsh];be=be) |> string)
-                    end))
+                    push!(args,$(argrfun(mode,rfun,:(ls[lsh]))))
                 end
             end
             return args
@@ -413,7 +403,7 @@ end
 
 Recursively filters out :line blocks from Expr objects
 """
-function linefilter(e::Expr)
+@noinline function linefilter(e::Expr)
     total = length(e.args)
     i = 0
     while i < total
@@ -440,7 +430,7 @@ end
 
 Recursively simplifies out extra edges from Expr objects
 """
-function treecombine!(e::Expr,redo=[false])
+@noinline function treecombine!(e::Expr,redo=[false])
     for i ∈ 1:length(e.args)
         if e.args[i] |> typeof == Expr && e.args[i].head == :call
             if e.head == :call
@@ -529,7 +519,7 @@ function detectinf(e)
     return nothing
 end
 
-num(expr) = expr ∈ [:e,:π,:Inf,:NaN] ? eval(expr) : expr
+@inline num(expr) = expr ∈ [:e,:π,:Inf,:NaN] ? eval(expr) : expr
 
 parsegen(:parse,:expr) |> eval
 
@@ -553,13 +543,17 @@ function print_args(io::IO,a::Array{Any,1})
     end
 end
 
-function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
+@noinline function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     if expr.head == :call
         if VERSION >= v"0.7.0-DEV.4445" && expr.args[1] == :(:)
             show_expr(io,expr.args[2])
             print(io,":")
             show_expr(io,expr.args[3])
             print(io," ")
+        elseif expr.args[1] == :(==)
+            show_expr(io,expr.args[2])
+            print(io,"=")
+            show_expr(io,expr.args[3])
         else
             show_expr(io, expr.args[1])
             print_args(io,expr.args[2:end])
@@ -656,7 +650,6 @@ function show_expr(io::IO, ex)
         print(io,unparse_irrational(ex))
         return nothing
     end
-    edit = IOBuffer()
     if typeof(ex) <: Matrix
         print(io, "mat(")
         li = size(ex)[1]
@@ -664,21 +657,36 @@ function show_expr(io::IO, ex)
         for i ∈ 1:li
             print(io, "(")
             for j ∈ 1:lj-1
-                print(io,ex[i,j])
+                show_expr(io,ex[i,j])
                 print(io,",")
             end
-            print(io,ex[i,lj])
+            show_expr(io,ex[i,lj])
             print(io,")")
             i ≠ li && print(io,",")
         end
         print(io,")")
+    elseif typeof(ex) <: Vector
+        print(io,"mat(")
+        l = length(ex)
+        for i ∈ 1:l
+            print(io,"(")
+            show_expr(io,ex[i])
+            print(io,")")
+            i ≠ l && print(io,",")
+        end
+        print(io,")")
+    elseif typeof(ex) <: Array
+        if length(size(ex)) > 2
+            throw(ReduceError("parsing of $(typeof(ex)) not supported."))
+        end
     else
+        edit = IOBuffer()
         print(edit, ex)
         print(io, edit |> take! |> String |> JSymReplace)
     end
 end
 
-function unparse_irrational(ex::T) where T <: Irrational
+@inline function unparse_irrational(ex::T) where T <: Irrational
     if ex == e
         return "e"
     elseif ex == π
@@ -727,11 +735,15 @@ function unfoldgen(fun::Symbol,mode::Symbol)
     end
 end
 
-function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
+@noinline function unfold_expr(mode::Symbol, fun::Symbol, expr::Expr, s...; force=false)
     #expr = mode == :unary ? squash(ixpr) : ixpr
     force && return unfold_expr_force(mode,fun,expr,s...)
     if expr.head in [:call,:block,:(:)]
-        unfold_expr_force(mode,fun,expr,s...)
+        if expr.args[1] == :(==) && fun == :solve
+            return solve(RExpr(expr.args[2]),s...) |> parse
+        else
+            return unfold_expr_force(mode,fun,expr,s...)
+        end
     elseif expr.head == :block
         return Expr(expr.head,unfold_expr.(mode,fun,expr.args,s...)...)
     elseif expr.head == :(:)

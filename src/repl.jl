@@ -19,7 +19,7 @@ function finished(s)
     str = Compat.String(LineEdit.buffer(s))
     if length(str) == 0
         return false
-    elseif str[end] == ';' || str[end] == '$'
+    elseif contains(str,r"(^|\n)[^%\n]*(;|\$)[ ]*(%[^\n]*)?$")
         return true
     else
         return false
@@ -37,11 +37,6 @@ function respond(repl, main)
             return REPL.transition(s, :abort)
         end
         input = String(take!(buf))
-        if '%' in input
-            tail = last(input)                              # chop the tail
-            input = subst("$(ans)", "%", input[1:end-1])    # substitute
-            input = string(input, tail)                     # add the tail
-        end
         if !isempty(strip(input))
             try
                 global ans = RExpr(input[1:end-1])

@@ -34,7 +34,7 @@ Interface for applying symbolic manipulation on [Julia expressions](https://docs
 * import operators from REDUCE using code generation to apply to arbitrary computational expressions;
 * interactive `reduce>` REPL within the Julia terminal window activated by `}` key;
 * extended arithmetic operators `+`,`-`,`*`,`^`,`/`,`//` compute on `Symbol` and `Expr` types;
-* provides over 330 internal and external methods each supporting many argument types.
+* provides hundreds of internal and external methods each supporting many argument types.
 
 ## Setup
 
@@ -129,7 +129,7 @@ julia> :(sin(x*im) + cos(y*φ)) |> RExpr
      (sqrt(5) + 1)*y
 cos(-----------------) + sinh(x)*i
             2
- ```
+```
 This same output can also be printed to the screen by calling `print(nat(r))` method.
 
 It is possible to direclty convert a julia expression object to LaTeX code using the `latex` method.

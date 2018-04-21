@@ -108,11 +108,22 @@ sran = [
     :random_new_seed
 ]
 
-Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;[:length]]]...) |> eval
-:(export $([sbas;sdep;sfun;snum;scom;sint;sran;[:length]]...)) |> eval
-:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval
+sbat = [
+    :det,
+    :trace,
+    :nullspace,
+    :rank
+]
 
-for fun in [sbas;sdep;sfun;snum;scom;sint;sran;[:length]]
+smat = [
+    :tp,
+]
+
+Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> eval
+:(export $([sbas;sdep;sfun;snum;scom;sint;sran;sbat;smat;[:length]]...)) |> eval
+#:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval
+
+for fun in [sbas;sdep;sfun;snum;scom;sint;sran;sbat;smat;[:length]]
     parsegen(fun,:unary) |> eval
 end
 
@@ -122,8 +133,16 @@ for fun in [sbas;sdep;sfun;snum;scom;sint]
         function $fun(expr::Compat.String;be=0)
             convert(Compat.String, $fun(RExpr(expr);be=be))
         end
-        macro $fun(expr)
+        #=macro $fun(expr)
             :($$(QuoteNode(fun))($(esc(expr))))
+        end=#
+    end
+end
+
+for fun in [sbat;smat]
+    @eval begin
+        function $fun(expr::Union{Array{Any,2},Expr,Symbol};be=0)
+            $fun(RExpr(expr);be=be) |> parse
         end
     end
 end
