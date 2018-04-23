@@ -3,7 +3,7 @@
 
 VERSION >= v"0.7.0-DEV.4445" && (import LinearAlgebra: factorize)
 
-sbas = [
+const sbas = [
     :abs,
     :conj,
     :factorial,
@@ -43,10 +43,9 @@ sbas = [
     :tan,
     :tanh,
     :gamma,
-    :factorize
 ]
 
-sdep = [
+const sdep = [
     :beta,
     :besseli,
     :besselj,
@@ -56,8 +55,7 @@ sdep = [
     :zeta
 ]
 
-sfun = [
-#    :logb,
+const sfun = [
     :ibeta,
     :igamma,
     :ln,
@@ -83,39 +81,49 @@ sfun = [
     :whittakerm,
     :whittakeru,
     :solidharmonicy,
-    :sphericalharmonicy
+    :sphericalharmonicy,
+    :expand_cases,
+    :depend,
+    :arglength,
+    :decompose,
+    :num,
+    :den,
+    :mainvar,
+    :precision,
+    :setmod,
+    :rootval
 ]
 
-snum = [
+const snum = [
     :ceiling,
     :fix,
 ]
 
-scom = [
+const scom = [
     :impart,
     :repart,
 ]
 
-sint = [
+const sint = [
     :nextprime,
     :euler,
     :fibonacci,
     :motzkin,
 ]
 
-sran = [
+const sran = [
     :random,
     :random_new_seed
 ]
 
-sbat = [
+const sbat = [
     :det,
     :trace,
     :nullspace,
     :rank
 ]
 
-smat = [
+const smat = [
     :tp,
 ]
 
@@ -128,8 +136,8 @@ for fun in [sbas;sdep;sfun;snum;scom;sint;sran;sbat;smat;[:length]]
 end
 
 for fun in [sbas;sdep;sfun;snum;scom;sint]
-    unfoldgen(fun,:unary) |> eval
     @eval begin
+        $(unfoldgen(fun,:unary))
         function $fun(expr::Compat.String;be=0)
             convert(Compat.String, $fun(RExpr(expr);be=be))
         end

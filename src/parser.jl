@@ -163,7 +163,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     end))
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not yet supported"))
-                elseif contains($((mode == :expr) ? :(sh[en]) : :("")),braces)
+                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),braces)
                     $(if mode == :expr; quote
                         ts = sexpr[h]
                         (h,state,mp) = loopshift(ts,'{','}',Compat.String,sexpr,h,iter,state)
@@ -187,6 +187,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                 push!(args, af≠[nothing] ? af : Array{Any,1}(0))
                             end
                         end
+                        length(args)==1 && typeof(args[1]) <: Array && (args = args[1])
                         push!(nsr,args)
                     end; else; :(nothing); end)
                 elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),prefix)
@@ -395,7 +396,7 @@ function parsegen(fun::Symbol,mode::Symbol)
     mf = Symbol(:parse,"_",mode)
     a = mode != :calculus ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
     return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0)) :
-    :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0) |> treecombine! |> num)
+    :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0) |> treecombine! |> irr)
 end
 
 """
@@ -519,7 +520,7 @@ function detectinf(e)
     return nothing
 end
 
-@inline num(expr) = expr ∈ [:e,:π,:Inf,:NaN] ? eval(expr) : expr
+@inline irr(expr) = expr ∈ [:e,:π,:Inf,:NaN] ? eval(expr) : expr
 
 parsegen(:parse,:expr) |> eval
 
@@ -802,3 +803,11 @@ function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
         return unfold_expr(mode,fun,expr,s...)
     end
 end
+
+#=function arrayparse(expr)
+    if typeof(expr) == expr && expr.head == :vcat
+        return expr
+    else
+        return expr
+    end
+end=#

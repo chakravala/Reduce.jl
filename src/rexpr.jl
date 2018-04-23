@@ -158,7 +158,7 @@ const jl_to_r_utf = Dict(
     "\""            =>  "~"
 )
 
-list(r::Array{RExpr,1}) = "{$(join(split(join(r)).str,','))}" |> RExpr
+list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr
 list(a::T) where T <: Vector = length(a) ≠ 0 ? list(lister.(a)) : R"{}"
 lister(expr) = typeof(expr) <: Vector ? list(expr) : RExpr(expr)
 
@@ -417,10 +417,6 @@ end
 
 rcall(r::RExpr,switches...) = rcall(r;on=[switches...])
 
-macro rcall(r)
-    :(eval(rcall($r)))
-end
-
 """
     rcall{T}(e::T)
 
@@ -436,9 +432,17 @@ julia> rcall(:(int(1/(1+x^2), x)))
 :(atan(x))
 ```
 """
-function rcall(expr::T;on::Array{Symbol,1}=Symbol[],off::Array{Symbol,1}=Symbol[]) where T
+function rcall(expr::T;on::Array{A,1}=Symbol[],off::Array{B,1}=Symbol[]) where T where A <: Union{Symbol,String} where B <: Union{Symbol,String}
     comp = rcall(RExpr(expr);on=on,off=off)
     (:latex in on) | (:nat in on) ? (return comp) : (return convert(T,comp))
+end
+
+macro rcall(r,on::Union{Array{Symbol,1},Array{String,1}}=Symbol[],off::Union{Array{Symbol,1},Array{String,1}}=Symbol[])
+    return Expr(:quote,rcall(r.head == :quote ? r.args[1] : r; on=on,off=off))
+end
+
+macro rcall(r,switches...)
+    Expr(:quote,rcall(r.head == :quote ? r.args[1] : r, switches...))
 end
 
 rcall(r,switches...) = rcall(r;on=Symbol[switches...])

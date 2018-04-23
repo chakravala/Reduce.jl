@@ -1,21 +1,38 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-calculus = Symbol[
+const calculus = [
     :df,
     :int,
     :limit,
     :logb,
     :solve,
-    :pf
+    :pf,
+    :order,
+    :korder,
+    :structr,
+    :coeff,
+    :coeffn,
+    :part,
+    :realvalued,
+    :notrealvalued,
+    :factorize,
+    :remainder,
+    :resultant,
+    :deg,
+    :lcof,
+    :lpower,
+    :lterm,
+    :reduct,
+    :totaldeg
 ]
 
-alg = Symbol[
+const alg = [
     :sum,
     :prod
 ]
 
-iops = Symbol[
+const iops = [
     :+,
     :-,
     :*,
@@ -24,7 +41,7 @@ iops = Symbol[
     ://
 ]
 
-cmat = Symbol[
+const cmat = [
     :mateign,
     :cofactor
 ]
@@ -34,13 +51,13 @@ Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
 #:(export $(Symbol.("@",[calculus;alg;iops])...)) |> eval
 
 for fun in [calculus;alg;iops]
-    parsegen(fun,:calculus) |> eval
-    unfoldgen(fun,:calculus) |> eval
-    #=@eval begin
-        macro $fun(expr,s...)
+    @eval begin
+        $(parsegen(fun,:calculus))
+        $(unfoldgen(fun,:calculus))
+        #=macro $fun(expr,s...)
             :($$(QuoteNode(fun))($(esc(expr)),$(esc(s))...))
-        end
-    end=#
+        end=#
+    end
 end
 
 for fun in [calculus;alg]
@@ -52,8 +69,8 @@ for fun in [calculus;alg]
 end
 
 for fun in cmat
-    parsegen(fun,:calculus) |> eval
     @eval begin
+        $(parsegen(fun,:calculus))
         function $fun(expr::Union{Array{Any,2},Expr,Symbol};be=0)
             $fun(RExpr(expr),s...;be=be)
         end
@@ -92,6 +109,9 @@ end
 solve(a::T,s::Symbol) where T <: Vector = solve(a,[s])
 solve(a::Expr,s::Array{Symbol,1}) = solve(a.head == :block ? a.args : [a],s)
 solve(a::Expr,s::Symbol) = solve(a,[s])
+
+order(::Void) = order(R"nil") |> parse
+korder(::Void) = korder(R"nil") |> parse
 
 export ∑, ∏
 

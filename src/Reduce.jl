@@ -70,7 +70,7 @@ end
 Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce: "*chomp(err.errstr))
 
 function ReduceCheck(output) # check for REDUCE errors
-    contains(output,"***** ")|contains(output,"+++ ") && throw(ReduceError(output))
+    contains(output,r"(([*]{5})|([+]{3}) )|( ?  \(Y or N\))") && throw(ReduceError(output))
 end
 
 function PipeClogged(tf::Bool,c::Int,info::String)
@@ -110,6 +110,20 @@ include("switch.jl") # load switch operators
 include("calculus.jl") # load calculus operators
 
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
+
+const variables = [
+    :root_multiplicities,
+    :requirements,
+    :assumptions,
+    :low_pow,
+    :high_pow
+]
+
+for var ∈ [variables;[:ws]]
+    :($var() = rcall(RExpr($(string(var)))) |> parse) |> eval
+end
+
+ws(n::Integer) = rcall(RExpr("ws($n)"))
 
 ## Setup
 
@@ -182,6 +196,7 @@ function Load()
         end
         load_package(:rlfi)
         offs |> RExpr |> rcall
+        rcall(R"on savestructr")
         show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
         R"x" == R"x"
     end
