@@ -24,7 +24,9 @@ const calculus = [
     :lpower,
     :lterm,
     :reduct,
-    :totaldeg
+    :totaldeg,
+    :matrix,
+    :operator
 ]
 
 const alg = [

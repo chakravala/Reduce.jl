@@ -3,7 +3,8 @@
 
 const switchbas = [
     :expand,
-    :complex
+    :complex,
+    :div
 ]
 
 const switches = [
@@ -26,7 +27,6 @@ const switches = [
     :varopt,
     :intstr,
     :allfac,
-    :div,
     :rat,
     :revpri,
     :fort,

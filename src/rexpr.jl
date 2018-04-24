@@ -160,6 +160,7 @@ const jl_to_r_utf = Dict(
 
 list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr
 list(a::T) where T <: Vector = length(a) ≠ 0 ? list(lister.(a)) : R"{}"
+list(a::T) where T <: RowVector = list([a...])
 lister(expr) = typeof(expr) <: Vector ? list(expr) : RExpr(expr)
 
 # convert substitution dictionary into SUB parameter string

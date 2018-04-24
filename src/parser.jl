@@ -1,6 +1,8 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
+export unfold, mat
+
 """
 REDUCE begin and end marker counter for parsegen
 """
@@ -618,21 +620,19 @@ end
         show_expr(io,expr.args[2])
         print(io," ")
     elseif expr.head == :vcat
-        print(io,"mat(")
+        print(io,"mat((")
         for i ∈ 1:length(expr.args)-1
             show_expr(io,expr.args[i])
-            print(io,",")
+            print(io,"),(")
         end
         show_expr(io,expr.args[end])
-        print(io,")")
+        print(io,"))")
     elseif expr.head == :row
-        print(io,"(")
         for i ∈ 1:length(expr.args)-1
             show_expr(io,expr.args[i])
             print(io,",")
         end
         print(io,expr.args[end])
-        print(io,")")
     elseif expr.head == :line; nothing
     else
         throw(ReduceError("Nested :$(expr.head) block structure not supported"))
@@ -784,7 +784,7 @@ function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
     else
         throw(ReduceError("Parse mode not supported."))
     end
-    return (fun ∈ switchtex) ? out : convert(Expr, out)
+    fun ∈ switchtex ? out : typeof(ex) <: Matrix ? mat(out) : convert(Expr, out)
 end
 
 function unfold_expr(mode::Symbol, fun::Symbol, ex, s...; force=true)
@@ -804,10 +804,19 @@ function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
     end
 end
 
-#=function arrayparse(expr)
-    if typeof(expr) == expr && expr.head == :vcat
-        return expr
+function mat(expr)
+    if typeof(expr) == Expr && expr.head == :vcat &&
+            typeof(expr.args[1]) == Expr && expr.args[1].head == :row
+        rows = length(expr.args)
+        cols = length(expr.args[1].args)
+        out = Array{Any,2}(rows,cols)
+        for k ∈ 1:rows
+            for l ∈ 1:cols
+                out[k,l] = expr.args[k].args[l]
+            end
+        end
+        return out
     else
         return expr
     end
-end=#
+end

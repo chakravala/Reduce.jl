@@ -125,6 +125,15 @@ end
 
 ws(n::Integer) = rcall(RExpr("ws($n)"))
 
+import Base: zero, one
+
+for T ∈ [:Any,:Expr,:Symbol]
+    @eval begin
+        zero(::Type{$T}) = 0
+        one(::Type{$T}) = 1
+    end
+end
+
 ## Setup
 
 const offlist = [:nat,:latex,:exp]

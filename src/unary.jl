@@ -91,7 +91,8 @@ const sfun = [
     :mainvar,
     :precision,
     :setmod,
-    :rootval
+    :rootval,
+    :clear
 ]
 
 const snum = [
@@ -149,11 +150,19 @@ end
 
 for fun in [sbat;smat]
     @eval begin
-        function $fun(expr::Union{Array{Any,2},Expr,Symbol};be=0)
-            $fun(RExpr(expr);be=be) |> parse
+        function $fun(expr::Union{Array{T,2},T};be=0) where T <: ExprSymbol
+            $fun(RExpr(expr);be=be) |> parse |> mat
+        end
+        function $fun(expr::Array{Any,2};be=0)
+            $fun(RExpr(expr);be=be) |> parse |> mat
         end
     end
 end
+
+import Base.LinAlg.transpose
+
+transpose(r::ExprSymbol) = r
+ctranspose(r::ExprSymbol) = conj(r)
 
 length(r::Expr;be=0) = length(r |> RExpr;be=be) |> parse |> eval
 
