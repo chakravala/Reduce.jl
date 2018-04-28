@@ -39,7 +39,7 @@ cos(---------------) + sinh(x)*i
 """
 RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
-function RExpr(r::T) where T <: Array
+function RExpr(r::T) where T <: Union{Array,RowVector}
     out = IOBuffer()
     show_expr(out,r)
     return out |> take! |> String |> RExpr

@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export unfold, mat
+export unfold, mat, treecombine!, irr
 
 """
 REDUCE begin and end marker counter for parsegen
@@ -90,6 +90,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
     mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
     mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
     quote
+        export $modefun
         @noinline function $modefun(fun::String,$(fargs...);be=0)
             nsr = $arty[]
             $(if mode == :calculus
@@ -676,6 +677,14 @@ function show_expr(io::IO, ex)
             i ≠ l && print(io,",")
         end
         print(io,")")
+    elseif typeof(ex) <: RowVector
+        print(io,"mat((")
+        l = length(ex)
+        for i ∈ 1:l
+            show_expr(io,ex[i])
+            i ≠ l && print(io,",")
+        end
+        print(io,"))")
     elseif typeof(ex) <: Array
         if length(size(ex)) > 2
             throw(ReduceError("parsing of $(typeof(ex)) not supported."))
@@ -805,17 +814,25 @@ function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
 end
 
 function mat(expr)
-    if typeof(expr) == Expr && expr.head == :vcat &&
-            typeof(expr.args[1]) == Expr && expr.args[1].head == :row
-        rows = length(expr.args)
-        cols = length(expr.args[1].args)
-        out = Array{Any,2}(rows,cols)
-        for k ∈ 1:rows
-            for l ∈ 1:cols
-                out[k,l] = expr.args[k].args[l]
+    if typeof(expr) == Expr && expr.head == :vcat
+        if typeof(expr.args[1]) == Expr && expr.args[1].head == :row
+            rows = length(expr.args)
+            cols = length(expr.args[1].args)
+            out = Array{Any,2}(rows,cols)
+            for k ∈ 1:rows
+                for l ∈ 1:cols
+                    out[k,l] = expr.args[k].args[l]
+                end
             end
+            return out
+        else
+            rows = length(expr.args)
+            out = Array{Any,1}(rows)
+            for k ∈ 1:rows
+                out[k] = expr.args[k]
+            end
+            return out
         end
-        return out
     else
         return expr
     end

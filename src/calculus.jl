@@ -73,36 +73,59 @@ end
 for fun in cmat
     @eval begin
         $(parsegen(fun,:calculus))
-        function $fun(expr::Union{Array{Any,2},Expr,Symbol};be=0)
-            $fun(RExpr(expr),s...;be=be)
+        function $fun(expr::Union{Array{Any,2},Expr,Symbol})
+            $fun(RExpr(expr),s...)
         end
     end
 end
 
 for fun in iops
     @eval begin
-        function $fun(a,expr::ExprSymbol,s...;be=0)
-            $fun(RExpr(a),RExpr(expr),s...;be=be) |> parse
+        function $fun(a,expr::ExprSymbol,s...)
+            $fun(RExpr(a),RExpr(expr),s...) |> parse
         end
-        function $fun(a::Union{<:Number,Expr,Symbol},r::RExpr,s...;be=0)
-            $fun(RExpr(a),r,RExpr.(s)...;be=be)
+        function $fun(a::Union{<:Number,Expr,Symbol},r::RExpr,s...)
+            $fun(RExpr(a),r,RExpr.(s)...)
         end
-        function $fun(expr::ExprSymbol,b::ExprSymbol,s...;be=0)
-            $fun(RExpr.([expr,b,s...])...;be=be) |> parse
+        function $fun(expr::ExprSymbol,b::ExprSymbol,s...)
+            $fun(RExpr.([expr,b,s...])...) |> parse
         end
     end
 end
 
-^(expr::ExprSymbol,s::Integer;be=0) = ^(RExpr(expr),s;be=be) |> parse
-^(expr::RExpr,s::Integer;be=0) = ^(expr,RExpr(s);be=be)
-//(expr,b::T;be=0) where T <: AbstractFloat = //(RExpr(expr),RExpr(b);be=be) |> parse
-//(a::T,expr;be=0) where T <: AbstractFloat = //(RExpr(a),RExpr(expr);be=be) |> parse
-//(expr::ExprSymbol,b::T;be=0) where T <: AbstractFloat = //(RExpr(expr),RExpr(b);be=be) |> parse
-//(a::T,expr::ExprSymbol;be=0) where T <: AbstractFloat = //(RExpr(a),RExpr(expr);be=be) |> parse
-function //(a::T,b::T;be=0) where T <: AbstractFloat
-    isnan(a) | isnan(b) | (isinf(a) & isinf(b)) && return NaN
-    return //(RExpr(a),RExpr(b);be=be) |> parse |> eval
+const MatExpr = Union{Array{Any,2},Array{Expr,2},Array{Symbol,2},RExpr,Expr,Symbol}
+const Mat = Union{Vector,RowVector,Array{Any,2},Array{Expr,2},Array{Symbol,2}}
+
+function ^(expr::Union{Array{T,2},T},s::Integer) where T <: ExprSymbol
+    out = ^(RExpr(expr),s) |> parse
+    return typeof(expr) <: Matrix ? mat(out) : out
 end
+^(expr::Array{Any,2},s::Integer) = ^(RExpr(expr),s) |> parse |> mat
+^(expr::Array{T,2},s::Integer) where T <: ExprSymbol = ^(RExpr(expr),s) |> parse |> mat
+^(expr::RExpr,s::Integer) = ^(expr,RExpr(s))
+function *(a::T,s::S) where T <: MatExpr where S <: MatExpr
+    out = *(RExpr(a),RExpr(s)) |> parse |> mat
+    return ((typeof(a) <: Mat) | (typeof(s) <: Mat)) ? mat(out) : out
+end
+*(a::T,s::S) where T <: Vector where S <: RowVector = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: Vector where S <: MatExpr = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: RowVector where S <: Vector = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: RowVector where S <: MatExpr = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: MatExpr where S <: Vector = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: MatExpr where S <: RowVector = *(RExpr(a),RExpr(s)) |> parse |> mat
+//(expr,b::T) where T <: AbstractFloat = //(RExpr(expr),RExpr(b)) |> parse
+//(a::T,expr) where T <: AbstractFloat = //(RExpr(a),RExpr(expr)) |> parse
+//(expr::ExprSymbol,b::T) where T <: AbstractFloat = //(RExpr(expr),RExpr(b)) |> parse
+//(a::T,expr::ExprSymbol) where T <: AbstractFloat = //(RExpr(a),RExpr(expr)) |> parse
+function //(a::T,b::T) where T <: AbstractFloat
+    isnan(a) | isnan(b) | (isinf(a) & isinf(b)) && return NaN
+    return //(RExpr(a),RExpr(b)) |> parse |> eval
+end
+
+#inv(r::T) where T <: MatExpr = r^-1
+
+#\(a::T,s::S) where T <: MatExpr where S <: Vector = (RExpr(a)^-1)*RExpr(s) |> parse |> mat
+#\(a::T,s::S) where T <: Vector where S <: MatExpr = (RExpr(a)^-1)*RExpr(s) |> parse |> mat
 
 function solve(a::Array{T,1},s::Array{Symbol,1}) where T <: Any
     out = solve(list(a),list(s))

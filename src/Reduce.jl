@@ -131,6 +131,8 @@ for T ∈ [:Any,:Expr,:Symbol]
     @eval begin
         zero(::Type{$T}) = 0
         one(::Type{$T}) = 1
+        zero(::$T) = 0
+        one(::$T) = 1
     end
 end
 
