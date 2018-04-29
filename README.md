@@ -36,6 +36,10 @@ Interface for applying symbolic manipulation on [Julia expressions](https://docs
 * extended arithmetic operators `+`,`-`,`*`,`^`,`/`,`//` compute on `Symbol` and `Expr` types;
 * provides hundreds of internal and external methods each supporting many argument types.
 
+Additional packages that depend on Reduce.jl are maintained at [JuliaReducePkg](https://github.com/JuliaReducePkg).
+
+The upstream REDUCE software created by Anthony C. Hearn is maintained by collaborators on [SourceForge](https://sourceforge.net/p/reduce-algebra/).
+
 ## Setup
 
 The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic download on Windows is supported, although any **appveyor** build tests for Windows will fail due to absent software distribution infrastructure. However, the automated testing for **Travis CI** using Linux and OSX are fully operational `using Reduce`.
@@ -55,7 +59,7 @@ View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) /
 
 Reduce expressions encapsulated into `RExpr` objects can be manipulated within julia using the standard syntax. Create an expression object either using the `RExpr("expression")` string constructor or `R"expression"`. Additionally, arbitrary julia expressions can also be parsed directly using the `RExpr(expr)` constructor. Internally `RExpr` objects are represented as an array that can be accessed by calling `*.str[n]` on the object.
 
-When `Reduce` is used in Julia, all of the standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
+When `Reduce` is used in Julia, the standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
 ```Julia
 julia> 1-1/:n
 :((n - 1) // n)
@@ -66,7 +70,7 @@ julia> ans^-:n
 julia> limit(ans,:n,Inf)
 e = 2.7182818284590...
 ```
-Julia abstract syntax trees are automatically converted into sequences of reduce statements that are in return parsed into julia `quote` blocks using the `RExpr` constructor.
+Julia abstract syntax trees are automatically converted into sequences of reduce statements (using `RExpr` constructor) that are in return parsed into julia `quote` blocks usig `parse`.
 The `rcall` method is used to evaluate any type of expression.
 ```Julia
 julia> :(int(sin(im*x+pi)^2-1,x)) |> rcall

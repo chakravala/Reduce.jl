@@ -105,9 +105,15 @@ readsp(rs::PSL) = split(read(rs),"\n\n\n")
 include("rexpr.jl") # load RExpr features
 include("parser.jl") # load parser generator
 include("repl.jl") # load repl features
-include("unary.jl") # load unary operators
 include("switch.jl") # load switch operators
-include("calculus.jl") # load calculus operators
+
+#=module Algebra
+importall Reduce
+using Compat
+import Compat.String=#
+include("unary.jl") # load unary operators
+include("args.jl") # load calculus operators
+#end
 
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 

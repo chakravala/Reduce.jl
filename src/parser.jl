@@ -40,7 +40,7 @@ const assign = r"^([A-Za-z_][A-Za-z_0-9]*)(:=)"
 @inline function argrfun(mode::Symbol,rfun::Symbol,sep,be=:be)
     if mode == :expr
         :($rfun(fun,$sep;be=$be))
-    elseif mode == :calculus
+    elseif mode == :args
         :($rfun(fun,$sep,s;be=$be) |> string)
     else
         :($rfun(fun,$sep;be=$be) |> string)
@@ -73,7 +73,7 @@ function loopshift(js,openpar,closepar,T,sexpr,h,iter,state)
     return (h,state,ep)
 end
 
-for mode ∈ [:expr,:unary,:switch,:calculus]
+for mode ∈ [:expr,:unary,:switch,:args]
     rfun = Symbol(:r,"_",mode)
     modefun = Symbol(:parse,"_",mode)
     argfun = Symbol(:args,"_",mode)
@@ -84,16 +84,16 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
         :("$fun($js)" |> RExpr |> rcall)
     elseif mode == :switch
         :(rcall("$js" |> RExpr, fun))
-    elseif mode == :calculus
+    elseif mode == :args
         :("$fun($(join([js,s...],',')))" |> RExpr |> rcall)
     end
-    mode != :calculus ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
-    mode != :calculus ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
+    mode != :args ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
+    mode != :args ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
     quote
         export $modefun
         @noinline function $modefun(fun::String,$(fargs...);be=0)
             nsr = $arty[]
-            $(if mode == :calculus
+            $(if mode == :args
                 quote
                     s = Array{Compat.String,1}()
                     for rs ∈ sr
@@ -117,7 +117,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     $(mode != :expr ? :(push!(nsr,Compat.String("procedure "*js))) : :(nothing))
                     push!(nsr,$(if mode == :expr
                         :(Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be)))
-                    elseif mode == :calculus
+                    elseif mode == :args
                         :($rfun(fun,sexpr[y:h],s;be=be) |> string)
                     else
                         :($rfun(fun,sexpr[y:h];be=be) |> string)
@@ -159,7 +159,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     sp = split(sexpr[h], ":=",limit=2)
                     push!(nsr,$(if mode == :expr
                         :(Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be)))
-                    elseif mode == :calculus
+                    elseif mode == :args
                         :(Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr,s;be=be)))
                     else
                         :(Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr;be=be)))
@@ -250,7 +250,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                                 elm = split(row[2:end-1],',')
                                 push!(args,$(if mode == :expr
                                     :(Expr(:row,$argfun(fun,$(string(mode)),elm,be)...))
-                                elseif mode == :calculus
+                                elseif mode == :args
                                     :($argfun(fun,$(string(mode)),elm,be,s) |> string)
                                 else
                                     :($argfun(fun,$(string(mode)),elm,be) |> string)
@@ -265,7 +265,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                             ls = split(lsm,',')
                             push!(args,$(if mode == :expr
                                 :($argfun(fun,$(string(mode)),ls,be))
-                            elseif mode == :calculus
+                            elseif mode == :args
                                 :($argfun(fun,$(string(mode)),ls,be,s) |> string)
                             else
                                 :($argfun(fun,$(string(mode)),ls,be) |> string)
@@ -299,7 +299,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                     sp = split(sexpr[h],":")
                     push!(nsr,$(if mode == :expr
                         :(Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))
-                    elseif mode == :calculus
+                    elseif mode == :args
                         :(($rfun(fun,sp[1],[];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string))
                     else
                         :(($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2];be=be)|>string))
@@ -345,7 +345,7 @@ for mode ∈ [:expr,:unary,:switch,:calculus]
                 end)
             end)
         end
-        $(if mode == :calculus
+        $(if mode == :args
             quote
                 $rfun(fun::String,r::Array{Compat.String,1},s;be=0) = $modefun(fun,RExpr(r),s...;be=be)
                 $rfun(fun::String,r,s;be=0) = $modefun(fun,r |> Compat.String |> RExpr,s...;be=be)
@@ -397,7 +397,7 @@ Parser generator that outputs code to walk and manipulate REDUCE expressions
 function parsegen(fun::Symbol,mode::Symbol)
     fune = fun == :// ? :/ : fun
     mf = Symbol(:parse,"_",mode)
-    a = mode != :calculus ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
+    a = mode != :args ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
     return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0)) :
     :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0) |> treecombine! |> irr)
 end
@@ -728,12 +728,12 @@ Parser generator that outputs code to walk and manipulate Julia expressions
 """
 function unfoldgen(fun::Symbol,mode::Symbol)
     modefun = Symbol(:parse,"_",mode)
-    fargs = if mode != :calculus
+    fargs = if mode != :args
         [:(r::Union{<:Expr,<:Symbol})]
     else
         [:(r::Union{<:Expr,<:Symbol}),Expr(:...,:s)]
     end
-    sargs = mode != :calculus ? [:(RExpr(r))] : [:(RExpr(r)),Expr(:...,:s)]
+    sargs = mode != :args ? [:(RExpr(r))] : [:(RExpr(r)),Expr(:...,:s)]
     return quote
         function $fun($(fargs...))
             if typeof(r) == Symbol
@@ -788,8 +788,8 @@ function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
         out = parse_unary(string(fun),RExpr(ex);be=0)
     elseif mode == :switch
         out = parse_switch(string(fun),RExpr(ex);be=0)
-    elseif mode ==:calculus
-        out = parse_calculus(string(fun),RExpr(ex),s...;be=0)
+    elseif mode ==:args
+        out = parse_args(string(fun),RExpr(ex),s...;be=0)
     else
         throw(ReduceError("Parse mode not supported."))
     end
@@ -836,4 +836,8 @@ function mat(expr)
     else
         return expr
     end
+end
+
+function mat(expr,original...)
+    |(typeof.(original)...) <: Matrix ? mat(expr) : expr
 end

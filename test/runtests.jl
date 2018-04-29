@@ -38,7 +38,7 @@ using Base.Test
 @test impart(2+1.7im) == 17//10
 @test bernoulli(2) == 1//6
 @test Reduce.parsegen(:parsetest,:expr) |> typeof == Expr
-@test Reduce.parsegen(:calctest,:calculus) |> typeof == Expr
+@test Reduce.parsegen(:calctest,:args) |> typeof == Expr
 @test Reduce.parsegen(:switchtest,:switch) |> typeof == Expr
 @test Reduce.parsegen(:unarytest,:unary) |> typeof == Expr
 !(VERSION < v"0.6.0") && is_linux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String

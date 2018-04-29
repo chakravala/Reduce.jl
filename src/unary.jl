@@ -133,12 +133,12 @@ Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> 
 #:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval
 
 for fun in [sbas;sdep;sfun;snum;scom;sint;sran;sbat;smat;[:length]]
-    parsegen(fun,:unary) |> eval
+    Reduce.parsegen(fun,:unary) |> eval
 end
 
 for fun in [sbas;sdep;sfun;snum;scom;sint]
     @eval begin
-        $(unfoldgen(fun,:unary))
+        $(Reduce.unfoldgen(fun,:unary))
         function $fun(expr::Compat.String;be=0)
             convert(Compat.String, $fun(RExpr(expr);be=be))
         end

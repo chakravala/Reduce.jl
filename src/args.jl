@@ -44,7 +44,7 @@ const iops = [
 ]
 
 const cmat = [
-    :mateign,
+    :mateigen,
     :cofactor
 ]
 
@@ -54,8 +54,8 @@ Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
 
 for fun in [calculus;alg;iops]
     @eval begin
-        $(parsegen(fun,:calculus))
-        $(unfoldgen(fun,:calculus))
+        $(Reduce.parsegen(fun,:args))
+        $(Reduce.unfoldgen(fun,:args))
         #=macro $fun(expr,s...)
             :($$(QuoteNode(fun))($(esc(expr)),$(esc(s))...))
         end=#
@@ -72,7 +72,7 @@ end
 
 for fun in cmat
     @eval begin
-        $(parsegen(fun,:calculus))
+        $(Reduce.parsegen(fun,:args))
         function $fun(expr::Union{Array{Any,2},Expr,Symbol})
             $fun(RExpr(expr),s...)
         end
