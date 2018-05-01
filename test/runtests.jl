@@ -1,5 +1,6 @@
 using Reduce, Compat
 using Base.Test
+@force using Reduce.Algebra
 
 # write your own tests here
 @test showerror(STDOUT,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing

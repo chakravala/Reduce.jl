@@ -48,7 +48,8 @@ const cmat = [
     :cofactor
 ]
 
-Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
+Expr(:block,[:($i(r...)=Base.$i(r...)) for i ∈ [alg;iops]]...) |> eval
+#Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
 :(export $([calculus;alg;iops;cmat]...)) |> eval
 #:(export $(Symbol.("@",[calculus;alg;iops])...)) |> eval
 

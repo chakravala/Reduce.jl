@@ -1,5 +1,6 @@
 __precompile__()
 module Reduce
+using ForceImport
 using Compat; import Compat.String
 
 #   This file is part of Reduce.jl. It is licensed under the MIT license
@@ -107,13 +108,15 @@ include("parser.jl") # load parser generator
 include("repl.jl") # load repl features
 include("switch.jl") # load switch operators
 
-#=module Algebra
+module Algebra
 importall Reduce
 using Compat
-import Compat.String=#
+import Compat.String
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
-#end
+end
+
+export Algebra, @force
 
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
 
