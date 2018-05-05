@@ -200,7 +200,7 @@ sub(s::Array{<:Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
 """
     sub(T::DataType,expr::Expr)
 
-Make a substitution to conver numerical values to type T
+Make a substitution to convert numerical values to type T
 """
 function sub(T::DataType,ixpr)
     if typeof(ixpr) == Expr
@@ -507,10 +507,10 @@ Reduces an entire program statement block using symbolic rewriting
 """
 function squash(expr)
     typeof(expr) == Expr && if expr.head == :block
-        return @eval $expr
+        return @eval Reduce.Algebra $expr
     elseif expr.head == :function
         out = deepcopy(expr)
-        out.args[2] = @eval $(Expr(:block,expr.args[2]))
+        out.args[2] = @eval Reduce.Algebra $(Expr(:block,expr.args[2]))
         return out
     else
         return rcall(expr)
