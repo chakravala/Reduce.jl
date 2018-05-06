@@ -55,13 +55,13 @@ For users who wish to experiment with precomplation, it is possible to enable ex
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
 
+## Usage
+
 The extended algebraic symbolic expression mode of Reduce.jl is activated with [ForceImport.jl](https://github.com/chakravala/ForceImport.jl) by
 ```Julia
 @force using Reduce.Algebra
 ```
-Which locally extends many native Julia function to `Symbol` and `Expr` types without extending global methods.
-
-## Usage
+This locally extends native Julia functions to `Symbol` and `Expr` types in the current module without extending global methods. Alternatively, the methods it provides can be accesed by prefixing `Algebra.` in front of the method.
 
 Reduce expressions encapsulated into `RExpr` objects can be manipulated within julia using the standard syntax. Create an expression object either using the `RExpr("expression")` string constructor or `R"expression"`. Additionally, arbitrary julia expressions can also be parsed directly using the `RExpr(expr)` constructor. Internally `RExpr` objects are represented as an array that can be accessed by calling `*.str[n]` on the object.
 

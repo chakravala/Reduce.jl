@@ -83,7 +83,6 @@ const sfun = [
     :solidharmonicy,
     :sphericalharmonicy,
     :expand_cases,
-    :depend,
     :arglength,
     :decompose,
     :num,
@@ -93,6 +92,7 @@ const sfun = [
     :setmod,
     :rootval,
     :showrules,
+    :reverse,
 ]
 
 const snan = [

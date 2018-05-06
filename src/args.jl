@@ -14,8 +14,6 @@ const calculus = [
     :coeff,
     :coeffn,
     :part,
-    :realvalued,
-    :notrealvalued,
     :factorize,
     :remainder,
     :resultant,
@@ -25,12 +23,29 @@ const calculus = [
     :lterm,
     :reduct,
     :totaldeg,
+    :pochhammer,
 ]
 
 const cnan = [
     :clear,
     :matrix,
-    :operator
+    :operator,
+    :listargp,
+    :infix,
+    :precedence,
+    :depend,
+    :nodepend,
+    :realvalued,
+    :notrealvalued,
+    :set,
+    :unset,
+    :mkid,
+    :even,
+    :odd,
+    :linear,
+    :noncom,
+    :symmetric,
+    :antisymmetric,
 ]
 
 const alg = [

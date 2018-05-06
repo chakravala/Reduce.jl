@@ -41,7 +41,18 @@ const switches = [
     :roundbf,
     :adjprec,
     :roundall,
-    :balancedmod
+    :balancedmod,
+    :nocommutedf,
+    :commutedf,
+    :simpnoncomdf,
+    :expanddf,
+    :allowdfint,
+    :dfint,
+    :trint,
+    :trintsubst,
+    :failhard,
+    :nolnr,
+    :nointsubst,
 ]
 
 const switchtex = [

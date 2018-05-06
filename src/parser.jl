@@ -568,7 +568,7 @@ end
             print_args(io,expr.args[2:end])
         end
     elseif expr.head == :(=)
-        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
+        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call) && ListPrint()<1
             show_expr(io,Expr(:function,expr.args[1],expr.args[2]))
         else
             show_expr(io,expr.args[1])
@@ -639,6 +639,16 @@ end
             print(io,",")
         end
         print(io,expr.args[end])
+    elseif expr.head == :tuple
+        ListPrint(ListPrint()+1)
+        print(io,"{")
+        l = length(expr.args)
+        for i ∈ 1:l
+            show_expr(io,expr.args[i])
+            i ≠ l && print(io,",")
+        end
+        print(io,"}")
+        ListPrint(ListPrint()-1)
     elseif expr.head == :line; nothing
     else
         throw(ReduceError("Nested :$(expr.head) block structure not supported"))
