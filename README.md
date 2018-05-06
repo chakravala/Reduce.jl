@@ -57,9 +57,15 @@ View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) /
 
 ## Usage
 
+The extended algebraic symbolic expression mode of Reduce.jl is activated with [ForceImport.jl](https://github.com/chakravala/ForceImport.jl) by
+```Julia
+@force using Reduce.Algebra
+```
+This locally extends native Julia functions to `Symbol` and `Expr` types in the current module without extending global methods. Alternatively, the methods it provides can be accesed by prefixing `Algebra.` in front of the method.
+
 Reduce expressions encapsulated into `RExpr` objects can be manipulated within julia using the standard syntax. Create an expression object either using the `RExpr("expression")` string constructor or `R"expression"`. Additionally, arbitrary julia expressions can also be parsed directly using the `RExpr(expr)` constructor. Internally `RExpr` objects are represented as an array that can be accessed by calling `*.str[n]` on the object.
 
-When `Reduce` is used in Julia, the standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
+When `Reduce` is used in Julia, standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
 ```Julia
 julia> 1-1/:n
 :((n - 1) // n)

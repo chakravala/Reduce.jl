@@ -190,9 +190,14 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 push!(args, af≠[nothing] ? af : Array{Any,1}(0))
                             end
                         end
-                        length(args)==1 && typeof(args[1]) <: Array && (args = args[1])
-                        push!(nsr,args)
+                        length(args)==1 && typeof(args[1]) <: Tuple && (args = args[1])
+                        push!(nsr,Tuple(args))
                     end; else; :(nothing); end)
+                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),"=>")
+                    sp = split(sexpr[h],r"=>")
+                    stuff = String.(split(sp[2],r"(when)|(and)"))
+                    ar = $rfun.(fun,stuff;be=be)
+                    push!(nsr,$rfun(fun,sp[1];be=be) => length(ar) ≠ 1 ? ar : ar[1])
                 elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),prefix)
                     $(if mode == :expr; quote
                     ts = sexpr[h]
@@ -395,7 +400,7 @@ end
 Parser generator that outputs code to walk and manipulate REDUCE expressions
 """
 function parsegen(fun::Symbol,mode::Symbol)
-    fune = fun == :// ? :/ : fun
+    fune = (fun == ://) ? :/ : (fun == :rlet) ? :let : fun
     mf = Symbol(:parse,"_",mode)
     a = mode != :args ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
     return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0)) :
@@ -563,11 +568,11 @@ end
             print_args(io,expr.args[2:end])
         end
     elseif expr.head == :(=)
-        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
+        if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call) && ListPrint()<1
             show_expr(io,Expr(:function,expr.args[1],expr.args[2]))
         else
             show_expr(io,expr.args[1])
-            print(io,":=")
+            print(io,ListPrint()>0 ? "=" : ":=")
             show_expr(io,expr.args[2])
         end
     elseif contains(string(expr.head),r"[*\/+-^]=$")
@@ -575,7 +580,7 @@ end
             throw(ReduceError("function assignment for $(expr.head) not supported"))
         else
             show_expr(io,expr.args[1])
-            print(io,":=")
+            print(io,ListPrint()>0 ? "=" : ":=")
             print(io,match(r"[^(=$)]",string(expr.head)).match*"(")
             show_expr(io,expr.args[1])
             print(io,",")
@@ -634,6 +639,16 @@ end
             print(io,",")
         end
         print(io,expr.args[end])
+    elseif expr.head == :tuple
+        ListPrint(ListPrint()+1)
+        print(io,"{")
+        l = length(expr.args)
+        for i ∈ 1:l
+            show_expr(io,expr.args[i])
+            i ≠ l && print(io,",")
+        end
+        print(io,"}")
+        ListPrint(ListPrint()-1)
     elseif expr.head == :line; nothing
     else
         throw(ReduceError("Nested :$(expr.head) block structure not supported"))
@@ -685,6 +700,28 @@ function show_expr(io::IO, ex)
             i ≠ l && print(io,",")
         end
         print(io,"))")
+    elseif typeof(ex) <: Tuple
+        ListPrint(ListPrint()+1)
+        print(io,"{")
+        l = length(ex)
+        for i ∈ 1:l
+            show_expr(io,ex[i])
+            i ≠ l && print(io,",")
+        end
+        print(io,"}")
+        ListPrint(ListPrint()-1)
+    elseif typeof(ex) <: Pair
+        show_expr(io,ex[1])
+        print(io," => ")
+        if typeof(ex[2]) <: Array
+            show_expr(io,ex[2][1])
+            for k ∈ 2:length(ex[2])
+                print(io, k ≠ 1 ? " and " : " when ")
+                show_expr(io, ex[2][k])
+            end
+        else
+            show_expr(io,ex[2])
+        end
     elseif typeof(ex) <: Array
         if length(size(ex)) > 2
             throw(ReduceError("parsing of $(typeof(ex)) not supported."))
