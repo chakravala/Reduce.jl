@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Reduce.sub",
     "category": "function",
-    "text": "sub(::Union{Dict,Pair},expr)\n\nMake variable substitutions using Reduce\'s native sub command\n\n\n\nsub(T::DataType,expr::Expr)\n\nMake a substitution to conver numerical values to type T\n\n\n\n"
+    "text": "sub(::Union{Dict,Pair},expr)\n\nMake variable substitutions using Reduce\'s native sub command\n\n\n\nsub(T::DataType,expr::Expr)\n\nMake a substitution to convert numerical values to type T\n\n\n\n"
 },
 
 {
@@ -238,14 +238,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Reduce.ColCheck",
     "category": "function",
     "text": "Reduce.ColCheck(::Bool)\n\nToggle whether to reset REPL linewidth on each show\n\n\n\n"
-},
-
-{
-    "location": "library.html#Reduce.DisplayLog",
-    "page": "Library",
-    "title": "Reduce.DisplayLog",
-    "category": "function",
-    "text": "Reduce.DisplayLog(::Bool)\n\nToggle whether to display the log of REDUCE commands\n\n\n\n"
 },
 
 {
