@@ -40,7 +40,7 @@ cos(---------------) + sinh(x)*i
 """
 RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
-function RExpr(r::T) where T <: Union{Array,RowVector}
+function RExpr(r::T) where T <: Union{Array,RowVector,Tuple,Pair}
     out = IOBuffer()
     show_expr(out,r)
     return out |> take! |> String |> RExpr
@@ -139,8 +139,8 @@ const r_to_jl_utf = Dict(
     "pi"            =>  "π",
     "golden_ratio"  =>  "φ",
     "**"            =>  "^",
-    "/"             =>  "//",
-    "~"             =>  "\""
+    "/"             =>  "//"
+    #"~"             =>  "\""
 )
 
 const jl_to_r = Dict(
@@ -155,8 +155,8 @@ const jl_to_r_utf = Dict(
     "π"             =>  "pi",
     "γ"             =>  "euler_gamma",
     "φ"             =>  "golden_ratio",
-    "//"            =>  "/",
-    "\""            =>  "~"
+    "//"            =>  "/"
+    #"\""            =>  "~"
 )
 
 list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr
@@ -225,6 +225,22 @@ function sub(T::DataType,ixpr)
     return ixpr
 end
 
+export sub_list
+
+# convert substitution dictionary into SUB parameter string
+function sub_list(syme::Dict{String,String})
+    str = IOBuffer()
+    write(str,"{")
+    k = length(keys(syme))
+    for key in keys(syme)
+        k -= 1
+        write(str,"$key => $(syme[key])")
+        k > 0 && write(str,",")
+    end
+    write(str,"}")
+    return String(take!(str)[1:end-1])
+end
+
 """
     Reduce.Rational(::Bool)
 
@@ -276,15 +292,24 @@ ColCheck = ( () -> begin
     end)()
 
 """
-    Reduce.DisplayLog(::Bool)
+    Reduce.PrintLog(::Bool)
 
 Toggle whether to display the log of REDUCE commands
 """
-DisplayLog = ( () -> begin
+PrintLog = ( () -> begin
         gs = false
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
+"""
+    Reduce.ListPrint(::Int)
+
+Toggle whether to translate assignment as `:=` or `=` for list parsing.
+"""
+ListPrint = ( () -> begin
+        gs = 0
+        return (tf=gs)->(gs≠tf && (gs=tf); return gs)
+    end)()
 
 @inline function SubReplace(sym::Symbol,str::String)
     a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
@@ -401,7 +426,7 @@ julia> R\"int(sin(x), x)\" |> RExpr |> rcall
     wrs = String(UInt8[take!(ons)...,take!(offs)...]) *
           string(r) *
           String(UInt8[take!(onr)...,take!(offr)...])
-    DisplayLog() && println(wrs)
+    PrintLog() && println(wrs)
     write(rs,wrs)
     sp = mode ? readsp(rs) : read(rs)
     expo && rcall(R"off exp")

@@ -74,6 +74,15 @@ function ReduceCheck(output) # check for REDUCE errors
     contains(output,r"(([*]{5})|([+]{3}) )|( ?  \(Y or N\))") && throw(ReduceError(output))
 end
 
+function ReduceWarn(output) # check for REDUCE warnings
+    if contains(output,r"[*]{3}")
+        info("REDUCE: "*chomp(output))
+        join(split(output,r"[*]{3}.*\n"))
+    else
+        output
+    end
+end
+
 function PipeClogged(tf::Bool,c::Int,info::String)
     warn("Reduce pipe clogged by $info, $(tf ? "success" : "failure") after $c tries")
 end
@@ -98,7 +107,7 @@ function Base.read(rs::PSL) # get result and strip prompts/EOT char
     out = replace(replace(out,r"\$\n\n" => "\n\n"),RES=>"")
     out = replace(out,Regex(SOS) => "")
     ReduceCheck(out)
-    return out
+    return ReduceWarn(out)
 end
 
 readsp(rs::PSL) = split(read(rs),"\n\n\n")
@@ -219,6 +228,7 @@ function Load()
         rcall(R"on savestructr")
         show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
         R"x" == R"x"
+        ListPrint(0)
     end
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)

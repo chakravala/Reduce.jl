@@ -92,7 +92,12 @@ const sfun = [
     :precision,
     :setmod,
     :rootval,
-    :clear
+    :showrules,
+]
+
+const snan = [
+    :rlet,
+    :clearrules,
 ]
 
 const snum = [
@@ -130,7 +135,7 @@ const smat = [
 
 Expr(:block,[:($i(r)=Base.$i(r)) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> eval
 #Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> eval
-:(export $([sbas;sdep;sfun;snum;scom;sint;sran;sbat;smat;[:length]]...)) |> eval
+:(export $([sbas;sdep;sfun;snan;snum;scom;sint;sran;sbat;smat;[:length]]...)) |> eval
 #:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval
 
 for fun in [sbas;sdep;sfun;snum;scom;sint;sran;sbat;smat;[:length]]
@@ -167,7 +172,26 @@ tp(r::Union{Vector,RowVector}) = r |> RExpr |> tp |> parse |> mat
 transpose(r::ExprSymbol) = r
 ctranspose(r::ExprSymbol) = conj(r)
 
+for fun in snan
+    nfun = fun ≠ :rlet ? fun : :let
+    @eval begin
+        $fun(r::RExpr) = string($(string(nfun)),"(",string(r),")") |> rcall |> RExpr
+        $fun(r) = $fun(RExpr(r)) |> parse
+    end
+end
+
 length(r::Expr) = length(r |> RExpr) |> parse |> eval
+
+"""
+    rlet(::Union{Dict,Pair},expr)
+
+Unlike substitutions via `sub`, `rlet` rules are global in scope and stay in effect until replaced or `clear`ed.
+"""
+rlet(r::Dict{String,String}) = rlet(sub_list(r))
+rlet(s::Dict{<:Any,<:Any}) = rlet(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...))
+rlet(s::Pair{<:Any,<:Any}) = rlet(Tuple([s]))
+rlet(s::T) where T <: Tuple = rlet(RExpr(s))
+rlet(s::Array{<:Pair{<:Any,<:Any},1}) = rlet(Tuple(s))
 
 for fun in [sint;sran]
     @eval begin

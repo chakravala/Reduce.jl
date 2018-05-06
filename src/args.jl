@@ -25,6 +25,10 @@ const calculus = [
     :lterm,
     :reduct,
     :totaldeg,
+]
+
+const cnan = [
+    :clear,
     :matrix,
     :operator
 ]
@@ -50,7 +54,7 @@ const cmat = [
 
 Expr(:block,[:($i(r...)=Base.$i(r...)) for i ∈ [alg;iops]]...) |> eval
 #Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
-:(export $([calculus;alg;iops;cmat]...)) |> eval
+:(export $([calculus;cnan;alg;iops;cmat]...)) |> eval
 #:(export $(Symbol.("@",[calculus;alg;iops])...)) |> eval
 
 for fun in [calculus;alg;iops]
@@ -68,6 +72,13 @@ for fun in [calculus;alg]
         function $fun(expr::Compat.String,s...;be=0)
             convert(Compat.String, $fun(RExpr(expr),s...;be=be))
         end
+    end
+end
+
+for fun in cnan
+    @eval begin
+        $fun(r::RExpr...) = string($(string(fun)),"(",join(string.(r),","),")") |> rcall |> RExpr
+        $fun(r...) = $fun(RExpr.(r)...) |> parse
     end
 end
 
