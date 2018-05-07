@@ -1,6 +1,7 @@
 using Reduce, Compat
 using Base.Test
 @force using Reduce.Algebra
+is_windows() && Reduce.ColCheck(false)
 
 # write your own tests here
 @test showerror(STDOUT,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
@@ -20,7 +21,7 @@ using Base.Test
 @test show(STDOUT, R"") == nothing
 @test show(STDOUT,"text/latex",R"int(sinh(e**i*z),z)") == nothing
 @test Base.write(Reduce.rs, R"") |> typeof == Int; rcall(1)
-@test "1"*R"1"*"1" == split(R"1;1;1")
+#@test "1"*R"1"*"1" == split(R"1;1;1")
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"
 @test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr

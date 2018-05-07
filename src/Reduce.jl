@@ -43,9 +43,9 @@ struct PSL <: Base.AbstractPipe
                 process = _spawn(rsl, input, output)
             end
         else
-            osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
-            osbit = contains(readstring(osbitf),"32BIT") ? "i686-pc-windows" : "x86_64-pc-windows"
-            close(osbitf)
+            #osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
+            #osbit = contains(readstring(osbitf),"32BIT") ? "i686-pc-windows" : "x86_64-pc-windows"
+            #close(osbitf)
             dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl") : #osbit):
                 joinpath(dirf,"..","deps","install","lib","psl"))
             rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
@@ -213,14 +213,14 @@ function Load()
         write(rs.input,"off nat; $EOTstr;\n")
         banner = readuntil(rs.output,EOT) |> String
         readavailable(rs.output)
-        if is_windows()
+        rcsl = contains(banner," CSL ")
+       if is_windows()
             banner = replace(banner,r"\r" => "")
-            !contains(dirname(@__FILE__),"appveyor") &&
-                println(split(String(banner),'\n')[rcsl ? 1 : end-3])
+            #!contains(dirname(@__FILE__),"appveyor") &&
+            println(split(String(banner),'\n')[rcsl ? 1 : end-3])
             ColCheck(false)
         else
             ReduceCheck(banner)
-            rcsl = contains(banner," CSL ")
             println(split(String(banner),'\n')[rcsl ? 1 : end-3])
         end
         load_package(:rlfi)
