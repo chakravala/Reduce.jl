@@ -12,3 +12,11 @@ date = Dict(
 rsvn = Dict(
   0 =>  "Reduce-svn4052-src",
   1 =>  "Reduce-svn4372-src")
+
+if VERSION >= v"0.7.0-DEV.4445"
+    function _spawn(cmd, input=devnull, output=devnull)
+        run(pipeline(cmd, stdin=input, stdout=output, stderr=stderr), wait=false)
+    end
+else
+    _spawn(cmd, input=DevNull, output=DevNull) = spawn(cmd, (input, output, STDERR))
+end

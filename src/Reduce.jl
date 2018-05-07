@@ -8,14 +8,6 @@ using Compat; import Compat.String
 
 include(joinpath(@__DIR__,"../deps/svn.jl"))
 
-if VERSION >= v"0.7.0-DEV.4445"
-    function _spawn(cmd, input=devnull, output=devnull)
-        run(pipeline(cmd, stdin=input, stdout=output, stderr=stderr), wait=false)
-    end
-else
-    _spawn(cmd, input=DevNull, output=DevNull) = spawn(cmd, (input, output, STDERR))
-end
-
 struct PSL <: Base.AbstractPipe
     input::Pipe
     output::Pipe
@@ -46,9 +38,9 @@ struct PSL <: Base.AbstractPipe
             #osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
             #osbit = contains(readstring(osbitf),"32BIT") ? "i686-pc-windows" : "x86_64-pc-windows"
             #close(osbitf)
-            dirf = (contains(dirf,"appveyor") ? joinpath(dirf,"..","deps","psl") : #osbit):
-                joinpath(dirf,"..","deps","install","lib","psl"))
-            rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
+            dirf = joinpath(dirf,"..","deps")
+            #rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
+            rsl = `"$(dirf)\reduce.exe" --nogui`
             process = _spawn(rsl, input, output)
         end
         # Close the unneeded ends of Pipes
@@ -216,7 +208,6 @@ function Load()
         rcsl = contains(banner," CSL ")
        if is_windows()
             banner = replace(banner,r"\r" => "")
-            #!contains(dirname(@__FILE__),"appveyor") &&
             println(split(String(banner),'\n')[rcsl ? 1 : end-3])
             ColCheck(false)
         else

@@ -80,31 +80,27 @@ if !is_windows()
     end
 else
     try
-        folder = joinpath(wdir," ..","deps","install","lib","psl")
-        cmd = `"$(folder)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+        #cmd = `"$(wdir)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+        cmd = `"$(wdir)\reduce.exe" --nogui`
         process = _spawn(cmd)
         kill(process)
     catch
         cd(wdir)
-        http = "https://ayera.dl.sourceforge.net/project/reduce-algebra/snapshot_"
-        setup = "Reduce-Setup"
-        if contains(wdir,"appveyor")
-            println("Building redpsl...")
-            download("https://github.com/chakravala/Reduce.jl/wiki/redpsl.cab",joinpath(wdir,"redpsl.cab"))
-            #download("http://codemist.dynu.com/red/winpsl.cab",joinpath(wdir,"winpsl.cab"))
-            open("redpsl.bat","w") do f
-                #write(f,"expand redpsl.cab \"$(wdir)\" -F:*"); end
-                write(f,"expand winpsl.cab \"$(wdir)\" -F:*\n")
-                write(f,"reg Query \"HKLM\\Hardware\\Description\\System\\CentralProcessor\\0\" | find /i \"x86\" > NUL && set OSQ=32BIT || set OSQ=64BIT\n")
-                write(f,"echo %OSQ% > osbit.txt")
-            end
-            run(`$(wdir)\\redpsl.bat`)
-        else
-            println("Downloading reduce binaries...")
-            download(http*date[ρ]*"/"*setup*"_"*date[ρ]*".exe",joinpath(wdir,"$(setup)_$(date[ρ]).exe"))
-            println("Installing reduce binaries...")
-            run(`$(setup)_$(date[ρ]).exe /SILENT /DIR=$(joinpath(wdir,"install"))`)
+        println("Building Reduce.jl with CSL binaries...")
+        cab = "wincsl.cab"
+        download("http://codemist.dynu.com/red/$cab",joinpath(wdir,cab))
+        open("redextract.bat","w") do f
+                write(f,"expand $cab \"$(wdir)\" -F:*\n")
+                #write(f,"reg Query \"HKLM\\Hardware\\Description\\System\\CentralProcessor\\0\" | find /i \"x86\" > NUL && set OSQ=32BIT || set OSQ=64BIT\n")
+                #write(f,"echo %OSQ% > osbit.txt")
         end
+        run(`$(wdir)\\redextract.bat`)
+        #=http = "https://ayera.dl.sourceforge.net/project/reduce-algebra/snapshot_"
+        setup = "Reduce-Setup"
+        println("Downloading reduce binaries...")
+        download(http*date[ρ]*"/"*setup*"_"*date[ρ]*".exe",joinpath(wdir,"$(setup)_$(date[ρ]).exe"))
+        println("Installing reduce binaries...")
+        run(`$(setup)_$(date[ρ]).exe /SILENT /DIR=$(joinpath(wdir,"install"))`)=#
         println("DONE")
     end
 end

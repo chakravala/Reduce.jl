@@ -1,7 +1,7 @@
 using Reduce, Compat
 using Base.Test
 @force using Reduce.Algebra
-is_windows() && Reduce.ColCheck(false)
+is_windows() && (Reduce.ColCheck(false); * = Algebra.:*)
 
 # write your own tests here
 @test showerror(STDOUT,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
