@@ -78,3 +78,23 @@ println()
 @test Reduce.lister(:x) == R"x"
 @test !latex(false)
 @test (@rounded @factor x^2-2x+1) == :((x-1)^2)
+@test (@rounded @off_factor @rcall x^2) == :(x^2)
+@test det([:a :b; :c :d]) == :(a*d-b*c)
+@test tp([:a;:b]) == [:a :b;]
+@test transpose(:x) == :x
+@test ctranspose(:x) == :(repart(x)-impart(x)*im)
+operator(:cbrt)
+@test (rlet(:(cbrt(~x))=>:(x^(1/3))); true)
+@test (rlet([:(cbrt(~x))=>:(x^(1/3))]); true)
+@test (rlet(Dict(:(cbrt(~x))=>:(x^(1/3)))); true)
+@test 1+R"x" == :(x+1)
+@test inv([:a :b; :c :d]) |> typeof <: Array
+@test inv(1) == 1.0
+@test [1]\[2] == [2.0]
+@test 1.0//1.0 == 1
+@test [:a :b; :c :d]/2 |> typeof <: Array
+@test [:a :b; :c :d]+1 == 1+[:a :b; :c :d]
+@test [:x] + 1 == 1 + [:x]
+@test [:x,:y]' + 1 == 1 + [:x,:y]'
+@test solve(:(x-1),:x) == solve((:(x-1),),:x)
+@test (order(nothing); korder(nothing); true)

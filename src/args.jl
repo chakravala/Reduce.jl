@@ -8,8 +8,6 @@ const calculus = [
     :logb,
     :solve,
     :pf,
-    :order,
-    :korder,
     :structr,
     :coeff,
     :coeffn,
@@ -46,6 +44,8 @@ const cnan = [
     :noncom,
     :symmetric,
     :antisymmetric,
+    :order,
+    :korder,
 ]
 
 const alg = [
@@ -100,8 +100,11 @@ end
 for fun in cmat
     @eval begin
         $(Reduce.parsegen(fun,:args))
-        function $fun(expr::Union{Array{Any,2},Expr,Symbol})
-            $fun(RExpr(expr),s...)
+        function $fun(expr::Union{Array{Any,2},Expr,Symbol},s...)
+            $fun(RExpr(expr),RExpr.(s)...)
+        end
+        function $fun(expr::Union{Array{T,2},Expr,Symbol},s...) where T <: ExprSymbol
+            $fun(RExpr(expr),RExpr.(s)...)
         end
     end
 end
@@ -181,6 +184,8 @@ function //(a::T,b::T) where T <: AbstractFloat
     return //(RExpr(a),RExpr(b)) |> parse |> eval
 end
 
+export inv, \
+
 inv(r) = Base.inv(r)
 inv(r::T) where T <: MatExpr = r^-1
 
@@ -195,6 +200,8 @@ end
 solve(a::T,s::Symbol) where T <: Vector = solve(a,[s])
 solve(a::Expr,s::Array{Symbol,1}) = solve(a.head == :block ? a.args : [a],s)
 solve(a::Expr,s::Symbol) = solve(a,[s])
+solve(a::T,s::S) where T <: Tuple where S <: Tuple = solve(RExpr(a),RExpr(s)) |> parse
+solve(a::T,s::Symbol) where T <: Tuple = solve(a,(s,))
 
 order(::Void) = order(R"nil") |> parse
 korder(::Void) = korder(R"nil") |> parse

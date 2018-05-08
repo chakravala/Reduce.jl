@@ -165,12 +165,8 @@ for fun in [sbat;smat]
     end
 end
 
-import Base.LinAlg: transpose, ctranspose
-
 tp(r::Array{T,1}) where T <: ExprSymbol = r |> RExpr |> tp |> parse |> mat
 tp(r::Union{Vector,RowVector}) = r |> RExpr |> tp |> parse |> mat
-transpose(r::ExprSymbol) = r
-ctranspose(r::ExprSymbol) = conj(r)
 
 for fun in snan
     nfun = fun ≠ :rlet ? fun : :let

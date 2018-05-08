@@ -116,7 +116,7 @@ function macroshift(r)
         if r.args[1] ∈ onswitch
             (expr,push!(on,string(r.args[1])[2:end]),off)
         elseif r.args[1] ∈ offswitch
-            (expr,on,push!(off,string(r.args[1])[5:end]))
+            (expr,on,push!(off,string(r.args[1])[6:end]))
         else
             (eval(r),String[],String[])
         end

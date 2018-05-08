@@ -129,6 +129,20 @@ end
 
 import Base: zero, one
 
+for T ∈ [:Any,:Expr,:Symbol]
+    @eval begin
+        zero(::Type{$T}) = 0
+        zero(::$T) = 0
+        one(::Type{$T}) = 1
+        one(::$T) = 1
+    end
+end
+
+import Base.LinAlg: transpose, ctranspose
+
+transpose(r::ExprSymbol) = r
+ctranspose(r::ExprSymbol) = Algebra.conj(r)
+
 ## Setup
 
 const offlist = [:nat,:latex,:exp]

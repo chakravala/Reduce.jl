@@ -35,21 +35,23 @@ Interface for applying symbolic manipulation on [Julia expressions](https://docs
 * interface link communicates and interprets via various reduce output modes using `rcall` method;
 * high-level reduce-julia syntax parser-generator walks arbitrary expression to rewrite mathematical code;
 * import operators from REDUCE using code generation to apply to arbitrary computational expressions;
-* interactive `reduce>` REPL within the Julia terminal window activated by `}` key.
+* interactive `reduce>` REPL within the Julia terminal window activated by `}` key;
 * extended arithmetic operators `+`,`-`,`*`,`^`,`/`,`//` compute on `Symbol` and `Expr` types;
-* provides over 330 internal and external methods each supporting many argument types.
+* provides hundreds of internal and external methods each supporting many argument types.
+
+Additional packages that depend on Reduce.jl are maintained at [JuliaReducePkg](https://github.com/JuliaReducePkg).
+
+The upstream REDUCE software created by Anthony C. Hearn is maintained by collaborators on [SourceForge](https://sourceforge.net/p/reduce-algebra/).
 
 ## Setup
 
-The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redpsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary of `redpsl` for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redpsl` for you, success depends on the build tools installed. Automatic download on Windows is supported, although any **appveyor** build tests for Windows will fail due to absent software distribution infrastructure. However, the automated testing for **Travis CI** using Linux and OSX are fully operational `using Reduce`.
+The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redcsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redcsl` for you, success depends on the build tools installed. Automated testing for **Travis CI** and **appveyor** using Linux, OSX, and Windows are fully operational `using Reduce`.
 
 ```Julia
 julia> Pkg.add("Reduce"); Pkg.build("Reduce")
 julia> using Reduce
-Reduce (Free PSL version, revision 4015),  5-May-2017 ...
+Reduce (Free CSL version, revision 4521),  11-March-2018 ...
 ```
-In order to support Unicode / UTF8 characters, the CSL version of reduce is required. The automated build script currently only fetches the PSL version. However, if you have `redcsl` installed on your system it can be used by Reduce.jl by setting the environment variable `ENV["REDUCE"] = "redcsl -w"` in julia.
-
 For users who wish to experiment with precomplation, it is possible to enable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "1"` in julia (only effective when `Reduce` is being compiled).
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
@@ -69,9 +71,15 @@ Releases of `Reduce.jl` enable the general application of various REDUCE functio
 
 ## Usage
 
+The extended algebraic symbolic expression mode of Reduce.jl is activated with [ForceImport.jl](https://github.com/chakravala/ForceImport.jl) by
+```Julia
+@force using Reduce.Algebra
+```
+This locally extends native Julia functions to `Symbol` and `Expr` types in the current module without extending global methods. Alternatively, the methods it provides can be accesed by prefixing `Algebra.` in front of the method.
+
 Reduce expressions encapsulated into `RExpr` objects can be manipulated within julia using the standard syntax. Create an expression object either using the `RExpr("expression")` string constructor or `R"expression"`. Additionally, arbitrary julia expressions can also be parsed directly using the `RExpr(expr)` constructor. Internally `RExpr` objects are represented as an array that can be accessed by calling `*.str[n]` on the object.
 
-When `Reduce` is used in Julia, all of the standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
+When `Reduce` is used in Julia, standard arithmetic operations are now extended to also work on `Symbol` and `Expr` types.
 ```Julia
 julia> 1-1/:n
 :((n - 1) // n)
@@ -82,7 +90,7 @@ julia> ans^-:n
 julia> limit(ans,:n,Inf)
 e = 2.7182818284590...
 ```
-Julia abstract syntax trees are automatically converted into sequences of reduce statements that are in return parsed into julia `quote` blocks using the `RExpr` constructor.
+Julia abstract syntax trees are automatically converted into sequences of reduce statements (using `RExpr` constructor) that are in return parsed into julia `quote` blocks usig `parse`.
 The `rcall` method is used to evaluate any type of expression.
 ```Julia
 julia> :(int(sin(im*x+pi)^2-1,x)) |> rcall
