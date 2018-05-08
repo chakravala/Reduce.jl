@@ -127,18 +127,7 @@ for var ∈ [variables;[:ws]]
     :($var() = rcall(RExpr($(string(var)))) |> parse) |> eval
 end
 
-ws(n::Integer) = rcall(RExpr("ws($n)"))
-
 import Base: zero, one
-
-for T ∈ [:Any,:Expr,:Symbol]
-    @eval begin
-        zero(::Type{$T}) = 0
-        one(::Type{$T}) = 1
-        zero(::$T) = 0
-        one(::$T) = 1
-    end
-end
 
 ## Setup
 
@@ -189,32 +178,34 @@ __init__() = (Load(); atexit(() -> kill(rs)))
 
 # Server setup
 
+const s = quote; #global rs = PSL()
+    global offs = ""
+    for o in offlist
+        o != :nat && (offs = offs*"off $o; ")
+    end
+    write(rs.input,"off nat; $EOTstr;\n")
+    banner = readuntil(rs.output,EOT) |> String
+    readavailable(rs.output)
+    rcsl = contains(banner," CSL ")
+    if is_windows()
+        banner = replace(banner,r"\r" => "")
+        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
+        ColCheck(false)
+    else
+        ReduceCheck(banner)
+        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
+    end
+    load_package(:rlfi)
+    offs |> RExpr |> rcall
+    rcall(R"on savestructr")
+    show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
+    R"x" == R"x"
+    ListPrint(0)
+end
+
 function Load()
     global rs = PSL()
-    s = quote; #global rs = PSL()
-        global offs = ""
-        for o in offlist
-            o != :nat && (offs = offs*"off $o; ")
-        end
-        write(rs.input,"off nat; $EOTstr;\n")
-        banner = readuntil(rs.output,EOT) |> String
-        readavailable(rs.output)
-        rcsl = contains(banner," CSL ")
-       if is_windows()
-            banner = replace(banner,r"\r" => "")
-            println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-            ColCheck(false)
-        else
-            ReduceCheck(banner)
-            println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-        end
-        load_package(:rlfi)
-        offs |> RExpr |> rcall
-        rcall(R"on savestructr")
-        show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
-        R"x" == R"x"
-        ListPrint(0)
-    end
+    global s
     if isdefined(Base,:active_repl) && isinteractive()
         eval(s)
         repl_init(Base.active_repl)

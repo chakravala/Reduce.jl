@@ -199,6 +199,46 @@ solve(a::Expr,s::Symbol) = solve(a,[s])
 order(::Void) = order(R"nil") |> parse
 korder(::Void) = korder(R"nil") |> parse
 
-export ∑, ∏
+export ∑, ∏, sub
 
 (∑, ∏) = (sum, prod)
+
+"""
+    sub(::Union{Dict,Pair},expr)
+
+Make variable substitutions using Reduce's native sub command
+"""
+sub(syme::String,expr::RExpr) = "sub($syme,$expr)" |> rcall |> RExpr
+sub(syme::String,expr::T) where T = convert(T,sub(syme,RExpr(expr)))
+sub(s::Dict{String,String},expr) = sub(Reduce._syme(s),expr)
+sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...),expr)
+sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
+sub(s::Array{<:Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
+
+"""
+    sub(T::DataType,expr::Expr)
+
+Make a substitution to convert numerical values to type T
+"""
+function sub(T::DataType,ixpr)
+    if typeof(ixpr) == Expr
+        expr = deepcopy(ixpr)
+        if expr.head == :call && expr.args[1] == :^
+            expr.args[2] = sub(T,expr.args[2])
+            if typeof(expr.args[3]) == Expr
+                expr.args[3] = sub(T,expr.args[3])
+            end
+        elseif expr.head == :macrocall &&
+                expr.args[1] ∈ [Symbol("@int128_str"), Symbol("@big_str")]
+            return convert(T,eval(expr))
+        else
+            for a ∈ 1:length(expr.args)
+                expr.args[a] = sub(T,expr.args[a])
+            end
+        end
+        return expr
+    elseif typeof(ixpr) <: Number
+        return convert(T,ixpr)
+    end
+    return ixpr
+end

@@ -21,7 +21,6 @@ is_windows() && (Reduce.ColCheck(false); * = Algebra.:*)
 @test show(STDOUT, R"") == nothing
 @test show(STDOUT,"text/latex",R"int(sinh(e**i*z),z)") == nothing
 @test Base.write(Reduce.rs, R"") |> typeof == Int; rcall(1)
-#@test "1"*R"1"*"1" == split(R"1;1;1")
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"
 @test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr
@@ -62,9 +61,20 @@ println()
 @test join(split(R"x+1;x+2"))|> string == "x+1;\nx+2"
 @test sub(:x=>7,:x+7) == sub([:x=>7,:z=>21],:z-:x)
 @test sub(Float64,prod((:x-:n)^:n,:n,1,7)|>horner) |> typeof == Expr
+@test sub(Float64,:(7^(x+1))) |> typeof == Expr
 @test squash(Expr(:function,:(fun(x)),:(z=3;z+=:x))).args[2] == squash(:(y=:x;y+=3))
+@test squash(:(sqrt(x)^2)) == :x
 @test Expr(:block,:(x+1)) |> RExpr == R"1+x"
 @test limit((1-1/:n)^-:n,:n,Inf) == e
 @test log(exp(:pi)) == π
 @test 2//Inf == 0
 @test Inf//2 == Inf
+
+@test (rcall("x"); Reduce.ws() == :x)
+@test (operator(:x); operator(:x); clear(:x); true)
+@test try det([:x :y]) catch true end
+@test join([R"1",R"1"]) == R"1;1"
+@test list([R"1",R"x"]) == list((1,:x))
+@test Reduce.lister(:x) == R"x"
+@test !latex(false)
+@test (@rounded @factor x^2-2x+1) == :((x-1)^2)

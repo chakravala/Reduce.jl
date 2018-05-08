@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, sub, squash, list
+export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, squash, list
 import Base: parse, convert, ==, getindex, *, split, string, show, join
 
 export ExprSymbol
@@ -63,9 +63,6 @@ end
 macro R_str(str)
     RExpr(str)
 end
-
-*(x::RExpr,y::Compat.String) = RExpr(push!(deepcopy(x.str),y))
-*(x::Compat.String,y::RExpr) = RExpr(unshift!(deepcopy(y.str),x))
 
 function rtrim(r::Array{Compat.String,1})
     n = deepcopy(r)
@@ -159,20 +156,29 @@ const jl_to_r_utf = Dict(
     #"\""            =>  "~"
 )
 
+list(r::T) where T <: Tuple = RExpr(r)
 list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr
 list(a::T) where T <: Vector = length(a) ≠ 0 ? list(lister.(a)) : R"{}"
 list(a::T) where T <: RowVector = list([a...])
 list(a::T) where T <: Matrix = list([a[:,k] for k ∈ 1:size(a)[2]])
 lister(expr) = typeof(expr) <: Vector ? list(expr) : RExpr(expr)
 
-# convert substitution dictionary into SUB parameter string
-function _syme(syme::Dict{String,String})
+export sub_list
+
+function sub_list(syme::Dict{String,String})
     str = IOBuffer()
+    write(str,"{")
+    k = length(keys(syme))
     for key in keys(syme)
-        write(str,"($key => $(syme[key])),")
+        k -= 1
+        write(str,"$key => $(syme[key])")
+        k > 0 && write(str,",")
     end
-    return String(take!(str)[1:end-1])
+    write(str,"}")
+    return String(take!(str))
 end
+
+_syme(syme::Dict{String,String}) = sub_list(syme)[2:end-1]
 
 function _subst(syme::String,expr::T) where T
     convert(T, "!*hold($expr)\$ ws where $syme" |> rcall)
@@ -184,62 +190,6 @@ reprjl = r_to_jl_utf
 const repjlr = jl_to_r_utf
 const gexrjl = Regex("($(join(keys(r_to_jl),")|(")))")
 const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
-
-"""
-    sub(::Union{Dict,Pair},expr)
-
-Make variable substitutions using Reduce's native sub command
-"""
-sub(syme::String,expr::RExpr) = "sub($syme,$expr)" |> rcall |> RExpr
-sub(syme::String,expr::T) where T = convert(T,sub(syme,RExpr(expr)))
-sub(s::Dict{String,String},expr) = sub(_syme(s),expr)
-sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...),expr)
-sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
-sub(s::Array{<:Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
-
-"""
-    sub(T::DataType,expr::Expr)
-
-Make a substitution to convert numerical values to type T
-"""
-function sub(T::DataType,ixpr)
-    if typeof(ixpr) == Expr
-        expr = deepcopy(ixpr)
-        if expr.head == :call && expr.args[1] == :^
-            expr.args[2] = sub(T,expr.args[2])
-            if typeof(expr.args[3]) == Expr
-                expr.args[3] = sub(T,expr.args[3])
-            end
-        elseif expr.head == :macrocall &&
-                expr.args[1] ∈ [Symbol("@int128_str"), Symbol("@big_str")]
-            return convert(T,eval(expr))
-        else
-            for a ∈ 1:length(expr.args)
-                expr.args[a] = sub(T,expr.args[a])
-            end
-        end
-        return expr
-    elseif typeof(ixpr) <: Number
-        return convert(T,ixpr)
-    end
-    return ixpr
-end
-
-export sub_list
-
-# convert substitution dictionary into SUB parameter string
-function sub_list(syme::Dict{String,String})
-    str = IOBuffer()
-    write(str,"{")
-    k = length(keys(syme))
-    for key in keys(syme)
-        k -= 1
-        write(str,"$key => $(syme[key])")
-        k > 0 && write(str,",")
-    end
-    write(str,"}")
-    return String(take!(str)[1:end-1])
-end
 
 """
     Reduce.Rational(::Bool)
