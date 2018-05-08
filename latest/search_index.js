@@ -145,14 +145,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "library.html#Reduce.sub",
-    "page": "Library",
-    "title": "Reduce.sub",
-    "category": "function",
-    "text": "sub(::Union{Dict,Pair},expr)\n\nMake variable substitutions using Reduce\'s native sub command\n\n\n\nsub(T::DataType,expr::Expr)\n\nMake a substitution to convert numerical values to type T\n\n\n\n"
-},
-
-{
     "location": "library.html#Reduce.squash",
     "page": "Library",
     "title": "Reduce.squash",
