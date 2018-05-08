@@ -13,9 +13,11 @@ if isfile("ver")
         if is_linux()
             run(`rm -rf $(joinpath(wdir,"usr"))`)
         elseif is_apple()
-            run(`rm -rf $(joinpath(wdir,"psl"))`)
+            run(`rm -rf $(joinpath(wdir,"csl"))`)
+        elseif is_windows()
+            run(`cmd /C DEL /F /S /Q /A "$(joinpath(wdir,"reduce.exe"))"`)
         end
-        run(`rm ver`)
+        run(is_windows() ? `cmd /C DEL /F /S /Q /A "ver"` : `rm ver`)
     end
 end
 
@@ -36,7 +38,7 @@ if !is_windows()
             elseif is_apple()
                 cmd = `$(joinpath(wdir,"psl"))/$rpsl`
             else
-                cmd = `$(joinpath(wdir,rsvn[ρ],"bin"))/$rpsl`
+                cmd = `$(joinpath(wdir,"Reduce-svn$(rsvn[ρ])-src","bin"))/$rpsl`
             end
             process = _spawn(cmd)
             kill(process)
@@ -47,13 +49,13 @@ if !is_windows()
         rtg = "reduce.tar.gz"
         dl = "/download"
         cd(wdir)
-        println("Building redpsl ... ")
+        println("Building Reduce.jl with CSL binaries ... ")
         if is_linux()
-            src = "/linux-tar/reduce-psl_"
+            src = "/reduce-csl_"
             if contains(readstring(`uname -m`),"64")
-                download(http*date[ρ]*src*date[ρ]*"_amd64.tgz"*dl,joinpath(wdir,rtg))
+                download(http*date[ρ]*"/linux64"*src*rsvn[ρ]*"_amd64.tgz"*dl,joinpath(wdir,rtg))
             else
-                download(http*date[ρ]*src*date[ρ]*"_i386.tgz"*dl,joinpath(wdir,rtg))
+                download(http*date[ρ]*"/linux32"*src*rsvn[ρ]*"_i386.tgz"*dl,joinpath(wdir,rtg))
             end
             run(`rm -rf $(joinpath(wdir,"usr"))`)
             run(`tar -xvf $(rtg)`)
@@ -61,46 +63,43 @@ if !is_windows()
             writever(ρ)
         elseif is_apple()
             snap = "Reduce-snapshot"
-            download(http*date[ρ]*"/"*snap*"_"*date[ρ]*".dmg"*dl,joinpath(wdir,"$(snap)_$(date[ρ]).dmg"))
+            download(http*date[ρ]*"/macintosh/"*snap*"_"*rsvn[ρ]*".dmg"*dl,joinpath(wdir,"$(snap)_$(date[ρ]).dmg"))
             run(`hdiutil attach $(wdir)/$(snap)_$(date[ρ]).dmg`)
-            run(`rm -rf $(joinpath(wdir,"psl"))`)
-            run(`cp -r /Volumes/$(snap)/psl $(wdir)/psl`)
+            run(`rm -rf $(joinpath(wdir,"csl"))`)
+            run(`cp -r /Volumes/$(snap)/csl $(wdir)/csl`)
             run(`hdiutil unmount /Volumes/$(snap)`)
             run(`rm $(snap)_$(date[ρ]).dmg`)
             writever(ρ)
         else
-            download(http*date[ρ]*"/"*rsvn[ρ]*".tar.gz"*dl,joinpath(wdir,rtg))
+            download(http*date[ρ]*"/Reduce-svn$(rsvn[ρ])-src.tar.gz"*dl,joinpath(wdir,rtg))
             run(`tar -xvf $(rtg)`)
             run(`rm $(rtg)`)
-            cd(joinpath("$wdir",rsvn[ρ]))
+            cd(joinpath("$wdir","Reduce-svn$(rsvn[ρ])-src"))
             run(`./configure --with-psl`)
             run(`make`)
+            writever(ρ)
         end
         println("DONE")
     end
 else
     try
-        #cmd = `"$(wdir)\psl\bpsl.exe" -td 16000000 -f "$(folder)\red\reduce.img"`
+        #cmd = `"$(wdir)\psl\bpsl.exe" -td 16000000 -f "$(wdir)\red\reduce.img"`
         cmd = `"$(wdir)\reduce.exe" --nogui`
         process = _spawn(cmd)
         kill(process)
     catch
         cd(wdir)
-        println("Building Reduce.jl with CSL binaries...")
+        println("Building Reduce.jl with CSL binaries ...")
         cab = "wincsl.cab"
-        download("http://codemist.dynu.com/red/$cab",joinpath(wdir,cab))
+        http = "https://ayera.dl.sourceforge.net/project/reduce-algebra/snapshot_"
+        download(http*date[ρ]*"/windows/wincsl_$(rsvn[ρ]).cab",joinpath(wdir,cab))
         open("redextract.bat","w") do f
                 write(f,"expand $cab \"$(wdir)\" -F:*\n")
                 #write(f,"reg Query \"HKLM\\Hardware\\Description\\System\\CentralProcessor\\0\" | find /i \"x86\" > NUL && set OSQ=32BIT || set OSQ=64BIT\n")
                 #write(f,"echo %OSQ% > osbit.txt")
         end
         run(`$(wdir)\\redextract.bat`)
-        #=http = "https://ayera.dl.sourceforge.net/project/reduce-algebra/snapshot_"
-        setup = "Reduce-Setup"
-        println("Downloading reduce binaries...")
-        download(http*date[ρ]*"/"*setup*"_"*date[ρ]*".exe",joinpath(wdir,"$(setup)_$(date[ρ]).exe"))
-        println("Installing reduce binaries...")
-        run(`$(setup)_$(date[ρ]).exe /SILENT /DIR=$(joinpath(wdir,"install"))`)=#
+        writever(ρ)
         println("DONE")
     end
 end

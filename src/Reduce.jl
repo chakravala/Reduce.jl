@@ -18,9 +18,6 @@ struct PSL <: Base.AbstractPipe
         output = Pipe()
         rsl = `$(split(rpsl))`
         dirf = @__DIR__
-        try
-            rsl = `$(split(ENV["REDUCE"]))`
-        end
         if !is_windows()
             try
                 process = _spawn(rsl, input, output)
@@ -28,16 +25,13 @@ struct PSL <: Base.AbstractPipe
                 if is_linux()
                     rsl = `$(joinpath(dirf,"..","deps","usr","bin"))/$rpsl`
                 elseif is_apple()
-                    rsl = `$(joinpath(dirf,"..","deps","psl"))/$rpsl`
+                    rsl = `$(joinpath(dirf,"..","deps","csl"))/$rpsl -w`
                 else
-                    rsl = `$(joinpath(dirf,"..",rsvn[ρ],"bin"))/$rpsl`
+                    rsl = `$(joinpath(dirf,"..","Reduce-svn$(rsvn[ρ])-src","bin"))/$rpsl`
                 end
                 process = _spawn(rsl, input, output)
             end
         else
-            #osbitf = open(joinpath(dirf,"..","deps","osbit.txt"))
-            #osbit = contains(readstring(osbitf),"32BIT") ? "i686-pc-windows" : "x86_64-pc-windows"
-            #close(osbitf)
             dirf = joinpath(dirf,"..","deps")
             #rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
             rsl = `"$(dirf)\reduce.exe" --nogui`
