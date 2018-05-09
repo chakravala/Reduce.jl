@@ -90,5 +90,5 @@ Reduce.ColCheck
 ```
 
 ```@docs
-Reduce.DisplayLog
+Reduce.PrintLog
 ```

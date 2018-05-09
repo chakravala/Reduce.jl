@@ -237,6 +237,10 @@ function Load()
     return nothing
 end
 
-include("precomp.jl")
+global preload = false
+try
+    (ENV["REDPRE"] == "1") && (preload = true)
+end
+preload && include("precomp.jl")
 
 end # module

@@ -4,7 +4,9 @@
 const switchbas = [
     :expand,
     :complex,
-    :div
+    :div,
+    :lcm,
+    :gcd,
 ]
 
 const switches = [
@@ -31,8 +33,6 @@ const switches = [
     :revpri,
     :fort,
     :ratarg,
-    :lcm,
-    :gcd,
     :ezgcd,
     :heugcd,
     :bezout,

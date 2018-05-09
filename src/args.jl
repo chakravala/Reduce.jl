@@ -63,8 +63,8 @@ const iops = [
 ]
 
 const cmat = [
-    :mateigen,
-    :cofactor
+    #:mateigen,
+    #:cofactor
 ]
 
 Expr(:block,[:($i(r...)=Base.$i(r...)) for i ∈ [alg;iops]]...) |> eval

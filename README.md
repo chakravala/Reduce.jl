@@ -14,6 +14,8 @@
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://chakravala.github.io/Reduce.jl/latest)
 [![Join the chat at gitter](https://badges.gitter.im/Reduce-jl/Lobby.svg)](https://gitter.im/Reduce-jl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+The premise behind Reduce.jl is based on the idea that `Symbol` and `Expr` types can be translated into computer algebra rewrite commands and then automatically parsed back into Julia ASTs, essentially extending the Julia language into a fully programable symbolic AST rewrite environment.
+
 REDUCE is a system for general algebraic computations of interest to mathematicians, scientists and engineers:
 
 * exact arithmetic using integers and fractions; arbitrary precision numerical approximation;
@@ -42,7 +44,7 @@ The upstream REDUCE software created by Anthony C. Hearn is maintained by collab
 
 ## Setup
 
-The `Reduce` package currently provides the base functionality to work with Julia and Reduce expressions, provided that you have `redcsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redcsl` for you, success depends on the build tools installed. Automated testing for **Travis CI** and **appveyor** using Linux, OSX, and Windows are fully operational `using Reduce`.
+The `Reduce` package provides the base functionality to work with Julia and Reduce expressions, provided that you have `redcsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redcsl` for you, success depends on the build tools installed. Automated testing for **Travis CI** and **appveyor** using Linux, OSX, and Windows are fully operational `using Reduce`.
 
 ```Julia
 julia> Pkg.add("Reduce"); Pkg.build("Reduce")
@@ -102,21 +104,24 @@ quote
     ((2 * sqrt(3) * atan((2x - 1) // sqrt(3)) - log((x ^ 2 - x) + 1)) + 2 * log(x + 1)) // 6
 end
 ```
-Call `split(::RExpr)` to create a new `RExpr` object with all expressions internally split into separate array elements.
-
 Mathematical operators and REDUCE modes can be applied directly to `Expr` and `RExpr` objects.
 ```Julia
-julia> Expr(:function,:(fun(a,b)),:(return a^3+3*a^2*b+3*a*b^2+b^3)) |> factor
+julia> Expr(:function,:(fun(a,b)),:(return 4x^4-44x^3+61x^2+270x-525)) |> horner
 :(function fun(a, b)
-        return (a + b) ^ 3
+        return ((4 * (x - 11) * x + 61) * x + 270) * x - 525
     end)
 ```
-Although not all language features have been implemented yet, it is possible to directly execute a variety of REDUCE style input programs using a synergy of julia syntax.
+Additionally, REDUCE switch statements can be used as macros to control evaluation of expressions.
+```Julia
+julia> @rounded @factor x^3-2x+1
+:((x + 1.61803398875) * (x - 1) * (x - 0.61803398875))
+```
+Most core features have a corresponding Julia method, but language features that have not been implemented yet can also be directly evaluated with `rcall` using a synergy of julia syntax.
 ```Julia
 julia> Expr(:for,:(i=2:34),:(product(i))) |> rcall
 :(@big_str "295232799039604140847618609643520000000")
 ```
-The `squash` function provides a way to reduce full program blocks into simplified functions,
+The `squash` function provides a way to reduce full program blocks into simplified functions, e.g.
 ```Julia
 julia> Expr(:function,:(example(a,b)),quote
            z = 3
@@ -128,6 +133,7 @@ julia> Expr(:function,:(example(a,b)),quote
         (5b - 2) * a - 2 * (b - 1)
     end)
 ```
+where `z` is a program variable and `:a` and `:b` are symbolic variables.
 
 ### Output mode
  Various output modes are supported. While in the REPL, the default `nat` output mode will be displayed for `RExpr` objects.
@@ -180,7 +186,7 @@ Releases of `Reduce.jl` enable the general application of various REDUCE functio
 
 ## Troubleshooting
 
-If the `reduce>` REPL is not appearing when `}` is pressed or the `Reduce.PSL` pipe is broken, the session can be restored by simply calling `Reduce.Reset()`, without requiring a restart of `julia` or reloading the package. This kills the currently running `redpsl` session and then re-initializes it for new use.
+If the `reduce>` REPL is not appearing when `}` is pressed or the Reduce pipe is broken, the session can be restored by simply calling `Reduce.Reset()`, without requiring a restart of `julia` or reloading the package. This kills the currently running Reduce session and then re-initializes it for new use.
 
 Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
 
