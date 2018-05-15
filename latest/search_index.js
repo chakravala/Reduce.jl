@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Reduce.jl",
     "category": "section",
-    "text": "Symbolic parser generator for Julia language expressions using REDUCE algebra term rewrite system"
+    "text": "Symbolic parser generator for Julia language expressions using REDUCE algebra term rewrite systemPages = [\"index.md\",\"library.md\",\"docs.md\"]"
 },
 
 {
@@ -93,7 +93,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Reduce.jl Library",
     "category": "section",
-    "text": ""
+    "text": "Pages = [\"index.md\",\"library.md\",\"docs.md\"]"
 },
 
 {
@@ -101,7 +101,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Index",
     "category": "section",
-    "text": ""
+    "text": "Pages = [\"library.md\"]"
 },
 
 {
@@ -249,6 +249,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "docs.html#",
+    "page": "Index",
+    "title": "Index",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "docs.html#Index-1",
+    "page": "Index",
+    "title": "Index",
+    "category": "section",
+    "text": "List of documented methods in Reduce.jl. See upstream index for others."
+},
+
+{
     "location": "man/acknowledgement.html#",
     "page": "Acknowledgement",
     "title": "Acknowledgement",
@@ -293,7 +309,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "2 Structure of Programs",
     "category": "section",
-    "text": "A REDUCE program consists of a set of functional commands which are evaluated sequentially by the computer. These commands are built up from declarations, statements and expressions. Such entities are composed of sequences of numbers, variables, operators, strings, reserved words and delimiters (such as commas and parentheses), which in turn are sequences of basic characters.Pages = [\"man/02-structure.md\"]"
+    "text": "A REDUCE program consists of a set of functional commands which are evaluated sequentially by the computer. These commands are built up from declarations, statements and expressions. Such entities are composed of sequences of numbers, variables, operators, strings, reserved words and delimiters (such as commas and parentheses), which in turn are sequences of basic characters.Pages = [\"02-structure.md\"]"
 },
 
 {
@@ -453,7 +469,15 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "2.7 Operators",
     "category": "section",
-    "text": ""
+    "text": "Operators in REDUCE are specified by name and type. There are two types, infix and prefix. Operators can be purely abstract, just symbols with no properties; they can have values assigned (using := or simple LET declarations) for specific arguments; they can have properties declared for some collection of arguments (using more general LET declarations); or they can be fully defined (usually by a procedure declaration).Infix operators have a definite precedence with respect to one another, and normally occur between their arguments. For example:a + b - c   (spaces optional)\nx<y and y=z (spaces required where shown)Spaces can be freely inserted between operators and variables or operators and operators. They are required only where operator names are spelled out with letters (such as the AND in the example) and must be unambiguously separated from another such or from a variable (like Y). Wherever one space can be used, so can any larger number.Prefix operators occur to the left of their arguments, which are written as a list enclosed in parentheses and separated by commas, as with normal mathematical functions, e.g.,cos(u)  \ndf(x^2,x)  \nq(v+w)Unmatched parentheses, incorrect groupings of infix operators and the like, naturally lead to syntax errors. The parentheses can be omitted (replaced by a space following the operator name) if the operator is unary and the argument is a single symbol or begins with a prefix operator name:cos y         means cos(y)\ncos (-y)      – parentheses necessary\nlog cos y     means log(cos(y))\nlog cos (a+b) means log(cos(a+b))butcos a*b       means (cos a)*b\ncos -y        is erroneous (treated as a variable\n              “cos” minus the variable y)A unary prefix operator has a precedence higher than any infix operator, including unary infix operators. In other words, REDUCE will always interpret cos y + 3 as (cos y) + 3 rather than as cos(y + 3).Infix operators may also be used in a prefix format on input, e.g., +(a,b,c). On output, however, such expressions will always be printed in infix form (i.e., a + b + c for this example).A number of prefix operators are built into the system with predefined properties. Users may also add new operators and define their rules for simplification. The built in operators are described in another section."
+},
+
+{
+    "location": "man/02-structure.html#Built-In-Infix-Operators-1",
+    "page": "2 Structure of Programs",
+    "title": "Built-In Infix Operators",
+    "category": "section",
+    "text": "The following infix operators are built into the system. They are all defined internally as procedures.⟨infix operator⟩        where∣:=∣or∣and∣member∣memq∣\n                        =∣neq∣eq∣>=∣>∣<=∣<∣\n                        +∣-∣*∣/∣^∣**∣.These operators may be further divided into the following subclasses:⟨assignment operator⟩   :=\n⟨logical operator⟩      or∣and∣member∣memq\n⟨relational operator⟩   =∣neq∣eq∣>=∣>∣<=∣<\n⟨substitution operator⟩ where\n⟨arithmetic operator⟩   +∣-∣*∣/∣^∣\\*\\*\n⟨construction operator⟩ .MEMQ and EQ are not used in the algebraic mode of REDUCE. They are explained in the section on symbolic mode. WHERE is described in the section on substitutions.In previous versions of REDUCE, not was also defined as an infix operator. In the present version it is a regular prefix operator, and interchangeable with null.For compatibility with the intermediate language used by REDUCE, each special character infix operator has an alternative alphanumeric identifier associated with it. These identifiers may be used interchangeably with the corresponding special character names on input. This correspondence is as follows::=   	setq    	(the assignment operator)\n=   	equal    \n>=   	geq    \n>   	greaterp    \n<=   	leq    \n<   	lessp    \n+   	plus    \n-   	difference   	(if unary, minus)\n*   	times    \n/   	quotient    	(if unary, recip)\n^ or ** expt    	(raising to a power)\n.   	cons    Note: NEQ is used to mean not equal. There is no special symbol provided for it.The above operators are binary, except NOT which is unary and + and * which are nary (i.e., taking an arbitrary number of arguments). In addition, - and / may be used as unary operators, e.g., /2 means the same as 1/2. Any other operator is parsed as a binary operator using a left association rule. Thus a/b/c is interpreted as (a/b)/c. There are two exceptions to this rule: := and . are right associative. Example: a:=b:=c is interpreted as a:=(b:=c). Unlike ALGOL and PASCAL, ^ is left associative. In other words, a^b^c is interpreted as (a^b)^c.The operators <, <=, >, >= can only be used for making comparisons between numbers. No meaning is currently assigned to this kind of comparison between general expressions.Parentheses may be used to specify the order of combination. If parentheses are omitted then this order is by the ordering of the precedence list defined by the right-hand side of the ⟨infix operator⟩ table at the beginning of this section, from lowest to highest. In other words, WHERE has the lowest precedence, and . (the dot operator) the highest."
 },
 
 {
@@ -469,7 +493,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3 Expressions",
     "category": "section",
-    "text": "REDUCE expressions may be of several types and consist of sequences of numbers, variables, operators, left and right parentheses and commas. The most common types are as follows:Pages = [\"man/03-expressions.md\"]"
+    "text": "REDUCE expressions may be of several types and consist of sequences of numbers, variables, operators, left and right parentheses and commas. The most common types are as follows:Pages = [\"03-expressions.md\"]Reduce expressions encapsulated into RExpr objects can be manipulated within julia using the standard syntax. Create an expression object either using the RExpr(\"expression\") string constructor or R\"expression\". Additionally, arbitrary julia expressions can also be parsed directly using the RExpr(expr) constructor. Internally RExpr objects are represented as an array that can be accessed by calling *.str[n] on the object. Julia abstract syntax trees are automatically converted into sequences of reduce statements (using RExpr constructor)."
 },
 
 {
@@ -477,7 +501,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.1 Scalar Expressions",
     "category": "section",
-    "text": "Using the arithmetic operations + - * / ^ (power) and parentheses, scalar expressions are composed from numbers, ordinary “scalar” variables (identifiers), array names with subscripts, operator or procedure names with arguments and statement expressions.Examples:reduce> x  \nreduce> x^3 - 2*y/(2*z^2 - df(x,z))  \nreduce> (p^2 + m^2)^(1/2)*log (y/m)  \nreduce> a(5) + b(i,q)The symbol ** may be used as an alternative to the caret symbol (^) for forming powers, particularly in those systems that do not support a caret symbol.Statement expressions, usually in parentheses, can also form part of a scalar expression, as in the examplereduce> w + (c:=x+y) + zWhen the algebraic value of an expression is needed, REDUCE determines it, starting with the algebraic values of the parts, roughly as follows:Variables and operator symbols with an argument list have the algebraic values they were last assigned, or if never assigned stand for themselves. However, array elements have the algebraic values they were last assigned, or, if never assigned, are taken to be 0.Procedures are evaluated with the values of their actual parameters.In evaluating expressions, the standard rules of algebra are applied. Unfortunately, this algebraic evaluation of an expression is not as unambiguous as is numerical evaluation. This process is generally referred to as “simplification” in the sense that the evaluation usually but not always produces a simplified form for the expression.There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and LET statements). In many cases, this is all that the user needs.The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command on rounded;. Other modes for coefficient arithmetic are described elsewhere.If an illegal action occurs during evaluation (such as division by zero) or functions are called with the wrong number of arguments, and so on, an appropriate error message is generated."
+    "text": "Using the arithmetic operations +, -, *, /, ^ (power) and parentheses, scalar expressions are composed from numbers, ordinary “scalar” variables (identifiers), array names with subscripts, operator or procedure names with arguments and statement expressions.Examples:RExpr(\"x\")\nR\"x^3 - 2*y/(2*z^2 - df(x,z))\"\nR\"(p^2 + m^2)^(1/2)*log (y/m)\"\nR\"a(5) + b(i,q)\"The symbol ** may be used as an alternative to the caret symbol (^) for forming powers, particularly in those systems that do not support a caret symbol.Statement expressions, usually in parentheses, can also form part of a scalar expression, as in the exampleR\"w + (c:=x+y) + z\"When the algebraic value of an expression is needed, REDUCE determines it, starting with the algebraic values of the parts, roughly as follows:Variables and operator symbols with an argument list have the algebraic values they were last assigned, or if never assigned stand for themselves. However, array elements have the algebraic values they were last assigned, or, if never assigned, are taken to be 0.Procedures are evaluated with the values of their actual parameters.In evaluating expressions, the standard rules of algebra are applied. Unfortunately, this algebraic evaluation of an expression is not as unambiguous as is numerical evaluation. This process is generally referred to as “simplification” in the sense that the evaluation usually but not always produces a simplified form for the expression.There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and LET statements). In many cases, this is all that the user needs.The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command on rounded;. Other modes for coefficient arithmetic are described elsewhere.If an illegal action occurs during evaluation (such as division by zero) or functions are called with the wrong number of arguments, and so on, an appropriate error message is generated."
 },
 
 {
@@ -485,7 +509,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.2 Integer Expressions",
     "category": "section",
-    "text": "These are expressions which, because of the values of the constants and variables in them, evaluate to whole numbers.Examples:2,      37 * 999,       (x + 3)^2 - x^2 - 6*xare obviously integer expressions.j + k - 2 * j^2is an integer expression when J and K have values that are integers, or if not integers are such that “the variables and fractions cancel out”, as ink - 7/3 - j + 2/3 + 2*j^2."
+    "text": "These are expressions which, because of the values of the constants and variables in them, evaluate to whole numbers.Examples:R\"2\";      R\"37 * 999\";       R\"(x + 3)^2 - x^2 - 6*x\"are obviously integer expressions.R\"j + k - 2 * j^2\"is an integer expression when J and K have values that are integers, or if not integers are such that “the variables and fractions cancel out”, as inR\"k - 7/3 - j + 2/3 + 2*j^2\""
 },
 
 {
@@ -493,7 +517,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.3 Boolean Expressions",
     "category": "section",
-    "text": ""
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
 },
 
 {
@@ -501,7 +525,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.4 Equations",
     "category": "section",
-    "text": "Equations are a particular type of expression with the syntax⟨expression⟩=⟨expression⟩In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., SOLVE), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the SUB operator. If both sides are to be evaluated, the switch EVALLHSEQP should be turned on.To facilitate the handling of equations, two selectors, LHS and RHS, which return the left- and right-hand sides of an equation respectively, are provided. For example,lhs(a+b=c) -> a+bandrhs(a+b=c) -> c"
+    "text": "Equations are a particular type of expression with the syntaxR\"⟨expression⟩=⟨expression⟩\"In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., SOLVE), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the SUB operator. If both sides are to be evaluated, the switch EVALLHSEQP should be turned on.To facilitate the handling of equations, two selectors, LHS and RHS, which return the left- and right-hand sides of an equation respectively, are provided. For example,julia> R\"lhs(a+b=c)\"\n\na + bandjulia> R\"rhs(a+b=c)\"\n\nc"
 },
 
 {
@@ -509,7 +533,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.5 Proper Statements as Expressions",
     "category": "section",
-    "text": "Several kinds of proper statements deliver an algebraic or numerical result of some kind, which can in turn be used as an expression or part of an expression. For example, an assignment statement itself has a value, namely the value assigned. So2 * (x := a+b)is equal to 2*(a+b), as well as having the “side-effect” of assigning the value a+b to X. In context,y := 2 * (x := a+b);sets X to a+b and Y to 2*(a+b).The sections on the various proper statement types indicate which of these statements are also useful as expressions."
+    "text": "Several kinds of proper statements deliver an algebraic or numerical result of some kind, which can in turn be used as an expression or part of an expression. For example, an assignment statement itself has a value, namely the value assigned. SoR\"2 * (x := a+b)\"is equal to R\"2*(a+b)\", as well as having the “side-effect” of assigning the value a+b to X. In context,R\"y := 2 * (x := a+b);\"sets X to a+b and Y to 2*(a+b).The sections on the various proper statement types indicate which of these statements are also useful as expressions."
 },
 
 {
