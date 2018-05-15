@@ -12,8 +12,35 @@ makedocs(
     sitename = "Reduce.jl",
     authors = "Michael Reed",
     pages = Any[
-        "Home" => "index.md"
-        "Library" => "library.md"
+        "Home" => "index.md",
+        "Library" => "library.md",
+        "Index" => "docs.md",
+        "User's Manual" => Any[
+            "man/acknowledgement.md",
+            "man/01-introduction.md",
+            "man/02-structure.md",
+            "man/03-expressions.md",
+            #="man/04-lists.md",
+            "man/05-statements.md",
+            "man/06-commands-delcarations.md",
+            "man/07-prefix-ops.md",
+            "man/08-display.md",
+            "man/09-polynomials.md",
+            "man/10-properties.md",
+            "man/11-substitution.md",
+            "man/12-file-io.md",
+            "man/13-interactive.md",
+            "man/14-matrix.md",
+            "man/15-procedures.md",
+            "man/16-packages.md",
+            "man/17-symbolic.md",
+            "man/18-physics.md",
+            "man/19-rlisp.md",=#
+            "man/20-maintaining.md",
+            "man/A-reserved.md",
+            "man/B-bibliography.md",
+            "man/C-changelog.md"
+            ]
         ]
 )
 

@@ -120,12 +120,36 @@ const variables = [
     :requirements,
     :assumptions,
     :low_pow,
-    :high_pow
+    :high_pow,
+    :catalan,
+    :euler_gamma,
 ]
 
 for var ∈ [variables;[:ws]]
     :($var() = rcall(RExpr($(string(var)))) |> parse) |> eval
 end
+
+@doc """
+    catalan()
+
+Catalan's constant, defined as
+
+\$ \\sum_{n=0}^\\infty \\frac{(-1)^n}{(2n+1)^2}. \$
+"""
+
+@doc """
+    euler_gamma()
+
+Euler's constant, also available as -\$psi(1)\$.
+"""
+
+@doc """
+    khinchin()
+
+Khinchin's constant, defined as
+
+\$ \\prod_{n=1}^\\infty \\left( 1 + \\frac{1}{n(n+2)} \\right)^{\\log_2 n}. \$
+"""
 
 import Base: zero, one
 

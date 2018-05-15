@@ -156,11 +156,18 @@ const jl_to_r_utf = Dict(
     #"\""            =>  "~"
 )
 
+
+"""
+    list(r)
+
+Returns an `RExpr` with list of its arguments.
+"""
 list(r::T) where T <: Tuple = RExpr(r)
 list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr
 list(a::T) where T <: Vector = length(a) ≠ 0 ? list(lister.(a)) : R"{}"
 list(a::T) where T <: RowVector = list([a...])
 list(a::T) where T <: Matrix = list([a[:,k] for k ∈ 1:size(a)[2]])
+list(r...) = list(r)
 lister(expr) = typeof(expr) <: Vector ? list(expr) : RExpr(expr)
 
 export sub_list

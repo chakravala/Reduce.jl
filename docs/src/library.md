@@ -1,11 +1,13 @@
 # Reduce.jl Library
 
 ```@contents
+Pages = ["index.md","library.md","docs.md"]
 ```
 
 ## Index
 
 ```@index
+Pages = ["library.md"]
 ```
 
 ## Reduce Interface

@@ -4,6 +4,7 @@
 
 
 ```@contents
+Pages = ["index.md","library.md","docs.md"]
 ```
 
 ## Introduction

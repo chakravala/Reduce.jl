@@ -98,6 +98,7 @@ const sfun = [
 const snan = [
     :rlet,
     :clearrules,
+    :scientific_notation,
 ]
 
 const snum = [
@@ -168,6 +169,8 @@ end
 tp(r::Array{T,1}) where T <: ExprSymbol = r |> RExpr |> tp |> parse |> mat
 tp(r::Union{Vector,RowVector}) = r |> RExpr |> tp |> parse |> mat
 
+length(r::Expr) = length(r |> RExpr) |> parse |> eval
+
 for fun in snan
     nfun = fun ≠ :rlet ? fun : :let
     @eval begin
@@ -175,8 +178,6 @@ for fun in snan
         $fun(r) = $fun(RExpr(r)) |> parse
     end
 end
-
-length(r::Expr) = length(r |> RExpr) |> parse |> eval
 
 """
     rlet(::Union{Dict,Pair},expr)
@@ -186,8 +187,10 @@ Unlike substitutions via `sub`, `rlet` rules are global in scope and stay in eff
 rlet(r::Dict{String,String}) = rlet(sub_list(r))
 rlet(s::Dict{<:Any,<:Any}) = rlet(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...))
 rlet(s::Pair{<:Any,<:Any}) = rlet(Tuple([s]))
-rlet(s::T) where T <: Tuple = rlet(RExpr(s))
+rlet(s::T) where T <: Tuple = rlet(RExpr(s)) |> parse
 rlet(s::Array{<:Pair{<:Any,<:Any},1}) = rlet(Tuple(s))
+
+scientific_notation(r::Union{Vector,RowVector}) = scientific_notation(list(r)) |> parse
 
 for fun in [sint;sran]
     @eval begin
