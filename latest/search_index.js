@@ -281,6 +281,238 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/02-structure.html#",
+    "page": "2 Structure of Programs",
+    "title": "2 Structure of Programs",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/02-structure.html#Structure-of-Programs-1",
+    "page": "2 Structure of Programs",
+    "title": "2 Structure of Programs",
+    "category": "section",
+    "text": "A REDUCE program consists of a set of functional commands which are evaluated sequentially by the computer. These commands are built up from declarations, statements and expressions. Such entities are composed of sequences of numbers, variables, operators, strings, reserved words and delimiters (such as commas and parentheses), which in turn are sequences of basic characters.Pages = [\"man/02-structure.md\"]"
+},
+
+{
+    "location": "man/02-structure.html#.1-The-REDUCE-Standard-Character-Set-1",
+    "page": "2 Structure of Programs",
+    "title": "2.1 The REDUCE Standard Character Set",
+    "category": "section",
+    "text": "The basic characters which are used to build REDUCE symbols are the following:The 26 letters a through z\nThe 10 decimal digits 0 through 9\nThe special characters _ ! ~ $ % ’ ( ) * + , - . / : ; < > = { }⟨blank⟩With the exception of strings and characters preceded by an exclamation mark, the case of characters is ignored: depending of the underlying LISP they will all be converted internally into lower case or upper case: ALPHA, Alpha and alpha represent the same symbol. Most implementations allow you to switch this conversion off. The operating instructions for a particular implementation should be consulted on this point. For portability, we shall limit ourselves to the standard character set in this exposition."
+},
+
+{
+    "location": "man/02-structure.html#.2-Numbers-1",
+    "page": "2 Structure of Programs",
+    "title": "2.2 Numbers",
+    "category": "section",
+    "text": "There are several different types of numbers available in REDUCE. Integers consist of a signed or unsigned sequence of decimal digits written without a decimal point, for example:-2, 5396, +32In principle, there is no practical limit on the number of digits permitted as exact arithmetic is used in most implementations. (You should however check the specific instructions for your particular system implementation to make sure that this is true.) For example, if you ask for the value of 2^2000 you get it displayed as a number of 603 decimal digits, taking up several lines of output on an interactive display. It should be borne in mind of course that computations with such long numbers can be quite slow.Numbers that aren’t integers are usually represented as the quotient of two integers, in lowest terms: that is, as rational numbers.In essentially all versions of REDUCE it is also possible (but not always desirable!) to ask REDUCE to work with floating point approximations to numbers again, to any precision. Such numbers are called real. They can be input in two ways:as a signed or unsigned sequence of any number of decimal digits with an embedded or trailing decimal point.\nas in 1. followed by a decimal exponent which is written as the letter E followed by a signed or unsigned integer.e.g. 32. +32.0 0.32E2 and 320.E-1 are all representations of 32.The declaration SCIENTIFIC_NOTATION controls the output format of floating point numbers. At the default settings, any number with five or less digits before the decimal point is printed in a fixed-point notation, e.g., 12345.6. Numbers with more than five digits are printed in scientific notation, e.g., 1.234567E+5. Similarly, by default, any number with eleven or more zeros after the decimal point is printed in scientific notation. To change these defaults, SCIENTIFIC_NOTATION can be used in one of two ways.reduce> SCIENTIFIC_NOTATION m;where m is a positive integer, sets the printing format so that a number with more than m digits before the decimal point, or m or more zeros after the decimal point, is printed in scientific notation.reduce> SCIENTIFIC_NOTATION{m,n};with m and n both positive integers, sets the format so that a number with more than m digits before the decimal point, or n or more zeros after the decimal point is printed in scientific notation.CAUTION: The unsigned part of any number may not begin with a decimal point, as this causes confusion with the CONS (.) operator, i.e., NOT ALLOWED ARE: .5 -.23 +.12; use 0.5 -0.23 +0.12 instead."
+},
+
+{
+    "location": "man/02-structure.html#.3-Identifiers-1",
+    "page": "2 Structure of Programs",
+    "title": "2.3 Identifiers",
+    "category": "section",
+    "text": "Identifiers in REDUCE consist of one or more alphanumeric characters (i.e. alphabetic letters or decimal digits) the first of which must be alphabetic. The maximum number of characters allowed is implementation dependent, although twenty-four is permitted in most implementations. In addition, the underscore character _ is considered a letter if it is within an identifier. For example,a az p1 q23p  a_very_long_variableare all identifiers, whereas_ais not.A sequence of alphanumeric characters in which the first is a digit is interpreted as a product. For example, 2ab3c is interpreted as 2*ab3c. There is one exception to this: If the first letter after a digit is E, the system will try to interpret that part of the sequence as a real number, which may fail in some cases. For example, 2E12 is the real number 2.0 * 1012, 2e3c is 2000.0*C, and 2ebc gives an error.Special characters, such as -, *, and <blank>, may be used in identifiers too, even as the first character, but each must be preceded by an exclamation mark in input. For example:light!-years    d!\\*!\\*n         good! morning  \n!$sign          !5goldringsCAUTION: Many system identifiers have such special characters in their names (especially * and =). If the user accidentally picks the name of one of them for his own purposes it may have catastrophic consequences for his REDUCE run. Users are therefore advised to avoid such names.Identifiers are used as variables, labels and to name arrays, operators and procedures. RestrictionsThe reserved words listed in section Appendix A: Reserved Identifiers may not be used as identifiers. No spaces may appear within an identifier, and an identifier may not extend over a line of text."
+},
+
+{
+    "location": "man/02-structure.html#.4-Variables-1",
+    "page": "2 Structure of Programs",
+    "title": "2.4 Variables",
+    "category": "section",
+    "text": "Every variable is named by an identifier, and is given a specific type. The type is of no concern to the ordinary user. Most variables are allowed to have the default type, called scalar. These can receive, as values, the representation of any ordinary algebraic expression. In the absence of such a value, they stand for themselves."
+},
+
+{
+    "location": "man/02-structure.html#Reserved-Variables-1",
+    "page": "2 Structure of Programs",
+    "title": "Reserved Variables",
+    "category": "section",
+    "text": "Several variables in REDUCE have particular properties which should not be changed by the user. These variables include:"
+},
+
+{
+    "location": "man/02-structure.html#CATALAN-1",
+    "page": "2 Structure of Programs",
+    "title": "CATALAN",
+    "category": "section",
+    "text": "Reduce.catalan"
+},
+
+{
+    "location": "man/02-structure.html#E-1",
+    "page": "2 Structure of Programs",
+    "title": "E",
+    "category": "section",
+    "text": "Intended to represent the base of the natural logarithms. log(e), if it occurs in an expression, is automatically replaced by 1. If ROUNDED is on, E is replaced by the value of e to the current degree of floating point precision."
+},
+
+{
+    "location": "man/02-structure.html#EULER_GAMMA-1",
+    "page": "2 Structure of Programs",
+    "title": "EULER_GAMMA",
+    "category": "section",
+    "text": "Reduce.euler_gamma"
+},
+
+{
+    "location": "man/02-structure.html#GOLDEN_RATIO-1",
+    "page": "2 Structure of Programs",
+    "title": "GOLDEN_RATIO",
+    "category": "section",
+    "text": "The number frac1+sqrt52."
+},
+
+{
+    "location": "man/02-structure.html#I-1",
+    "page": "2 Structure of Programs",
+    "title": "I",
+    "category": "section",
+    "text": "Intended to represent the square root of -1. i^2 is replaced by -1, and appropriately for higher powers of I. This applies only to the symbol I used on the top level, not as a formal parameter in a procedure, a local variable, nor in the context for i:= ...."
+},
+
+{
+    "location": "man/02-structure.html#INFINITY-1",
+    "page": "2 Structure of Programs",
+    "title": "INFINITY",
+    "category": "section",
+    "text": "Intended to represent ∞ in limit and power series calculations for example, as well as in definite integration. Note however that the current system does not do proper arithmetic on ∞. For example, infinity + infinity is 2*infinity."
+},
+
+{
+    "location": "man/02-structure.html#KHINCHIN-1",
+    "page": "2 Structure of Programs",
+    "title": "KHINCHIN",
+    "category": "section",
+    "text": "Reduce.khinchin"
+},
+
+{
+    "location": "man/02-structure.html#NEGATIVE-1",
+    "page": "2 Structure of Programs",
+    "title": "NEGATIVE",
+    "category": "section",
+    "text": "Used in the Roots package."
+},
+
+{
+    "location": "man/02-structure.html#NIL-1",
+    "page": "2 Structure of Programs",
+    "title": "NIL",
+    "category": "section",
+    "text": "In REDUCE (algebraic mode only) taken as a synonym for zero. Therefore NIL cannot be used as a variable."
+},
+
+{
+    "location": "man/02-structure.html#PI-1",
+    "page": "2 Structure of Programs",
+    "title": "PI",
+    "category": "section",
+    "text": "Intended to represent the circular constant. With ROUNDED on, it is replaced by the value of π to the current degree of floating point precision."
+},
+
+{
+    "location": "man/02-structure.html#POSITIVE-1",
+    "page": "2 Structure of Programs",
+    "title": "POSITIVE",
+    "category": "section",
+    "text": "Used in the Roots package."
+},
+
+{
+    "location": "man/02-structure.html#T-1",
+    "page": "2 Structure of Programs",
+    "title": "T",
+    "category": "section",
+    "text": "Must not be used as a formal parameter or local variable in procedures, since conflict arises with the symbolic mode meaning of T as true.Other reserved variables, such as LOW_POW, described in other sections, are listed in Appendix A: Reserved Identifiers.Using these reserved variables inappropriately will lead to errors.There are also internal variables used by REDUCE that have similar restrictions. These usually have an asterisk in their names, so it is unlikely a casual user would use one. An example of such a variable is K!\\* used in the asymptotic command package.Certain words are reserved in REDUCE. They may only be used in the manner intended. A list of these is given in the section “Reserved Identifiers”. There are, of course, an impossibly large number of such names to keep in mind. The reader may therefore want to make himself a copy of the list, deleting the names he doesn’t think he is likely to use by mistake."
+},
+
+{
+    "location": "man/02-structure.html#.5-Strings-1",
+    "page": "2 Structure of Programs",
+    "title": "2.5 Strings",
+    "category": "section",
+    "text": "Strings are used in WRITE statements, in other output statements (such as error messages), and to name files. A string consists of any number of characters enclosed in double quotes. For example:~A String~Lower case characters within a string are not converted to upper case.The string ~~ represents the empty string. A double quote may be included in a string by preceding it by another double quote. Thus ~a~~b~ is the string a~b, and ~~~~ is the string consisting of the single character ~.Note that the Reduce.jl parser does not currently support REDUCE strings, as there is no need for them due to the native string support of the Julia language."
+},
+
+{
+    "location": "man/02-structure.html#.6-Comments-1",
+    "page": "2 Structure of Programs",
+    "title": "2.6 Comments",
+    "category": "section",
+    "text": "Text can be included in program listings for the convenience of human readers, in such a way that REDUCE pays no attention to it. There are two ways to do this:Everything from the word COMMENT to the next statement terminator, normally ; or $, is ignored. Such comments can be placed anywhere a blank could properly appear. (Note that END and >> are not treated as COMMENT delimiters!)\nEverything from the symbol % to the end of the line on which it appears is ignored. Such comments can be placed as the last part of any line. Statement terminators have no special meaning in such comments. Remember to put a semicolon before the % if the earlier part of the line is intended to be so terminated. Remember also to begin each line of a multi-line % comment with a % sign."
+},
+
+{
+    "location": "man/02-structure.html#.7-Operators-1",
+    "page": "2 Structure of Programs",
+    "title": "2.7 Operators",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "man/03-expressions.html#",
+    "page": "3 Expressions",
+    "title": "3 Expressions",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/03-expressions.html#Expressions-1",
+    "page": "3 Expressions",
+    "title": "3 Expressions",
+    "category": "section",
+    "text": "REDUCE expressions may be of several types and consist of sequences of numbers, variables, operators, left and right parentheses and commas. The most common types are as follows:Pages = [\"man/03-expressions.md\"]"
+},
+
+{
+    "location": "man/03-expressions.html#.1-Scalar-Expressions-1",
+    "page": "3 Expressions",
+    "title": "3.1 Scalar Expressions",
+    "category": "section",
+    "text": "Using the arithmetic operations + - * / ^ (power) and parentheses, scalar expressions are composed from numbers, ordinary “scalar” variables (identifiers), array names with subscripts, operator or procedure names with arguments and statement expressions.Examples:reduce> x  \nreduce> x^3 - 2*y/(2*z^2 - df(x,z))  \nreduce> (p^2 + m^2)^(1/2)*log (y/m)  \nreduce> a(5) + b(i,q)The symbol ** may be used as an alternative to the caret symbol (^) for forming powers, particularly in those systems that do not support a caret symbol.Statement expressions, usually in parentheses, can also form part of a scalar expression, as in the examplereduce> w + (c:=x+y) + zWhen the algebraic value of an expression is needed, REDUCE determines it, starting with the algebraic values of the parts, roughly as follows:Variables and operator symbols with an argument list have the algebraic values they were last assigned, or if never assigned stand for themselves. However, array elements have the algebraic values they were last assigned, or, if never assigned, are taken to be 0.Procedures are evaluated with the values of their actual parameters.In evaluating expressions, the standard rules of algebra are applied. Unfortunately, this algebraic evaluation of an expression is not as unambiguous as is numerical evaluation. This process is generally referred to as “simplification” in the sense that the evaluation usually but not always produces a simplified form for the expression.There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and LET statements). In many cases, this is all that the user needs.The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command on rounded;. Other modes for coefficient arithmetic are described elsewhere.If an illegal action occurs during evaluation (such as division by zero) or functions are called with the wrong number of arguments, and so on, an appropriate error message is generated."
+},
+
+{
+    "location": "man/03-expressions.html#.2-Integer-Expressions-1",
+    "page": "3 Expressions",
+    "title": "3.2 Integer Expressions",
+    "category": "section",
+    "text": "These are expressions which, because of the values of the constants and variables in them, evaluate to whole numbers.Examples:2,      37 * 999,       (x + 3)^2 - x^2 - 6*xare obviously integer expressions.j + k - 2 * j^2is an integer expression when J and K have values that are integers, or if not integers are such that “the variables and fractions cancel out”, as ink - 7/3 - j + 2/3 + 2*j^2."
+},
+
+{
+    "location": "man/03-expressions.html#.3-Boolean-Expressions-1",
+    "page": "3 Expressions",
+    "title": "3.3 Boolean Expressions",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "man/03-expressions.html#.4-Equations-1",
+    "page": "3 Expressions",
+    "title": "3.4 Equations",
+    "category": "section",
+    "text": "Equations are a particular type of expression with the syntax⟨expression⟩=⟨expression⟩In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., SOLVE), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the SUB operator. If both sides are to be evaluated, the switch EVALLHSEQP should be turned on.To facilitate the handling of equations, two selectors, LHS and RHS, which return the left- and right-hand sides of an equation respectively, are provided. For example,lhs(a+b=c) -> a+bandrhs(a+b=c) -> c"
+},
+
+{
+    "location": "man/03-expressions.html#.5-Proper-Statements-as-Expressions-1",
+    "page": "3 Expressions",
+    "title": "3.5 Proper Statements as Expressions",
+    "category": "section",
+    "text": "Several kinds of proper statements deliver an algebraic or numerical result of some kind, which can in turn be used as an expression or part of an expression. For example, an assignment statement itself has a value, namely the value assigned. So2 * (x := a+b)is equal to 2*(a+b), as well as having the “side-effect” of assigning the value a+b to X. In context,y := 2 * (x := a+b);sets X to a+b and Y to 2*(a+b).The sections on the various proper statement types indicate which of these statements are also useful as expressions."
+},
+
+{
     "location": "man/20-maintaining.html#",
     "page": "20 Maintaining REDUCE",
     "title": "20 Maintaining REDUCE",
