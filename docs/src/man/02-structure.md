@@ -33,15 +33,9 @@ In essentially all versions of REDUCE it is also possible (but not always desira
 
 e.g. `32. +32.0 0.32E2` and `320.E-1` are all representations of 32.
 
-The declaration `SCIENTIFIC_NOTATION` controls the output format of floating point numbers. At the default settings, any number with five or less digits before the decimal point is printed in a fixed-point notation, e.g., `12345.6`. Numbers with more than five digits are printed in scientific notation, e.g., `1.234567E+5`. Similarly, by default, any number with eleven or more zeros after the decimal point is printed in scientific notation. To change these defaults, `SCIENTIFIC_NOTATION` can be used in one of two ways.
-```Julia
-reduce> SCIENTIFIC_NOTATION m;
+```@docs
+Reduce.Algebra.scientific_notation
 ```
-where `m` is a positive integer, sets the printing format so that a number with more than `m` digits before the decimal point, or `m` or more zeros after the decimal point, is printed in scientific notation.
-```Julia
-reduce> SCIENTIFIC_NOTATION{m,n};
-```
-with `m` and `n` both positive integers, sets the format so that a number with more than `m` digits before the decimal point, or `n` or more zeros after the decimal point is printed in scientific notation.
 
 *CAUTION:* The unsigned part of any number may *not* begin with a decimal point, as this causes confusion with the `CONS` (`.`) operator, i.e., *NOT ALLOWED ARE:* `.5 -.23 +.12`; use `0.5 -0.23 +0.12` instead.
 
@@ -81,13 +75,13 @@ Several variables in REDUCE have particular properties which should not be chang
 
 #### CATALAN
 
-```@docs
-Reduce.catalan
-```
+Catalan's constant, defined as
+
+``\sum_{n=0}^\infty \frac{(-1)^n}{(2n+1)^2}.``
 
 #### E
 
-Intended to represent the base of the natural logarithms. `log(e)`, if it occurs in an expression, is automatically replaced by 1. If `ROUNDED` is on, `E` is replaced by the value of ``e`` to the current degree of floating point precision.
+Intended to represent the base of the natural logarithms. `log(e)`, if it occurs in an expression, is automatically replaced by 1. If `rounded` is on, `E` is replaced by the value of ``e`` to the current degree of floating point precision.
 
 #### EULER_GAMMA
 
@@ -119,11 +113,11 @@ Used in the Roots package.
 
 #### NIL
 
-In REDUCE (algebraic mode only) taken as a synonym for zero. Therefore `NIL` cannot be used as a variable.
+In REDUCE (algebraic mode only) taken as a synonym for zero. Therefore `nil` cannot be used as a variable.
 
 #### PI
 
-Intended to represent the circular constant. With `ROUNDED` on, it is replaced by the value of π to the current degree of floating point precision.
+Intended to represent the circular constant. With `rounded` on, it is replaced by the value of π to the current degree of floating point precision.
 
 #### POSITIVE
 
@@ -133,7 +127,7 @@ Used in the Roots package.
 
 Must not be used as a formal parameter or local variable in procedures, since conflict arises with the symbolic mode meaning of `T` as *true*.
 
-Other reserved variables, such as `LOW_POW`, described in other sections, are listed in [Appendix A: Reserved Identifiers](@ref).
+Other reserved variables, such as `low_pow`, described in other sections, are listed in [Appendix A: Reserved Identifiers](@ref).
 
 Using these reserved variables inappropriately will lead to errors.
 
@@ -143,7 +137,7 @@ Certain words are reserved in REDUCE. They may only be used in the manner intend
 
 ## 2.5 Strings
 
-Strings are used in `WRITE` statements, in other output statements (such as error messages), and to name files. A string consists of any number of characters enclosed in double quotes. For example:
+Strings are used in `write` statements, in other output statements (such as error messages), and to name files. A string consists of any number of characters enclosed in double quotes. For example:
 ```
 ~A String~
 ```
@@ -157,19 +151,19 @@ The string `~~` represents the empty string. A double quote may be included in a
 
 Text can be included in program listings for the convenience of human readers, in such a way that REDUCE pays no attention to it. There are two ways to do this:
 
-1. Everything from the word `COMMENT` to the next statement terminator, normally `;` or `$`, is ignored. Such comments can be placed anywhere a blank could properly appear. (Note that `END` and `>>` are not treated as `COMMENT` delimiters!)
+1. Everything from the word `comment` to the next statement terminator, normally `;` or `$`, is ignored. Such comments can be placed anywhere a blank could properly appear. (Note that `end` and `>>` are not treated as `comment` delimiters!)
 2. Everything from the symbol `%` to the end of the line on which it appears is ignored. Such comments can be placed as the last part of any line. Statement terminators have no special meaning in such comments. Remember to put a semicolon before the `%` if the earlier part of the line is intended to be so terminated. Remember also to begin each line of a multi-line `%` comment with a `%` sign.
 
 ## 2.7 Operators
 
-Operators in REDUCE are specified by name and type. There are two types, infix and prefix. Operators can be purely abstract, just symbols with no properties; they can have values assigned (using `:=` or simple `LET` declarations) for specific arguments; they can have properties declared for some collection of arguments (using more general `LET` declarations); or they can be fully defined (usually by a procedure declaration).
+Operators in REDUCE are specified by name and type. There are two types, infix and prefix. Operators can be purely abstract, just symbols with no properties; they can have values assigned (using `:=` or simple `let` declarations) for specific arguments; they can have properties declared for some collection of arguments (using more general `let` declarations); or they can be fully defined (usually by a procedure declaration).
 
 Infix operators have a definite precedence with respect to one another, and normally occur between their arguments. For example:
 ```
 a + b - c   (spaces optional)
 x<y and y=z (spaces required where shown)
 ```
-Spaces can be freely inserted between operators and variables or operators and operators. They are required only where operator names are spelled out with letters (such as the `AND` in the example) and must be unambiguously separated from another such or from a variable (like `Y`). Wherever one space can be used, so can any larger number.
+Spaces can be freely inserted between operators and variables or operators and operators. They are required only where operator names are spelled out with letters (such as the `and` in the example) and must be unambiguously separated from another such or from a variable (like `Y`). Wherever one space can be used, so can any larger number.
 
 Prefix operators occur to the left of their arguments, which are written as a list enclosed in parentheses and separated by commas, as with normal mathematical functions, e.g.,
 ```
@@ -213,7 +207,7 @@ These operators may be further divided into the following subclasses:
 ⟨arithmetic operator⟩   +∣-∣*∣/∣^∣\*\*
 ⟨construction operator⟩ .
 ```
-`MEMQ` and `EQ` are not used in the algebraic mode of REDUCE. They are explained in the section on symbolic mode. `WHERE` is described in the section on substitutions.
+`memq` and `eq` are not used in the algebraic mode of REDUCE. They are explained in the section on symbolic mode. `where` is described in the section on substitutions.
 
 In previous versions of REDUCE, *not* was also defined as an infix operator. In the present version it is a regular prefix operator, and interchangeable with *null*.
 
@@ -232,10 +226,10 @@ For compatibility with the intermediate language used by REDUCE, each special ch
 ^ or ** expt    	(raising to a power)
 .   	cons    
 ```
-Note: `NEQ` is used to mean not equal. There is no special symbol provided for it.
+Note: `neq` is used to mean not equal. There is no special symbol provided for it.
 
-The above operators are binary, except `NOT` which is unary and `+` and `*` which are nary (i.e., taking an arbitrary number of arguments). In addition, `-` and `/` may be used as unary operators, e.g., `/2` means the same as `1/2`. Any other operator is parsed as a binary operator using a left association rule. Thus `a/b/c` is interpreted as `(a/b)/c`. There are two exceptions to this rule: `:=` and `.` are right associative. Example: `a:=b:=c` is interpreted as `a:=(b:=c)`. Unlike ALGOL and PASCAL, `^` is left associative. In other words, `a^b^c` is interpreted as `(a^b)^c`.
+The above operators are binary, except `not` which is unary and `+` and `*` which are nary (i.e., taking an arbitrary number of arguments). In addition, `-` and `/` may be used as unary operators, e.g., `/2` means the same as `1/2`. Any other operator is parsed as a binary operator using a left association rule. Thus `a/b/c` is interpreted as `(a/b)/c`. There are two exceptions to this rule: `:=` and `.` are right associative. Example: `a:=b:=c` is interpreted as `a:=(b:=c)`. Unlike ALGOL and PASCAL, `^` is left associative. In other words, `a^b^c` is interpreted as `(a^b)^c`.
 
 The operators `<`, `<=`, `>`, `>=` can only be used for making comparisons between numbers. No meaning is currently assigned to this kind of comparison between general expressions.
 
-Parentheses may be used to specify the order of combination. If parentheses are omitted then this order is by the ordering of the precedence list defined by the right-hand side of the *⟨infix operator⟩* table at the beginning of this section, from lowest to highest. In other words, `WHERE` has the lowest precedence, and `.` (the dot operator) the highest.
+Parentheses may be used to specify the order of combination. If parentheses are omitted then this order is by the ordering of the precedence list defined by the right-hand side of the *⟨infix operator⟩* table at the beginning of this section, from lowest to highest. In other words, `where` has the lowest precedence, and `.` (the dot operator) the highest.

@@ -93,6 +93,8 @@ const sfun = [
     :rootval,
     :showrules,
     :reverse,
+    :lhs,
+    :rhs,
 ]
 
 const snan = [
@@ -190,7 +192,22 @@ rlet(s::Pair{<:Any,<:Any}) = rlet(Tuple([s]))
 rlet(s::T) where T <: Tuple = rlet(RExpr(s)) |> parse
 rlet(s::Array{<:Pair{<:Any,<:Any},1}) = rlet(Tuple(s))
 
+"""
+    Algebra.scientific_notation(::Union{Number,Tuple,Vector})
+
+The declaration `scientific_notation` controls the output format of floating point numbers. At the default settings, any number with five or less digits before the decimal point is printed in a fixed-point notation, e.g., `12345.6`. Numbers with more than five digits are printed in scientific notation, e.g., `1.234567E+5`. Similarly, by default, any number with eleven or more zeros after the decimal point is printed in scientific notation. To change these defaults, `scientific_notation` can be used in one of two ways.
+```Julia
+julia> Algebra.scientific_notation(m);
+```
+where `m` is a positive integer, sets the printing format so that a number with more than `m` digits before the decimal point, or `m` or more zeros after the decimal point, is printed in scientific notation.
+```Julia
+julia> Algebra.scientific_notation(m,n);
+```
+with `m` and `n` both positive integers, sets the format so that a number with more than `m` digits before the decimal point, or `n` or more zeros after the decimal point is printed in scientific notation.
+"""
+scientific_notation(r::T) where T <: Tuple = scientific_notation(RExpr(r)) |> parse
 scientific_notation(r::Union{Vector,RowVector}) = scientific_notation(list(r)) |> parse
+scientific_notation(r::T...) where T <: Number = scientific_notation(list(r)) |> parse
 
 for fun in [sint;sran]
     @eval begin
@@ -219,3 +236,31 @@ end
 function bernoulli(n::T) where T <: Integer
     bernoulli(RExpr(n)) |> parse |> eval
 end
+
+@doc """
+    lhs(::Union{Expr,RExpr})
+
+Returns the left-hand side of an equation.
+
+## Examples
+```Julia
+julia> Algebra.lhs(R"a+b=c")
+
+a + b
+
+```
+""" Reduce.Algebra.lhs
+
+@doc """
+    rhs(::Union{Expr,RExpr})
+
+Returns the right-hand side of an equation.
+
+## Examples
+```Julia
+julia> Algebra.rhs(R"a+b=c")
+
+c
+
+```
+""" Reduce.Algebra.rhs

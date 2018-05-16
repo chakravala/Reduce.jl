@@ -121,8 +121,8 @@ const variables = [
     :assumptions,
     :low_pow,
     :high_pow,
-    :catalan,
     :euler_gamma,
+    :khinchin,
 ]
 
 for var ∈ [variables;[:ws]]
@@ -130,18 +130,10 @@ for var ∈ [variables;[:ws]]
 end
 
 @doc """
-    catalan()
-
-Catalan's constant, defined as
-
-\$ \\sum_{n=0}^\\infty \\frac{(-1)^n}{(2n+1)^2}. \$
-"""
-
-@doc """
     euler_gamma()
 
 Euler's constant, also available as -\$psi(1)\$.
-"""
+""" Reduce.euler_gamma
 
 @doc """
     khinchin()
@@ -149,7 +141,7 @@ Euler's constant, also available as -\$psi(1)\$.
 Khinchin's constant, defined as
 
 \$ \\prod_{n=1}^\\infty \\left( 1 + \\frac{1}{n(n+2)} \\right)^{\\log_2 n}. \$
-"""
+""" Reduce.khinchin
 
 import Base: zero, one
 

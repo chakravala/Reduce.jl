@@ -11,7 +11,7 @@ In this introduction, we shall limit ourselves to the interactive use of REDUCE,
 julia> using Reduce
 Reduce (Free CSL version, revision 4521),  11-March-2018 ...
 ```
-where the version number and the system release date will change from time to time in [deps/svn.jl](https://github.com/chakravala/Reduce.jl/blob/master/deps/svn.jl). To enter the Reduce REPL, type `<shift>+<]>` as the first character in the Julia prompt.
+where the version number and the system release date will change from time to time in [deps/svn.jl](https://github.com/chakravala/Reduce.jl/blob/master/deps/svn.jl). To enter the Reduce REPL, type `<shift>`+`<]>` as the first character in the Julia prompt.
 ```Julia
 reduce>
 ```

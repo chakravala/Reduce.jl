@@ -34,9 +34,9 @@ Procedures are evaluated with the values of their actual parameters.
 
 In evaluating expressions, the standard rules of algebra are applied. Unfortunately, this algebraic evaluation of an expression is not as unambiguous as is numerical evaluation. This process is generally referred to as “simplification” in the sense that the evaluation usually but not always produces a simplified form for the expression.
 
-There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and `LET` statements). In many cases, this is all that the user needs.
+There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and `let` statements). In many cases, this is all that the user needs.
 
-The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command `on rounded;`. Other modes for coefficient arithmetic are described elsewhere.
+The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command `rounded(true)`. Other modes for coefficient arithmetic are described elsewhere.
 
 If an illegal action occurs during evaluation (such as division by zero) or functions are called with the wrong number of arguments, and so on, an appropriate error message is generated.
 
@@ -67,21 +67,18 @@ Equations are a particular type of expression with the syntax
 ```
 R"⟨expression⟩=⟨expression⟩"
 ```
-In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., `SOLVE`), and can be returned as values.
+In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., `solve`), and can be returned as values.
 
-Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the `SUB` operator. If both sides are to be evaluated, the switch `EVALLHSEQP` should be turned on.
+Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the `sub` operator. If both sides are to be evaluated, the switch `evallhseqp` should be turned on.
 
-To facilitate the handling of equations, two selectors, `LHS` and `RHS`, which return the left- and right-hand sides of an equation respectively, are provided. For example,
-```Julia
-julia> R"lhs(a+b=c)"
+To facilitate the handling of equations, two selectors, `lhs` and `rhs`, which return the left- and right-hand sides of an equation respectively, are provided.
 
-a + b
+```@docs
+Reduce.Algebra.lhs
 ```
-and
-```Julia
-julia> R"rhs(a+b=c)"
 
-c
+```@docs
+Reduce.Algebra.rhs
 ```
 
 ## 3.5 Proper Statements as Expressions
@@ -95,5 +92,7 @@ is equal to `R"2*(a+b)"`, as well as having the “side-effect” of assigning t
 R"y := 2 * (x := a+b);"
 ```
 sets `X` to `a+b` and `Y` to `2*(a+b)`.
+
+**Note that if the Reduce.jl parser is used to convert these types of expressions to Julia AST, issues can occur since an equivalent feature does not exist in the Julia language.**
 
 The sections on the various proper statement types indicate which of these statements are also useful as expressions.

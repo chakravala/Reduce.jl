@@ -171,6 +171,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         ts = sexpr[h]
                         (h,state,mp) = loopshift(ts,'{','}',Compat.String,sexpr,h,iter,state)
                         smp = match(braces,join(mp,";\n")).match[2:end-1]
+                        ListPrint(ListPrint()+1)
                         args = Array{$arty,1}(0)
                         while smp ≠ ""
                             lsM = match(braces,smp)
@@ -190,6 +191,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 push!(args, af≠[nothing] ? af : Array{Any,1}(0))
                             end
                         end
+                        ListPrint(ListPrint()-1)
                         length(args)==1 && typeof(args[1]) <: Tuple && (args = args[1])
                         push!(nsr,Tuple(args))
                     end; else; :(nothing); end)
@@ -300,6 +302,12 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     nothing
                 elseif isempty(sh[en])
                     nothing
+                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),"=")
+                    $(if mode == :expr; quote
+                    sp = split(sexpr[h],"=")
+                    push!(nsr,$(:(Expr(:call,ListPrint()>0 ? :(=) : :(==),
+                            $rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))))
+                    end; end)
                 elseif contains(sexpr[h],":")
                     sp = split(sexpr[h],":")
                     push!(nsr,$(if mode == :expr
