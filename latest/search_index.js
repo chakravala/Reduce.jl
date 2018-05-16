@@ -321,11 +321,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/02-structure.html#Reduce.Algebra.scientific_notation",
+    "page": "2 Structure of Programs",
+    "title": "Reduce.Algebra.scientific_notation",
+    "category": "function",
+    "text": "Algebra.scientific_notation(::Union{Number,Tuple,Vector})\n\nThe declaration scientific_notation controls the output format of floating point numbers. At the default settings, any number with five or less digits before the decimal point is printed in a fixed-point notation, e.g., 12345.6. Numbers with more than five digits are printed in scientific notation, e.g., 1.234567E+5. Similarly, by default, any number with eleven or more zeros after the decimal point is printed in scientific notation. To change these defaults, scientific_notation can be used in one of two ways.\n\njulia> Algebra.scientific_notation(m);\n\nwhere m is a positive integer, sets the printing format so that a number with more than m digits before the decimal point, or m or more zeros after the decimal point, is printed in scientific notation.\n\njulia> Algebra.scientific_notation(m,n);\n\nwith m and n both positive integers, sets the format so that a number with more than m digits before the decimal point, or n or more zeros after the decimal point is printed in scientific notation.\n\n\n\n"
+},
+
+{
     "location": "man/02-structure.html#.2-Numbers-1",
     "page": "2 Structure of Programs",
     "title": "2.2 Numbers",
     "category": "section",
-    "text": "There are several different types of numbers available in REDUCE. Integers consist of a signed or unsigned sequence of decimal digits written without a decimal point, for example:-2, 5396, +32In principle, there is no practical limit on the number of digits permitted as exact arithmetic is used in most implementations. (You should however check the specific instructions for your particular system implementation to make sure that this is true.) For example, if you ask for the value of 2^2000 you get it displayed as a number of 603 decimal digits, taking up several lines of output on an interactive display. It should be borne in mind of course that computations with such long numbers can be quite slow.Numbers that aren’t integers are usually represented as the quotient of two integers, in lowest terms: that is, as rational numbers.In essentially all versions of REDUCE it is also possible (but not always desirable!) to ask REDUCE to work with floating point approximations to numbers again, to any precision. Such numbers are called real. They can be input in two ways:as a signed or unsigned sequence of any number of decimal digits with an embedded or trailing decimal point.\nas in 1. followed by a decimal exponent which is written as the letter E followed by a signed or unsigned integer.e.g. 32. +32.0 0.32E2 and 320.E-1 are all representations of 32.The declaration SCIENTIFIC_NOTATION controls the output format of floating point numbers. At the default settings, any number with five or less digits before the decimal point is printed in a fixed-point notation, e.g., 12345.6. Numbers with more than five digits are printed in scientific notation, e.g., 1.234567E+5. Similarly, by default, any number with eleven or more zeros after the decimal point is printed in scientific notation. To change these defaults, SCIENTIFIC_NOTATION can be used in one of two ways.reduce> SCIENTIFIC_NOTATION m;where m is a positive integer, sets the printing format so that a number with more than m digits before the decimal point, or m or more zeros after the decimal point, is printed in scientific notation.reduce> SCIENTIFIC_NOTATION{m,n};with m and n both positive integers, sets the format so that a number with more than m digits before the decimal point, or n or more zeros after the decimal point is printed in scientific notation.CAUTION: The unsigned part of any number may not begin with a decimal point, as this causes confusion with the CONS (.) operator, i.e., NOT ALLOWED ARE: .5 -.23 +.12; use 0.5 -0.23 +0.12 instead."
+    "text": "There are several different types of numbers available in REDUCE. Integers consist of a signed or unsigned sequence of decimal digits written without a decimal point, for example:-2, 5396, +32In principle, there is no practical limit on the number of digits permitted as exact arithmetic is used in most implementations. (You should however check the specific instructions for your particular system implementation to make sure that this is true.) For example, if you ask for the value of 2^2000 you get it displayed as a number of 603 decimal digits, taking up several lines of output on an interactive display. It should be borne in mind of course that computations with such long numbers can be quite slow.Numbers that aren’t integers are usually represented as the quotient of two integers, in lowest terms: that is, as rational numbers.In essentially all versions of REDUCE it is also possible (but not always desirable!) to ask REDUCE to work with floating point approximations to numbers again, to any precision. Such numbers are called real. They can be input in two ways:as a signed or unsigned sequence of any number of decimal digits with an embedded or trailing decimal point.\nas in 1. followed by a decimal exponent which is written as the letter E followed by a signed or unsigned integer.e.g. 32. +32.0 0.32E2 and 320.E-1 are all representations of 32.Reduce.Algebra.scientific_notationCAUTION: The unsigned part of any number may not begin with a decimal point, as this causes confusion with the CONS (.) operator, i.e., NOT ALLOWED ARE: .5 -.23 +.12; use 0.5 -0.23 +0.12 instead."
 },
 
 {
@@ -357,7 +365,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "CATALAN",
     "category": "section",
-    "text": "Reduce.catalan"
+    "text": "Catalan\'s constant, defined assum_n=0^infty frac(-1)^n(2n+1)^2"
 },
 
 {
@@ -365,7 +373,15 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "E",
     "category": "section",
-    "text": "Intended to represent the base of the natural logarithms. log(e), if it occurs in an expression, is automatically replaced by 1. If ROUNDED is on, E is replaced by the value of e to the current degree of floating point precision."
+    "text": "Intended to represent the base of the natural logarithms. log(e), if it occurs in an expression, is automatically replaced by 1. If rounded is on, E is replaced by the value of e to the current degree of floating point precision."
+},
+
+{
+    "location": "man/02-structure.html#Reduce.euler_gamma",
+    "page": "2 Structure of Programs",
+    "title": "Reduce.euler_gamma",
+    "category": "function",
+    "text": "euler_gamma()\n\nEuler\'s constant, also available as -psi(1).\n\n\n\n"
 },
 
 {
@@ -401,6 +417,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/02-structure.html#Reduce.khinchin",
+    "page": "2 Structure of Programs",
+    "title": "Reduce.khinchin",
+    "category": "function",
+    "text": "khinchin()\n\nKhinchin\'s constant, defined as\n\n$ \\prod_{n=1}^\\infty \\left( 1 + \\frac{1}{n(n+2)} \\right)^{\\log_2 n}. $\n\n\n\n"
+},
+
+{
     "location": "man/02-structure.html#KHINCHIN-1",
     "page": "2 Structure of Programs",
     "title": "KHINCHIN",
@@ -421,7 +445,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "NIL",
     "category": "section",
-    "text": "In REDUCE (algebraic mode only) taken as a synonym for zero. Therefore NIL cannot be used as a variable."
+    "text": "In REDUCE (algebraic mode only) taken as a synonym for zero. Therefore nil cannot be used as a variable."
 },
 
 {
@@ -429,7 +453,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "PI",
     "category": "section",
-    "text": "Intended to represent the circular constant. With ROUNDED on, it is replaced by the value of π to the current degree of floating point precision."
+    "text": "Intended to represent the circular constant. With rounded on, it is replaced by the value of π to the current degree of floating point precision."
 },
 
 {
@@ -445,7 +469,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "T",
     "category": "section",
-    "text": "Must not be used as a formal parameter or local variable in procedures, since conflict arises with the symbolic mode meaning of T as true.Other reserved variables, such as LOW_POW, described in other sections, are listed in Appendix A: Reserved Identifiers.Using these reserved variables inappropriately will lead to errors.There are also internal variables used by REDUCE that have similar restrictions. These usually have an asterisk in their names, so it is unlikely a casual user would use one. An example of such a variable is K!\\* used in the asymptotic command package.Certain words are reserved in REDUCE. They may only be used in the manner intended. A list of these is given in the section “Reserved Identifiers”. There are, of course, an impossibly large number of such names to keep in mind. The reader may therefore want to make himself a copy of the list, deleting the names he doesn’t think he is likely to use by mistake."
+    "text": "Must not be used as a formal parameter or local variable in procedures, since conflict arises with the symbolic mode meaning of T as true.Other reserved variables, such as low_pow, described in other sections, are listed in Appendix A: Reserved Identifiers.Using these reserved variables inappropriately will lead to errors.There are also internal variables used by REDUCE that have similar restrictions. These usually have an asterisk in their names, so it is unlikely a casual user would use one. An example of such a variable is K!\\* used in the asymptotic command package.Certain words are reserved in REDUCE. They may only be used in the manner intended. A list of these is given in the section “Reserved Identifiers”. There are, of course, an impossibly large number of such names to keep in mind. The reader may therefore want to make himself a copy of the list, deleting the names he doesn’t think he is likely to use by mistake."
 },
 
 {
@@ -453,7 +477,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "2.5 Strings",
     "category": "section",
-    "text": "Strings are used in WRITE statements, in other output statements (such as error messages), and to name files. A string consists of any number of characters enclosed in double quotes. For example:~A String~Lower case characters within a string are not converted to upper case.The string ~~ represents the empty string. A double quote may be included in a string by preceding it by another double quote. Thus ~a~~b~ is the string a~b, and ~~~~ is the string consisting of the single character ~.Note that the Reduce.jl parser does not currently support REDUCE strings, as there is no need for them due to the native string support of the Julia language."
+    "text": "Strings are used in write statements, in other output statements (such as error messages), and to name files. A string consists of any number of characters enclosed in double quotes. For example:~A String~Lower case characters within a string are not converted to upper case.The string ~~ represents the empty string. A double quote may be included in a string by preceding it by another double quote. Thus ~a~~b~ is the string a~b, and ~~~~ is the string consisting of the single character ~.Note that the Reduce.jl parser does not currently support REDUCE strings, as there is no need for them due to the native string support of the Julia language."
 },
 
 {
@@ -461,7 +485,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "2.6 Comments",
     "category": "section",
-    "text": "Text can be included in program listings for the convenience of human readers, in such a way that REDUCE pays no attention to it. There are two ways to do this:Everything from the word COMMENT to the next statement terminator, normally ; or $, is ignored. Such comments can be placed anywhere a blank could properly appear. (Note that END and >> are not treated as COMMENT delimiters!)\nEverything from the symbol % to the end of the line on which it appears is ignored. Such comments can be placed as the last part of any line. Statement terminators have no special meaning in such comments. Remember to put a semicolon before the % if the earlier part of the line is intended to be so terminated. Remember also to begin each line of a multi-line % comment with a % sign."
+    "text": "Text can be included in program listings for the convenience of human readers, in such a way that REDUCE pays no attention to it. There are two ways to do this:Everything from the word comment to the next statement terminator, normally ; or $, is ignored. Such comments can be placed anywhere a blank could properly appear. (Note that end and >> are not treated as comment delimiters!)\nEverything from the symbol % to the end of the line on which it appears is ignored. Such comments can be placed as the last part of any line. Statement terminators have no special meaning in such comments. Remember to put a semicolon before the % if the earlier part of the line is intended to be so terminated. Remember also to begin each line of a multi-line % comment with a % sign."
 },
 
 {
@@ -469,7 +493,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "2.7 Operators",
     "category": "section",
-    "text": "Operators in REDUCE are specified by name and type. There are two types, infix and prefix. Operators can be purely abstract, just symbols with no properties; they can have values assigned (using := or simple LET declarations) for specific arguments; they can have properties declared for some collection of arguments (using more general LET declarations); or they can be fully defined (usually by a procedure declaration).Infix operators have a definite precedence with respect to one another, and normally occur between their arguments. For example:a + b - c   (spaces optional)\nx<y and y=z (spaces required where shown)Spaces can be freely inserted between operators and variables or operators and operators. They are required only where operator names are spelled out with letters (such as the AND in the example) and must be unambiguously separated from another such or from a variable (like Y). Wherever one space can be used, so can any larger number.Prefix operators occur to the left of their arguments, which are written as a list enclosed in parentheses and separated by commas, as with normal mathematical functions, e.g.,cos(u)  \ndf(x^2,x)  \nq(v+w)Unmatched parentheses, incorrect groupings of infix operators and the like, naturally lead to syntax errors. The parentheses can be omitted (replaced by a space following the operator name) if the operator is unary and the argument is a single symbol or begins with a prefix operator name:cos y         means cos(y)\ncos (-y)      – parentheses necessary\nlog cos y     means log(cos(y))\nlog cos (a+b) means log(cos(a+b))butcos a*b       means (cos a)*b\ncos -y        is erroneous (treated as a variable\n              “cos” minus the variable y)A unary prefix operator has a precedence higher than any infix operator, including unary infix operators. In other words, REDUCE will always interpret cos y + 3 as (cos y) + 3 rather than as cos(y + 3).Infix operators may also be used in a prefix format on input, e.g., +(a,b,c). On output, however, such expressions will always be printed in infix form (i.e., a + b + c for this example).A number of prefix operators are built into the system with predefined properties. Users may also add new operators and define their rules for simplification. The built in operators are described in another section."
+    "text": "Operators in REDUCE are specified by name and type. There are two types, infix and prefix. Operators can be purely abstract, just symbols with no properties; they can have values assigned (using := or simple let declarations) for specific arguments; they can have properties declared for some collection of arguments (using more general let declarations); or they can be fully defined (usually by a procedure declaration).Infix operators have a definite precedence with respect to one another, and normally occur between their arguments. For example:a + b - c   (spaces optional)\nx<y and y=z (spaces required where shown)Spaces can be freely inserted between operators and variables or operators and operators. They are required only where operator names are spelled out with letters (such as the and in the example) and must be unambiguously separated from another such or from a variable (like Y). Wherever one space can be used, so can any larger number.Prefix operators occur to the left of their arguments, which are written as a list enclosed in parentheses and separated by commas, as with normal mathematical functions, e.g.,cos(u)  \ndf(x^2,x)  \nq(v+w)Unmatched parentheses, incorrect groupings of infix operators and the like, naturally lead to syntax errors. The parentheses can be omitted (replaced by a space following the operator name) if the operator is unary and the argument is a single symbol or begins with a prefix operator name:cos y         means cos(y)\ncos (-y)      – parentheses necessary\nlog cos y     means log(cos(y))\nlog cos (a+b) means log(cos(a+b))butcos a*b       means (cos a)*b\ncos -y        is erroneous (treated as a variable\n              “cos” minus the variable y)A unary prefix operator has a precedence higher than any infix operator, including unary infix operators. In other words, REDUCE will always interpret cos y + 3 as (cos y) + 3 rather than as cos(y + 3).Infix operators may also be used in a prefix format on input, e.g., +(a,b,c). On output, however, such expressions will always be printed in infix form (i.e., a + b + c for this example).A number of prefix operators are built into the system with predefined properties. Users may also add new operators and define their rules for simplification. The built in operators are described in another section."
 },
 
 {
@@ -477,7 +501,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "Built-In Infix Operators",
     "category": "section",
-    "text": "The following infix operators are built into the system. They are all defined internally as procedures.⟨infix operator⟩        where∣:=∣or∣and∣member∣memq∣\n                        =∣neq∣eq∣>=∣>∣<=∣<∣\n                        +∣-∣*∣/∣^∣**∣.These operators may be further divided into the following subclasses:⟨assignment operator⟩   :=\n⟨logical operator⟩      or∣and∣member∣memq\n⟨relational operator⟩   =∣neq∣eq∣>=∣>∣<=∣<\n⟨substitution operator⟩ where\n⟨arithmetic operator⟩   +∣-∣*∣/∣^∣\\*\\*\n⟨construction operator⟩ .MEMQ and EQ are not used in the algebraic mode of REDUCE. They are explained in the section on symbolic mode. WHERE is described in the section on substitutions.In previous versions of REDUCE, not was also defined as an infix operator. In the present version it is a regular prefix operator, and interchangeable with null.For compatibility with the intermediate language used by REDUCE, each special character infix operator has an alternative alphanumeric identifier associated with it. These identifiers may be used interchangeably with the corresponding special character names on input. This correspondence is as follows::=   	setq    	(the assignment operator)\n=   	equal    \n>=   	geq    \n>   	greaterp    \n<=   	leq    \n<   	lessp    \n+   	plus    \n-   	difference   	(if unary, minus)\n*   	times    \n/   	quotient    	(if unary, recip)\n^ or ** expt    	(raising to a power)\n.   	cons    Note: NEQ is used to mean not equal. There is no special symbol provided for it.The above operators are binary, except NOT which is unary and + and * which are nary (i.e., taking an arbitrary number of arguments). In addition, - and / may be used as unary operators, e.g., /2 means the same as 1/2. Any other operator is parsed as a binary operator using a left association rule. Thus a/b/c is interpreted as (a/b)/c. There are two exceptions to this rule: := and . are right associative. Example: a:=b:=c is interpreted as a:=(b:=c). Unlike ALGOL and PASCAL, ^ is left associative. In other words, a^b^c is interpreted as (a^b)^c.The operators <, <=, >, >= can only be used for making comparisons between numbers. No meaning is currently assigned to this kind of comparison between general expressions.Parentheses may be used to specify the order of combination. If parentheses are omitted then this order is by the ordering of the precedence list defined by the right-hand side of the ⟨infix operator⟩ table at the beginning of this section, from lowest to highest. In other words, WHERE has the lowest precedence, and . (the dot operator) the highest."
+    "text": "The following infix operators are built into the system. They are all defined internally as procedures.⟨infix operator⟩        where∣:=∣or∣and∣member∣memq∣\n                        =∣neq∣eq∣>=∣>∣<=∣<∣\n                        +∣-∣*∣/∣^∣**∣.These operators may be further divided into the following subclasses:⟨assignment operator⟩   :=\n⟨logical operator⟩      or∣and∣member∣memq\n⟨relational operator⟩   =∣neq∣eq∣>=∣>∣<=∣<\n⟨substitution operator⟩ where\n⟨arithmetic operator⟩   +∣-∣*∣/∣^∣\\*\\*\n⟨construction operator⟩ .memq and eq are not used in the algebraic mode of REDUCE. They are explained in the section on symbolic mode. where is described in the section on substitutions.In previous versions of REDUCE, not was also defined as an infix operator. In the present version it is a regular prefix operator, and interchangeable with null.For compatibility with the intermediate language used by REDUCE, each special character infix operator has an alternative alphanumeric identifier associated with it. These identifiers may be used interchangeably with the corresponding special character names on input. This correspondence is as follows::=   	setq    	(the assignment operator)\n=   	equal    \n>=   	geq    \n>   	greaterp    \n<=   	leq    \n<   	lessp    \n+   	plus    \n-   	difference   	(if unary, minus)\n*   	times    \n/   	quotient    	(if unary, recip)\n^ or ** expt    	(raising to a power)\n.   	cons    Note: neq is used to mean not equal. There is no special symbol provided for it.The above operators are binary, except not which is unary and + and * which are nary (i.e., taking an arbitrary number of arguments). In addition, - and / may be used as unary operators, e.g., /2 means the same as 1/2. Any other operator is parsed as a binary operator using a left association rule. Thus a/b/c is interpreted as (a/b)/c. There are two exceptions to this rule: := and . are right associative. Example: a:=b:=c is interpreted as a:=(b:=c). Unlike ALGOL and PASCAL, ^ is left associative. In other words, a^b^c is interpreted as (a^b)^c.The operators <, <=, >, >= can only be used for making comparisons between numbers. No meaning is currently assigned to this kind of comparison between general expressions.Parentheses may be used to specify the order of combination. If parentheses are omitted then this order is by the ordering of the precedence list defined by the right-hand side of the ⟨infix operator⟩ table at the beginning of this section, from lowest to highest. In other words, where has the lowest precedence, and . (the dot operator) the highest."
 },
 
 {
@@ -501,7 +525,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.1 Scalar Expressions",
     "category": "section",
-    "text": "Using the arithmetic operations +, -, *, /, ^ (power) and parentheses, scalar expressions are composed from numbers, ordinary “scalar” variables (identifiers), array names with subscripts, operator or procedure names with arguments and statement expressions.Examples:RExpr(\"x\")\nR\"x^3 - 2*y/(2*z^2 - df(x,z))\"\nR\"(p^2 + m^2)^(1/2)*log (y/m)\"\nR\"a(5) + b(i,q)\"The symbol ** may be used as an alternative to the caret symbol (^) for forming powers, particularly in those systems that do not support a caret symbol.Statement expressions, usually in parentheses, can also form part of a scalar expression, as in the exampleR\"w + (c:=x+y) + z\"When the algebraic value of an expression is needed, REDUCE determines it, starting with the algebraic values of the parts, roughly as follows:Variables and operator symbols with an argument list have the algebraic values they were last assigned, or if never assigned stand for themselves. However, array elements have the algebraic values they were last assigned, or, if never assigned, are taken to be 0.Procedures are evaluated with the values of their actual parameters.In evaluating expressions, the standard rules of algebra are applied. Unfortunately, this algebraic evaluation of an expression is not as unambiguous as is numerical evaluation. This process is generally referred to as “simplification” in the sense that the evaluation usually but not always produces a simplified form for the expression.There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and LET statements). In many cases, this is all that the user needs.The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command on rounded;. Other modes for coefficient arithmetic are described elsewhere.If an illegal action occurs during evaluation (such as division by zero) or functions are called with the wrong number of arguments, and so on, an appropriate error message is generated."
+    "text": "Using the arithmetic operations +, -, *, /, ^ (power) and parentheses, scalar expressions are composed from numbers, ordinary “scalar” variables (identifiers), array names with subscripts, operator or procedure names with arguments and statement expressions.Examples:RExpr(\"x\")\nR\"x^3 - 2*y/(2*z^2 - df(x,z))\"\nR\"(p^2 + m^2)^(1/2)*log (y/m)\"\nR\"a(5) + b(i,q)\"The symbol ** may be used as an alternative to the caret symbol (^) for forming powers, particularly in those systems that do not support a caret symbol.Statement expressions, usually in parentheses, can also form part of a scalar expression, as in the exampleR\"w + (c:=x+y) + z\"When the algebraic value of an expression is needed, REDUCE determines it, starting with the algebraic values of the parts, roughly as follows:Variables and operator symbols with an argument list have the algebraic values they were last assigned, or if never assigned stand for themselves. However, array elements have the algebraic values they were last assigned, or, if never assigned, are taken to be 0.Procedures are evaluated with the values of their actual parameters.In evaluating expressions, the standard rules of algebra are applied. Unfortunately, this algebraic evaluation of an expression is not as unambiguous as is numerical evaluation. This process is generally referred to as “simplification” in the sense that the evaluation usually but not always produces a simplified form for the expression.There are many options available to the user for carrying out such simplification. If the user doesn’t specify any method, the default method is used. The default evaluation of an expression involves expansion of the expression and collection of like terms, ordering of the terms, evaluation of derivatives and other functions and substitution for any expressions which have values assigned or declared (see assignments and let statements). In many cases, this is all that the user needs.The declarations by which the user can exercise some control over the way in which the evaluation is performed are explained in other sections. For example, if a real (floating point) number is encountered during evaluation, the system will normally convert it into a ratio of two integers. If the user wants to use real arithmetic, he can effect this by the command rounded(true). Other modes for coefficient arithmetic are described elsewhere.If an illegal action occurs during evaluation (such as division by zero) or functions are called with the wrong number of arguments, and so on, an appropriate error message is generated."
 },
 
 {
@@ -521,11 +545,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/03-expressions.html#Reduce.Algebra.lhs",
+    "page": "3 Expressions",
+    "title": "Reduce.Algebra.lhs",
+    "category": "function",
+    "text": "lhs(::Union{Expr,RExpr})\n\nReturns the left-hand side of an equation.\n\nExamples\n\njulia> Algebra.lhs(:(a+b==c))\n:(a + b)\n\n\n\n"
+},
+
+{
+    "location": "man/03-expressions.html#Reduce.Algebra.rhs",
+    "page": "3 Expressions",
+    "title": "Reduce.Algebra.rhs",
+    "category": "function",
+    "text": "rhs(::Union{Expr,RExpr})\n\nReturns the right-hand side of an equation.\n\nExamples\n\njulia> Algebra.rhs(:(a+b==c))\n:c\n\n\n\n"
+},
+
+{
     "location": "man/03-expressions.html#.4-Equations-1",
     "page": "3 Expressions",
     "title": "3.4 Equations",
     "category": "section",
-    "text": "Equations are a particular type of expression with the syntaxR\"⟨expression⟩=⟨expression⟩\"In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., SOLVE), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the SUB operator. If both sides are to be evaluated, the switch EVALLHSEQP should be turned on.To facilitate the handling of equations, two selectors, LHS and RHS, which return the left- and right-hand sides of an equation respectively, are provided. For example,julia> R\"lhs(a+b=c)\"\n\na + bandjulia> R\"rhs(a+b=c)\"\n\nc"
+    "text": "Equations are a particular type of expression with the syntaxR\"⟨expression⟩=⟨expression⟩\"In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., solve), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the sub operator. If both sides are to be evaluated, the switch evallhseqp should be turned on.To facilitate the handling of equations, two selectors, lhs and rhs, which return the left- and right-hand sides of an equation respectively, are provided. For example,julia> R\"lhs(a+b=c)\"\n\na + bandjulia> R\"rhs(a+b=c)\"\n\ncReduce.Algebra.lhsReduce.Algebra.rhs"
 },
 
 {
@@ -533,7 +573,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.5 Proper Statements as Expressions",
     "category": "section",
-    "text": "Several kinds of proper statements deliver an algebraic or numerical result of some kind, which can in turn be used as an expression or part of an expression. For example, an assignment statement itself has a value, namely the value assigned. SoR\"2 * (x := a+b)\"is equal to R\"2*(a+b)\", as well as having the “side-effect” of assigning the value a+b to X. In context,R\"y := 2 * (x := a+b);\"sets X to a+b and Y to 2*(a+b).The sections on the various proper statement types indicate which of these statements are also useful as expressions."
+    "text": "Several kinds of proper statements deliver an algebraic or numerical result of some kind, which can in turn be used as an expression or part of an expression. For example, an assignment statement itself has a value, namely the value assigned. SoR\"2 * (x := a+b)\"is equal to R\"2*(a+b)\", as well as having the “side-effect” of assigning the value a+b to X. In context,R\"y := 2 * (x := a+b);\"sets X to a+b and Y to 2*(a+b).Note that if the Reduce.jl parser is used to convert these types of expressions to Julia AST, issues can occur since an equivalent feature does not exist in the Julia language.The sections on the various proper statement types indicate which of these statements are also useful as expressions."
 },
 
 {
