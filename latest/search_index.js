@@ -549,7 +549,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "Reduce.Algebra.lhs",
     "category": "function",
-    "text": "lhs(::Union{Expr,RExpr})\n\nReturns the left-hand side of an equation.\n\nExamples\n\njulia> Algebra.lhs(:(a+b==c))\n:(a + b)\n\n\n\n"
+    "text": "lhs(::Union{Expr,RExpr})\n\nReturns the left-hand side of an equation.\n\nExamples\n\njulia> Algebra.lhs(R\"a+b=c\")\n\na + b\n\n\n\n\n"
 },
 
 {
@@ -557,7 +557,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "Reduce.Algebra.rhs",
     "category": "function",
-    "text": "rhs(::Union{Expr,RExpr})\n\nReturns the right-hand side of an equation.\n\nExamples\n\njulia> Algebra.rhs(:(a+b==c))\n:c\n\n\n\n"
+    "text": "rhs(::Union{Expr,RExpr})\n\nReturns the right-hand side of an equation.\n\nExamples\n\njulia> Algebra.rhs(R\"a+b=c\")\n\nc\n\n\n\n\n"
 },
 
 {
@@ -565,7 +565,7 @@ var documenterSearchIndex = {"docs": [
     "page": "3 Expressions",
     "title": "3.4 Equations",
     "category": "section",
-    "text": "Equations are a particular type of expression with the syntaxR\"⟨expression⟩=⟨expression⟩\"In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., solve), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the sub operator. If both sides are to be evaluated, the switch evallhseqp should be turned on.To facilitate the handling of equations, two selectors, lhs and rhs, which return the left- and right-hand sides of an equation respectively, are provided. For example,julia> R\"lhs(a+b=c)\"\n\na + bandjulia> R\"rhs(a+b=c)\"\n\ncReduce.Algebra.lhsReduce.Algebra.rhs"
+    "text": "Equations are a particular type of expression with the syntaxR\"⟨expression⟩=⟨expression⟩\"In addition to their role as boolean expressions, they can also be used as arguments to several operators (e.g., solve), and can be returned as values.Under normal circumstances, the right-hand-side of the equation is evaluated but not the left-hand-side. This also applies to any substitutions made by the sub operator. If both sides are to be evaluated, the switch evallhseqp should be turned on.To facilitate the handling of equations, two selectors, lhs and rhs, which return the left- and right-hand sides of an equation respectively, are provided.Reduce.Algebra.lhsReduce.Algebra.rhs"
 },
 
 {
