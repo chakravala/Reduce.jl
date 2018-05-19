@@ -171,6 +171,21 @@ end
 tp(r::Array{T,1}) where T <: ExprSymbol = r |> RExpr |> tp |> parse |> mat
 tp(r::Union{Vector,RowVector}) = r |> RExpr |> tp |> parse |> mat
 
+"""
+    length(r)
+
+`length` is a generic operator for finding the length of various objects in the system. The meaning depends on the type of the object. In particular, the length of an algebraic expression is the number of additive top-level terms its expanded representation.
+
+*Examples:*
+```Julia
+julia> length(:(a+b))
+2
+
+julia> length(2)
+1
+```
+Other objects that support a length operator include arrays, lists and matrices. The explicit meaning in these cases is included in the description of these objects.
+"""
 length(r::Expr) = length(r |> RExpr) |> parse |> eval
 
 for fun in snan
@@ -264,3 +279,195 @@ c
 
 ```
 """ Reduce.Algebra.rhs
+
+@doc """
+    abs(r)
+
+`abs` returns the absolute value of its single argument, if that argument has a numerical value. A non-numerical argument is returned as an absolute value, with an overall numerical coefficient taken outside the absolute value operator. For example:
+
+```Julia
+julia> Algebra.abs(-3/4)
+0.75
+
+julia> Algebra.abs(:(2a))
+:(2 * abs(a))
+
+julia> Algebra.abs(im)
+1.0
+
+julia> Algebra.abs(:(-x))
+:(abs(x))
+```
+""" Reduce.Algebra.abs
+
+@doc """
+    ceiling(r)
+
+This operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:
+
+```Julia
+julia> Algebra.ceiling(-5/4)
+-1
+
+julia> Algebra.ceiling(:(-a))
+:(ceiling(-a))
+```
+""" Reduce.Algebra.ceiling
+
+@doc """
+    conj(r)
+
+This operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:
+
+```Julia
+julia> Algebra.ceiling(-5/4)
+-1
+
+julia> Algebra.ceiling(:(-a))
+:(ceiling(-a))
+```
+""" Reduce.Algebra.conj
+
+@doc """
+    factorial(r)
+
+If the single argument of `factorial` evaluates to a non-negative integer, its factorial is returned. Otherwise an expression involving `factorial` is returned. For example:
+
+```Julia
+julia> Algebra.factorial(5)
+120
+
+julia> Algebra.factorial(:a)
+:(factorial(a))
+```
+""" Reduce.Algebra.factorial
+
+@doc """
+    fix(r)
+
+This operator returns the fixed value (i.e., the integer part of the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:
+
+```Julia
+julia> Algebra.fix(-5/4)
+-1
+
+julia> Algebra.fix(:a)
+:(fix(a))
+```
+""" Reduce.Algebra.fix
+
+@doc """
+    floor(r)
+
+This operator returns the floor (i.e., the greatest integer less than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:
+
+```Julia
+julia> Algebra.floor(-5/4)
+-2.0
+
+julia> Algebra.floor(:a)
+:(floor(a))
+```
+""" Reduce.Algebra.floor
+
+@doc """
+    impart(r)
+
+This operator returns the imaginary part of an expression, if that argument has an numerical value. A non-numerical argument is returned as an expression in the operators `repart` and `impart`. For example:
+
+```Julia
+julia> Algebra.impart(1+im)
+1
+
+julia> Algebra.impart(:(a+im*b))
+:(impart(a) + repart(b))
+```
+""" Reduce.Algebra.impart
+
+@doc """
+    nextprime(r)
+
+`nextprime` returns the next prime greater than its integer argument, using a probabilistic algorithm. A type error occurs if the value of the argument is not an integer. For example:
+
+```Julia
+julia> Algebra.nextprime(5)
+7
+
+julia> Algebra.nextprime(-2)
+2
+
+julia> Algebra.nextprime(-7)
+-5
+
+julia> Algebra.nextprime(1000000)
+1000003
+```
+whereas `Algebra.nextprime(:a)` gives a type error.
+""" Reduce.Algebra.nextprime
+
+@doc """
+    random(r)
+
+
+`random(n)` returns a random number ``r`` in the range ``0 ≤ r < n``. A type error occurs if the value of the argument is not a positive integer in algebraic mode, or positive number in symbolic mode. For example:
+
+```Julia
+julia> Algebra.random(5)
+3
+
+julia> Algebra.random(1000)
+191
+```
+whereas `Algebra.random(:a)` gives a type error.
+""" Reduce.Algebra.random
+
+@doc """
+    random_new_seed(r)
+
+`random_new_seed(n)` reseeds the random number generator to a sequence determined by the integer argument `n`. It can be used to ensure that a repeatable pseudo-random sequence will be delivered regardless of any previous use of `random`, or can be called early in a run with an argument derived from something variable (such as the time of day) to arrange that different runs of a REDUCE program will use different random sequences. When a fresh copy of REDUCE is first created it is as if `random_new_seed(1)` has been obeyed.
+
+A type error occurs if the value of the argument is not a positive integer.
+""" Reduce.Algebra.random_new_seed
+
+@doc """
+    repart(r)
+
+This returns the real part of an expression, if that argument has an numerical value. A non-numerical argument is returned as an expression in the operators `repart` and `impart`. For example:
+
+```Julia
+julia> Algebra.repart(1+im)
+1
+
+julia> Algebra.repart(:(a+im*b))
+:(repart(a) - impart(b))
+```
+""" Reduce.Algebra.repart
+
+@doc """
+    round(r)
+
+This operator returns the rounded value (i.e, the nearest integer) of its single argument if that argument has a numerical value. A non-numeric argument is returned as an expression in the original operator. For example:
+
+```Julia
+julia> Algebra.round(-5/4)
+-1.0
+
+julia> Algebra.round(:a)
+:(round(a))
+```
+""" Reduce.Algebra.round
+
+@doc """
+    sign(r)
+
+`sign` tries to evaluate the sign of its argument. If this is possible `sign` returns one of `1`, `0` or `-1`. Otherwise, the result is the original form or a simplified variant. For example:
+
+```Julia
+julia> Algebra.sign(-5)
+-1
+
+julia> Algebra.sign(:(-a^2*b))
+:(-(sign(b)))
+```
+Note that even powers of formal expressions are assumed to be positive only as long as the switch `complex` is off.
+""" Reduce.Algebra.sign

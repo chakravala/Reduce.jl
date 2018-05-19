@@ -626,7 +626,7 @@ end
         if expr.args[1] == Symbol("@big_str") || expr.args[1] == Symbol("@int128_str")
             print(io,expr.args[2])
         else
-            throw(ReduceError("Macro $(expr.args[1]) block structure not supported"))
+            throw(ReduceError("Macro $(expr.args[1]) block structure not supported\n\n$expr"))
         end
     elseif expr.head == :(:)
         show_expr(io,expr.args[1])
@@ -659,7 +659,7 @@ end
         ListPrint(ListPrint()-1)
     elseif expr.head == :line; nothing
     else
-        throw(ReduceError("Nested :$(expr.head) block structure not supported"))
+        throw(ReduceError("Nested :$(expr.head) block structure not supported\n\n$expr"))
     end
 end
 
@@ -822,7 +822,7 @@ end
     elseif expr.head == :line
         return nothing
     else
-        throw(ReduceError("Nested :$(expr.head) block structure not supported"))
+        throw(ReduceError("Nested :$(expr.head) block structure not supported\n\n$expr"))
     end
 end
 
