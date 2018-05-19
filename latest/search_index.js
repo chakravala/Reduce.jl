@@ -249,22 +249,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "docs.html#",
-    "page": "Index",
-    "title": "Index",
-    "category": "page",
-    "text": ""
-},
-
-{
-    "location": "docs.html#Index-1",
-    "page": "Index",
-    "title": "Index",
-    "category": "section",
-    "text": "List of documented methods in Reduce.jl. See upstream index for others."
-},
-
-{
     "location": "man/acknowledgement.html#",
     "page": "Acknowledgement",
     "title": "Acknowledgement",
@@ -577,6 +561,590 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/06-commands-declarations.html#",
+    "page": "6 Commands and Declarations",
+    "title": "6 Commands and Declarations",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/06-commands-declarations.html#Commands-and-Declarations-1",
+    "page": "6 Commands and Declarations",
+    "title": "6 Commands and Declarations",
+    "category": "section",
+    "text": "A command is an order to the system to do something. Some commands cause visible results (such as calling for input or output); others, usually called declarations, set options, define properties of variables, or define procedures. Commands are formally defined as a statement followed by a terminator⟨command⟩ 		::= ⟨statement⟩⟨terminator⟩\n⟨terminator⟩ 	::= ;∣$Some REDUCE commands and declarations are described in the following sub-sections.Pages = [\"06-commands-declarations.md\"]"
+},
+
+{
+    "location": "man/06-commands-declarations.html#.1-Array-Declarations-1",
+    "page": "6 Commands and Declarations",
+    "title": "6.1 Array Declarations",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/06-commands-declarations.html#Reduce.Algebra.on",
+    "page": "6 Commands and Declarations",
+    "title": "Reduce.Algebra.on",
+    "category": "function",
+    "text": "on(::Symbol...)\n\nTakes a list of switch names as argument and turns them on.\n\n\n\n"
+},
+
+{
+    "location": "man/06-commands-declarations.html#Reduce.Algebra.off",
+    "page": "6 Commands and Declarations",
+    "title": "Reduce.Algebra.off",
+    "category": "function",
+    "text": "off(::Symbol...)\n\nTakes a list of switch names as argument and turns them off.\n\n\n\n"
+},
+
+{
+    "location": "man/06-commands-declarations.html#.2-Mode-Handling-Declarations-1",
+    "page": "6 Commands and Declarations",
+    "title": "6.2 Mode Handling Declarations",
+    "category": "section",
+    "text": "The on and off declarations are available to the user for controlling various system options. Each option is represented by a switch name. on and off take a list of switch names as argument and turn them on and off respectively, e.g.,julia> on(:time)causes the system to print a message after each command giving the elapsed CPU time since the last command, or since time was last turned off, or the session began. Another useful switch with interactive use is demo, which causes the system to pause after each command in a file (with the exception of comments) until a <Return> is typed on the terminal. This enables a user to set up a demonstration file and step through it command by command.Reduce.Algebra.onReduce.Algebra.offAs with most declarations, arguments to on and off may be strung together separated by commas. For example,julia> off(:time,:demo)will turn off both the time messages and the demonstration switch.We note here that while most on and off commands are obeyed almost instantaneously, some trigger time-consuming actions such as reading in necessary modules from secondary storage.A diagnostic message is printed if on or off are used with a switch that is not known to the system. For example, if you misspell idemo and typejulia> on(:demq)you will get the messageERROR: Reduce: \n***** demq not defined as switch "
+},
+
+{
+    "location": "man/06-commands-declarations.html#.3-END-1",
+    "page": "6 Commands and Declarations",
+    "title": "6.3 END",
+    "category": "section",
+    "text": "The identifier end has two separate uses.Its use in a R\"begin… end\" bracket has been discussed in connection with compound statements.\nFiles to be read using IN should end with an extra end; command. The reason for this is explained in the section on the IN command. This use of END does not allow an immediately preceding end (such as the end of a procedure definition), so we advise using ;end; there."
+},
+
+{
+    "location": "man/06-commands-declarations.html#.4-BYE-Command-1",
+    "page": "6 Commands and Declarations",
+    "title": "6.4 BYE Command",
+    "category": "section",
+    "text": "The command R\"bye\" (or alternatively R\"quit\") stops the execution of REDUCE, closes all open output files, and returns you to the calling program (usually the operating system). Your REDUCE session is normally destroyed."
+},
+
+{
+    "location": "man/06-commands-declarations.html#.5-SHOWTIME-Command-1",
+    "page": "6 Commands and Declarations",
+    "title": "6.5 SHOWTIME Command",
+    "category": "section",
+    "text": "R\"showtime\" prints the elapsed time since the last call of this command or, on its first call, since the current REDUCE session began. The time is normally given in milliseconds and gives the time as measured by a system clock. The operations covered by this measure are system dependent."
+},
+
+{
+    "location": "man/06-commands-declarations.html#.6-DEFINE-Command-1",
+    "page": "6 Commands and Declarations",
+    "title": "6.6 DEFINE Command",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/07-prefix-ops.html#",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7 Built-in Prefix Operators",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/07-prefix-ops.html#Built-in-Prefix-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7 Built-in Prefix Operators",
+    "category": "section",
+    "text": "In the following subsections are descriptions of the most useful prefix operators built into REDUCE that are not defined in other sections (such as substitution operators). Some are fully defined internally as procedures; others are more nearly abstract operators, with only some of their properties known to the system.In many cases, an operator is described by a prototypical header line as follows. Each formal parameter is given a name and followed by its allowed type. The names of classes referred to in the definition are printed in lower case, and parameter names in upper case. If a parameter type is not commonly used, it may be a specific set enclosed in brackets { … }. Operators that accept formal parameter lists of arbitrary length have the parameter and type class enclosed in square brackets indicating that zero or more occurrences of that argument are permitted. Optional parameters and their type classes are enclosed in angle brackets.Pages = [\"07-prefix-ops.md\"]"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.abs",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.abs",
+    "category": "function",
+    "text": "abs(r)\n\nabs returns the absolute value of its single argument, if that argument has a numerical value. A non-numerical argument is returned as an absolute value, with an overall numerical coefficient taken outside the absolute value operator. For example:\n\njulia> Algebra.abs(-3/4)\n0.75\n\njulia> Algebra.abs(:(2a))\n:(2 * abs(a))\n\njulia> Algebra.abs(im)\n1.0\n\njulia> Algebra.abs(:(-x))\n:(abs(x))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.ceiling",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.ceiling",
+    "category": "function",
+    "text": "ceiling(r)\n\nThis operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.ceiling(-5/4)\n-1\n\njulia> Algebra.ceiling(:(-a))\n:(ceiling(-a))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.conj",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.conj",
+    "category": "function",
+    "text": "conj(r)\n\nThis operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.ceiling(-5/4)\n-1\n\njulia> Algebra.ceiling(:(-a))\n:(ceiling(-a))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.factorial",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.factorial",
+    "category": "function",
+    "text": "factorial(r)\n\nIf the single argument of factorial evaluates to a non-negative integer, its factorial is returned. Otherwise an expression involving factorial is returned. For example:\n\njulia> Algebra.factorial(5)\n120\n\njulia> Algebra.factorial(:a)\n:(factorial(a))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.fix",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.fix",
+    "category": "function",
+    "text": "fix(r)\n\nThis operator returns the fixed value (i.e., the integer part of the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.fix(-5/4)\n-1\n\njulia> Algebra.fix(:a)\n:(fix(a))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.floor",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.floor",
+    "category": "function",
+    "text": "floor(r)\n\nThis operator returns the floor (i.e., the greatest integer less than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.floor(-5/4)\n-2.0\n\njulia> Algebra.floor(:a)\n:(floor(a))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.impart",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.impart",
+    "category": "function",
+    "text": "impart(r)\n\nThis operator returns the imaginary part of an expression, if that argument has an numerical value. A non-numerical argument is returned as an expression in the operators repart and impart. For example:\n\njulia> Algebra.impart(1+im)\n1\n\njulia> Algebra.impart(:(a+im*b))\n:(impart(a) + repart(b))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.max",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.max",
+    "category": "function",
+    "text": "max(r...)\n\nmax can take an arbitrary number of expressions as their arguments. If all arguments evaluate to numerical values, the maximum of the argument list is returned. If any argument is non-numeric, an appropriately reduced expression is returned. For example:\n\njulia> Algebra.max(2,-3,4,5)\n5\n\njulia> Algebra.max(:a,2,3)\n:(max(3, a))\n\nmax of an empty list returns 0.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.nextprime",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.nextprime",
+    "category": "function",
+    "text": "nextprime(r)\n\nnextprime returns the next prime greater than its integer argument, using a probabilistic algorithm. A type error occurs if the value of the argument is not an integer. For example:\n\njulia> Algebra.nextprime(5)\n7\n\njulia> Algebra.nextprime(-2)\n2\n\njulia> Algebra.nextprime(-7)\n-5\n\njulia> Algebra.nextprime(1000000)\n1000003\n\nwhereas Algebra.nextprime(:a) gives a type error.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.random",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.random",
+    "category": "function",
+    "text": "random(r)\n\nrandom(n) returns a random number r in the range 0  r  n. A type error occurs if the value of the argument is not a positive integer in algebraic mode, or positive number in symbolic mode. For example:\n\njulia> Algebra.random(5)\n3\n\njulia> Algebra.random(1000)\n191\n\nwhereas Algebra.random(:a) gives a type error.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.random_new_seed",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.random_new_seed",
+    "category": "function",
+    "text": "random_new_seed(r)\n\nrandom_new_seed(n) reseeds the random number generator to a sequence determined by the integer argument n. It can be used to ensure that a repeatable pseudo-random sequence will be delivered regardless of any previous use of random, or can be called early in a run with an argument derived from something variable (such as the time of day) to arrange that different runs of a REDUCE program will use different random sequences. When a fresh copy of REDUCE is first created it is as if random_new_seed(1) has been obeyed.\n\nA type error occurs if the value of the argument is not a positive integer.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.repart",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.repart",
+    "category": "function",
+    "text": "repart(r)\n\nThis returns the real part of an expression, if that argument has an numerical value. A non-numerical argument is returned as an expression in the operators repart and impart. For example:\n\njulia> Algebra.repart(1+im)\n1\n\njulia> Algebra.repart(:(a+im*b))\n:(repart(a) - impart(b))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.round",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.round",
+    "category": "function",
+    "text": "round(r)\n\nThis operator returns the rounded value (i.e, the nearest integer) of its single argument if that argument has a numerical value. A non-numeric argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.round(-5/4)\n-1.0\n\njulia> Algebra.round(:a)\n:(round(a))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.sign",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.sign",
+    "category": "function",
+    "text": "sign(r)\n\nsign tries to evaluate the sign of its argument. If this is possible sign returns one of 1, 0 or -1. Otherwise, the result is the original form or a simplified variant. For example:\n\njulia> Algebra.sign(-5)\n-1\n\njulia> Algebra.sign(:(-a^2*b))\n:(-(sign(b)))\n\nNote that even powers of formal expressions are assumed to be positive only as long as the switch complex is off.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.1-Numerical-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.1 Numerical Operators",
+    "category": "section",
+    "text": "REDUCE includes a number of functions that are analogs of those found in most numerical systems. With numerical arguments, such functions return the expected result. However, they may also be called with non-numerical arguments. In such cases, except where noted, the system attempts to simplify the expression as far as it can. In such cases, a residual expression involving the original operator usually remains. These operators are as follows:Reduce.Algebra.absReduce.Algebra.ceilingReduce.Algebra.conjReduce.Algebra.factorialReduce.Algebra.fixReduce.Algebra.floorReduce.Algebra.impartReduce.Algebra.maxReduce.Alebra.minReduce.Algebra.nextprimeReduce.Algebra.randomReduce.Algebra.random_new_seedReduce.Algebra.repartReduce.Algebra.roundReduce.Algebra.sign"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.2-Mathematical-Functions-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.2 Mathematical Functions",
+    "category": "section",
+    "text": "REDUCE knows that the following represent mathematical functions that can take arbitrary scalar expressions as their argument(s):acos acosh acot acoth acsc acsch asec asech asin   asinh atan atanh atan2 beta ci cos cosh cot coth csc   csch dilog ei exp gamma hypot ibeta igamma ln log   logb log10 sec sech si sin sinh sqrt tan tanh   airy_ai airy_aiprime airy_bi airy_biprime   besseli besselj besselk bessely   hankel1 hankel2 kummerm kummeru lommel1 lommel2   struveh struvel whittakerm whittakeru   polygamma psi zeta   solidharmonicy sphericalharmonicywhere log is the natural logarithm (and equivalent to ln), and logb has two arguments of which the second is the logarithmic base.The derivatives of all these functions are also known to the system.REDUCE knows various elementary identities and properties of these functions. For example: cos(-x) = cos(x)              sin(-x) = - sin (x)  \n cos(n*pi) = (-1)^n            sin(n*pi) = 0  \n log(e)  = 1                   e^(i*pi/2) = i  \n log(1)  = 0                   e^(i*pi) = -1  \n log(e^x) = x                  e^(3*i*pi/2) = -iBeside these identities, there are a lot of simplifications for elementary functions defined in the REDUCE system as rulelists. In order to view these, the showrules operator can be used, e.g.reduce> showrules tan;  \n \n{tan(~n*arbint(~i)*pi + ~(~ x)) => tan(x) when fixp(n),  \n \n tan(~x)  \n \n  => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),  \n \n      ~x + ~(~ k)*pi  \n tan(----------------)  \n            ~d  \n \n             x                  k                     k     1  \n  =>  - cot(---) + i*pi*impart(---)) when abs(repart(---))=---,  \n             d                  d                     d     2  \n \n      ~(~ w) + ~(~ k)*pi           w      k                k  \n tan(--------------------) => tan(--- + (--- - fix(repart(---)))*pi)  \n            ~(~ d)                 d      d                d  \n \n                              k  \n when whereexp({rp => repart(---)},bool-eval(ratnump(rp) and abs(rp)>=1)),  \n                              d  \n \n tan(atan(~x)) => x,  \n \n                             2  \n df(tan(~x),~x) => 1 + tan(x) }  \nFor further simplification, especially of expressions involving trigonometric functions, see the TRIGSIMP package (chapter 16.72) documentation.Functions not listed above may be defined in the special functions package SPECFN.The user can add further rules for the reduction of expressions involving these operators by using the let command.In many cases it is desirable to expand product arguments of logarithms, or collect a sum of logarithms into a single logarithm. Since these are inverse operations, it is not possible to provide rules for doing both at the same time and preserve the REDUCE concept of idempotent evaluation. As an alternative, REDUCE provides two switches expandlogs and combinelogs to carry out these operations. Both are off by default, and are subject to the value of the switch precise. This switch is on by default and prevents modifications that may be false in a complex domain. Thus to expand log(3*y) into a sum of logs, one can sayjulia> Algebra.on(:expandlogs);\n\njulia> Algebra.log(:(3*y))whereas to expand log(x*y) into a sum of logs, one needs to sayjulia> Algebra.off(:precise); Algebra.on(:expandlogs);\n\njulia> Algebra.log(:(x*y))To combine this sum into a single log:julia> Algebra.off(:precise); Algebra.on(:combinelogs);\n\njulia> Alebra.:+(log(:x),log(:y))These switches affect the logarithmic functions log10 (base 10) and logb (arbitrary base) as well.At the present time, it is possible to have both switches on at once, which could lead to infinite recursion. However, an expression is switched from one form to the other in this case. Users should not rely on this behavior, since it may change in the next release.The current version of REDUCE does a poor job of simplifying surds. In particular, expressions involving the product of variables raised to non-integer powers do not usually have their powers combined internally, even though they are printed as if those powers were combined. For example, the expressionreduce> x^(1/3)*x^(1/6)will print assqrt(x)but will have an internal form containing the two exponentiated terms. If you now subtract sqrt(x) from this expression, you will not get zero. Instead, the confusing formsqrt(x) - sqrt(x)will result. To combine such exponentiated terms, the switch combineexpt should be turned on.The square root function can be input using the name sqrt, or the power operation ^(1/2). On output, unsimplified square roots are normally represented by the operator sqrt rather than a fractional power. With the default system switch settings, the argument of a square root is first simplified, and any divisors of the expression that are perfect squares taken outside the square root argument. The remaining expression is left under the square root. Thus the expressionjulia> Algebra.sqrt(:(-8a^2*b))becomes:(2 * sqrt(b) * sqrt(2) * a * im)Note that such simplifications can cause trouble if A is eventually given a value that is a negative number. If it is important that the positive property of the square root and higher even roots always be preserved, the switch PRECISE should be set on (the default value). This causes any non-numerical factors taken out of surds to be represented by their absolute value form. With PRECISE on then, the above example would become:(2 * sqrt(-2b) * abs(a))However, this is incorrect in the complex domain, where the sqrtx^2 is not identical to x. To avoid the above simplification, the switch precise_complex should be set on (default is off). For example:julia> Algebra.on(:precise_complex); Algebra.sqrt(:(-8a^2*b))yields the output:(2 * sqrt(-2 * a ^ 2 * b))The statement that REDUCE knows very little about these functions applies only in the mathematically exact off rounded mode. If rounded is on, any of the functionsacos acosh acot acoth acsc acsch asec asech asin  \nasinh atan atanh atan2 cos cosh cot coth csc csch  \nexp hypot ibeta igamma ln log logb log10 psi sec  \nsech sin sinh sqrt tan tanhwhen given a numerical argument has its value calculated to the current degree of floating point precision. In addition, real (non-integer valued) powers of numbers will also be evaluated.If the complex switch is turned on in addition to rounded, these functions will also calculate a real or complex result, again to the current degree of floating point precision, if given complex arguments. For example, with on(:rounded,:complex)julia> @rounded @complex 2.3^(5.6im)\n:(-0.0480793490914 - 0.998843519372im)\n\njulia> @rounded @complex cos(2+3im)\n:(-4.18962569097 - 9.10922789376im)"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.3-Bernoulli-Numbers-and-Euler-Numbers-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.3 Bernoulli Numbers and Euler Numbers",
+    "category": "section",
+    "text": "The unary operator bernoulli provides notation and computation for Bernoulli numbers. bernoulli(n) evaluates to the nth Bernoulli number; all of the odd Bernoulli numbers, except bernoulli(1), are zero.The algorithms are based upon those by Herbert Wilf, presented by Sandra Fillebrown [?]. If the rounded switch is off, the algorithms are exactly those; if it is on, some further rounding may be done to prevent computation of redundant digits. Hence, these functions are particularly fast when used to approximate the Bernoulli numbers in rounded mode.Euler numbers are computed by the unary operator Euler, which return the nth Euler number. The computation is derived directly from Pascal’s triangle of binomial coefficients."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.4-Fibonacci-Numbers-and-Fibonacci-Polynomials-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.4 Fibonacci Numbers and Fibonacci Polynomials",
+    "category": "section",
+    "text": "The unary operator fibonacci provides notation and computation for Fibonacci numbers. fibonacci(n) evaluates to the nth Fibonacci number. If n is a positive or negative integer, it will be evaluated following the definition:F_0 = 0 F_1 = 1 F_n = F_n-1 + F_n-2Fibonacci Polynomials are computed by the binary operator fibonaccip. fibonaccip(n,x) returns the nth Fibonacci polynomial in the variable x. If n is a positive or negative integer, it will be evaluated following the definition:F_0(x) = 0 F_1(x) = 1 F_n(x) = xF_n-1(x) + F_n-2(x)"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.5-Motzkin-numbers-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.5 Motzkin numbers",
+    "category": "section",
+    "text": "A Motzkin number M_n (named after Theodore Motzkin) is the number of different ways of drawing non-intersecting chords on a circle between n points. For a non-negative integer n, the operator motzkin(n) returns the nth Motzkin number, according to the recursion formulaM_0 =  1  M_1 = 1  M_n+1  =  frac2n+3n+3M_n + frac3nn+3M_n-1"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.6-CHANGEVAR-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.6 CHANGEVAR Operator",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.7-CONTINUED_FRACTION-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.7 CONTINUED_FRACTION Operator",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.df",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.df",
+    "category": "function",
+    "text": "df(r...)\n\nThe operator df is used to represent partial differentiation with respect to one or more variables. It is used with the syntax:\n\nR\"df(⟨EXPRN:algebraic⟩[,⟨VAR:kernel⟩ <,⟨NUM:integer⟩ >])\"\n\nThe first argument is the expression to be differentiated. The remaining arguments specify the differentiation variables and the number of times they are applied.\n\nThe number num may be omitted if it is 1. For example,\n\nreduce> df(y,x)\n\nreduce> df(y,x,2)\n\nreduce> df(y,x1,2,x2,x3,2)\n\nThe evaluation of df(y,x) proceeds as follows: first, the values of y and x are found. Let us assume that x has no assigned value, so its value is x. Each term or other part of the value of y that contains the variable x is differentiated by the standard rules. If z is another variable, not x itself, then its derivative with respect to x is taken to be 0, unless z has previously been declared to depend on x, in which case the derivative is reported as the symbol df(z,x).\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.8-DF-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.8 DF Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.df"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.8.1-Switches-influencing-differentiation-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.8.1 Switches influencing differentiation",
+    "category": "section",
+    "text": "Consider df(u,x,y,z). If none of x,y,z are equal to u then the order of differentiation is commuted into a canonical form, unless the switch nocommutedf is turned on (default is off). if at least one of x,y,z is equal to u then the order of differentiation is not commuted and the derivative is not simplified to zero, unless the switch commutedf is turned on. It is off by default.If commutedf is off and the switch simpnoncomdf is on then simplify as follows:df(u,x,u)        ->  df(u,x,2) / df(u,x)  \ndf(u,x,n,u)      ->  df(u,x,n+1) / df(u,x)provided u depends only on the one variable x. This simplification removes the non-commutative aspect of the derivative.If the switch expanddf is turned on then REDUCE uses the chain rule to expand symbolic derivatives of indirectly dependent variables provided the result is unambiguous, i.e. provided there is no direct dependence. It is off by default. Thus, for example, givenjulia> Algebra.depend(:f,:u,:v); Algebra.depend((:u,:v),:x)\n\njulia> Algebra.on(:expanddf)\n\njulia> Algebra.df(:f,:x)\n:(df(f, u) * df(u, x) + df(f, v) * df(v, x))whereas afterjulia> Algebra.depend(:f,:x)df(:f,:x) does not expand at all (since the result would be ambiguous and the algorithm would loop).Turning on the switch allowdfint allows “differentiation under the integral sign”, i.e.df(int(y, x), v) -> int(df(y, v), x)if this results in a simplification. If the switch dfint is also turned on then this happens regardless of whether the result simplifies. Both switches are off by default."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.8.2-Adding-Differentiation-Rules-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.8.2 Adding Differentiation Rules",
+    "category": "section",
+    "text": "The let statement can be used to introduce rules for differentiation of user-defined operators. Its general form isR\"for all ⟨var1⟩,…,⟨varn⟩ let df(⟨operator⟩⟨varlist⟩,⟨vari⟩)=⟨expression⟩\"where ⟨varlist⟩ ::= (⟨var1⟩,…,⟨varn⟩), and ⟨var1⟩,…,⟨varn⟩ are the dummy variable arguments of ⟨operator⟩.An analogous form applies to infix operators.Examples:R\"for all x let df(tan x,x)= 1 + tan(x)^2\"(This is how the tan differentiation rule appears in the REDUCE source.)R\"for all x,y let df(f(x,y),x)=2*f(x,y),  df(f(x,y),y)=x*f(x,y)\"Notice that all dummy arguments of the relevant operator must be declared arbitrary by the for all command, and that rules may be supplied for operators with any number of arguments. If no differentiation rule appears for an argument in an operator, the differentiation routines will return as result an expression in terms of df. For example, if the rule for the differentiation with respect to the second argument of f is not supplied, the evaluation of df(f(x,z),z) would leave this expression unchanged. (No depend declaration is needed here, since f(x,z) obviously “depends on” z.)Once such a rule has been defined for a given operator, any future differentiation rules for that operator must be defined with the same number of arguments for that operator, otherwise we get the error messageERROR: Reduce: \nIncompatible df rule argument length for <operator>"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.int",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.int",
+    "category": "function",
+    "text": "int(r...)\n\nint is an operator in REDUCE for indefinite integration using a combination of the Risch-Norman algorithm and pattern matching. It is used with the syntax:\n\nR\"int(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩)\"\n\nThis will return correctly the indefinite integral for expressions comprising polynomials, log functions, exponential functions and tan and atan. The arbitrary constant is not represented. If the integral cannot be done in closed terms, it returns a formal integral for the answer in one of two ways:\n\nIt returns the input, int(…,…) unchanged.\nIt returns an expression involving ints of some other functions (sometimes more complicated than the original one, unfortunately).\n\nRational functions can be integrated when the denominator is factorizable by the program. In addition it will attempt to integrate expressions involving error functions, dilogarithms and other trigonometric expressions. In these cases it might not always succeed in finding the solution, even if one exists.\n\nExamples:\n\njulia> Algebra.int(:(log(x)),:x)\n:((log(x) - 1) * x)\n\njulia> Algebra.int(:(e^x),:x)\n:(e ^ x)\n\nThe program checks that the second argument is a variable and gives an error if it is not.\n\nNote: If the int operator is called with 4 arguments, REDUCE will implicitly call the definite integration package (DEFINT) and this package will interpret the third and fourth arguments as the lower and upper limit of integration, respectively. For details, consult the documentation on the DEFINT package.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.9-INT-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.9 INT Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.int"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.9.1-Options-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.9.1 Options",
+    "category": "section",
+    "text": "The switch trint when on will trace the operation of the algorithm. It produces a great deal of output in a somewhat illegible form, and is not of much interest to the general user. It is normally off.The switch trintsubst when on will trace the heuristic attempts to solve the integral by substitution. It is normally off.If the switch failhard is on the algorithm will terminate with an error if the integral cannot be done in closed terms, rather than return a formal integration form. failhard is normally off.The switch nolnr suppresses the use of the linear properties of integration in cases when the integral cannot be found in closed terms. It is normally off.The switch nointsubst disables the heuristic attempts to solve the integral by substitution. It is normally off."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.9.2-Advanced-Use-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.9.2 Advanced Use",
+    "category": "section",
+    "text": "If a function appears in the integrand that is not one of the functions exp, erf, tan, atan, log, dilog then the algorithm will make an attempt to integrate the argument if it can, differentiate it and reach a known function. However the answer cannot be guaranteed in this case. If a function is known to be algebraically independent of this set it can be flagged transcendental byR\"flag(’(trilog),’transcendental)\"in which case this function will be added to the permitted field descriptors for a genuine decision procedure. If this is done the user is responsible for the mathematical correctness of his actions.The standard version does not deal with algebraic extensions. Thus integration of expressions involving square roots and other like things can lead to trouble. A contributed package that supports integration of functions involving square roots is available, however (ALGINT, chapter 16.1). In addition there is a definite integration package, DEFINT( chapter 16.18)."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.9.3-References-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.9.3 References",
+    "category": "section",
+    "text": "A. C. Norman & P. M. A. Moore, “Implementing the New Risch Algorithm”, Proc. 4th International Symposium on Advanced Comp. Methods in Theor. Phys., CNRS, Marseilles, 1977.S. J. Harrington, “A New Symbolic Integration System in Reduce”, Comp. Journ. 22 (1979) 2.A. C. Norman & J. H. Davenport, “Symbolic Integration — The Dust Settles?”, Proc. EUROSAM 79, Lecture Notes in Computer Science 72, Springer-Verlag, Berlin Heidelberg New York (1979) 398-407."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.length",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.length",
+    "category": "function",
+    "text": "length(r)\n\nlength is a generic operator for finding the length of various objects in the system. The meaning depends on the type of the object. In particular, the length of an algebraic expression is the number of additive top-level terms its expanded representation.\n\nExamples:\n\njulia> length(:(a+b))\n2\n\njulia> length(2)\n1\n\nOther objects that support a length operator include arrays, lists and matrices. The explicit meaning in these cases is included in the description of these objects.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.10-LENGTH-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.10 LENGTH Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.length"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.11-MAP-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.11 MAP Operator",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.12-MKID-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.12 MKID Operator",
+    "category": "section",
+    "text": "In many applications, it is useful to create a set of identifiers for naming objects in a consistent manner. In most cases, it is sufficient to create such names from two components. The operator mkid is provided for this purpose. Its syntax is:R\"mkid(U:id,V:id|non-negative integer)\"for examplejulia> Algebra.mkid(:a,3)\n:a3\n\njulia> Algebra.mkid(:apple,:s)\n:appleswhile mkid(:(a+b),2) gives an error.The set statement can be used to give a value to the identifiers created by mkid, for examplejulia> Algebra.set(Algebra.mkid(:a,3),2)will give a3 the value 2. Similarly, the unset statement can be used to remove the value from these identifiers, for examplejulia> Algebra.unset(Algebra.mkid(:a,3))"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.pochhammer",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.pochhammer",
+    "category": "function",
+    "text": "pochhammer(a,k)\n\nThe Pochhammer notation (a)_k (also called Pochhammer’s symbol) is supported by the binary operator pochhammer(a,k). For a non-negative integer k, it is defined as (http://dlmf.nist.gov/5.2.iii)\n\n(a)_0	= 1\n\n(a)_k	= a(a + 1)(a + 2)(a + k - 1)\n\nFor a = 012, this is equivalent to\n\n(a)k	= racGamma (a+-k-)Gamma (a)\n\nWith rounded off, this expression is evaluated numerically if a and k are both integral, and otherwise may be simplified where appropriate. The simplification rules are based upon algorithms supplied by Wolfram Koepf.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.13-The-Pochhammer-Notation-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.13 The Pochhammer Notation",
+    "category": "section",
+    "text": "Reduce.Algebra.pochhammer"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.pf",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.pf",
+    "category": "function",
+    "text": "pf(expr,var)\n\nR\"pf(⟨exp⟩,⟨var⟩)\" transforms the expression ⟨exp⟩ into a list of partial fractions with respect to the main variable, ⟨var⟩. pf does a complete partial fraction decomposition, and as the algorithms used are fairly unsophisticated (factorization and the extended Euclidean algorithm), the code may be unacceptably slow in complicated cases.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.14-PF-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.14 PF Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.pfExample: Given R\"2/((x+1)^2*(x+2))\" in the workspace, R\"pf(ws,x)\" gives the result    2      - 2         2\n{-------,-------,--------------}\n  x + 2   x + 1    2\n                  x  + 2*x + 1If you want the denominators in factored form, use off(:exp). Thus, with R\"2/((x+1)^2*(x+2))\" in the workspace, the commands R\"off(exp); pf(ws,x)\" give the result    2      - 2       2\n{-------,-------,----------}\n  x + 2   x + 1          2\n                  (x + 1)To recombine the terms, for each… sum can be used. So with the above list in the workspace, R\"for each j in ws sum j\" returns the result        2\n------------------\n                2\n (x + 2)*(x + 1)Alternatively, one can use the operations on lists to extract any desired term."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.15-SELECT-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.15 SELECT Operator",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.solve",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.solve",
+    "category": "function",
+    "text": "solve(r...)\n\nsolve is an operator for solving one or more simultaneous algebraic equations. It is used with the syntax:\n\nR\"SOLVE(⟨EXPRN:algebraic⟩[,⟨VAR:kernel⟩∣,⟨VARLIST:list of kernels⟩])\"\n\nexprn is of the form ⟨expression⟩ or {⟨expression1⟩,⟨expression2⟩, …}. Each expression is an algebraic equation, or is the difference of the two sides of the equation. The second argument is either a kernel or a list of kernels representing the unknowns in the system. This argument may be omitted if the number of distinct, non-constant, top-level kernels equals the number of unknowns, in which case these kernels are presumed to be the unknowns.\n\nFor one equation, solve recursively uses factorization and decomposition, together with the known inverses of log, sin, cos, ^, acos, asin, and linear, quadratic, cubic, quartic, or binomial factors. Solutions of equations built with exponentials or logarithms are often expressed in terms of Lambert’s W function. This function is (partially) implemented in the special functions package.\n\nLinear equations are solved by the multi-step elimination method due to Bareiss, unless the switch cramer is on, in which case Cramer’s method is used. The Bareiss method is usually more efficient unless the system is large and dense.\n\nNon-linear equations are solved using the Groebner basis package (chapter 16.28). Users should note that this can be quite a time consuming process.\n\nExamples:\n\nAlgebra.solve(:(log(sin(x+3))^5 == 8),:x)\nAlgebra.solve(:(a*log(sin(x+3))^5 - b), :(sin(x+3)))\nAlgebra.solve((:(a*x+y==3),:(y=-2)),(:x,:y))\n\nsolve returns a list of solutions. If there is one unknown, each solution is an equation for the unknown. If a complete solution was found, the unknown will appear by itself on the left-hand side of the equation. On the other hand, if the solve package could not find a solution, the “solution” will be an equation for the unknown in terms of the operator root_of. If there are several unknowns, each solution will be a list of equations for the unknowns. For example,\n\njulia> Algebra.solve(:(x^2==1),:x)\n(:(x = 1), :(x = -1))\n\njulia> Algebra.solve(:(x^7-x^6+x^2==1),:x)\n(:(x = root_of(x_ ^ 6 + x_ + 1, x_, tag_1)), :(x = 1))\n\njulia> Algebra.solve((:(x+3y==7),:(y-x==1)),(:x,:y))\n(:(x = 1), :(y = 2))\n\nThe tag argument is used to uniquely identify those particular solutions. Solution multiplicities are stored in the global variable root_multiplicities rather than the solution list. The value of this variable is a list of the multiplicities of the solutions for the last call of solve. For example,\n\njulia> Algebra.solve(:(x^2==2x-1),:x); Reduce.root_multiplicities()\n\ngives the results\n\n(:(x = 1),)\n \n(2,)\n\nIf you want the multiplicities explicitly displayed, the switch multiplicities can be turned on. For example\n\njulia> Algebra.on(:multiplicities); Algebra.solve(:(x^2==2x-1),:x)\n\nyields the result\n\n(:(x = 1), :(x = 1))\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16-SOLVE-Operator-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16 SOLVE Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.solve"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16.1-Handling-of-Undetermined-Solutions-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16.1 Handling of Undetermined Solutions",
+    "category": "section",
+    "text": "When solve cannot find a solution to an equation, it normally returns an equation for the relevant indeterminates in terms of the operator root_of. For example, the expressionjulia> Algebra.solve(:(cos(x)+log(x)),:x)returns the result(:(x = root_of(cos(x_) + log(x_), x_, tag_1)),)An expression with a top-level root_of operator is implicitly a list with an unknown number of elements (since we don’t always know how many solutions an equation has). If a substitution is made into such an expression, closed form solutions can emerge. If this occurs, the root_of construct is replaced by an operator one_of. At this point it is of course possible to transform the result of the original solve operator expression into a standard solve solution. To effect this, the operator expand_cases can be used.The following example shows the use of these facilities:julia> Algebra.solve(:(-a*x^3+a*x^2+x^4-x^3-4*x^2+4),:x)\n(:(x = root_of((a * x_ ^ 2 - x_ ^ 3) + 4x_ + 4, x_, tag_2)), :(x = 1))\n\njulia> Algebra.sub(:a=-1,ans)\n(:(x=one_of((2, -1, -2), tag_2)), :(x=1))\n \njulia> Algebra.expand_cases(ans)\n(:(x=2), :(x=-1), :(x=-2), :(x=1))"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16.2-Solutions-of-Equations-Involving-Cubics-and-Quartics-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16.2 Solutions of Equations Involving Cubics and Quartics",
+    "category": "section",
+    "text": "Since roots of cubics and quartics can often be very messy, a switch fullroots is available, that, when off (the default), will prevent the production of a result in closed form. The root_of construct will be used in this case instead.In constructing the solutions of cubics and quartics, trigonometrical forms are used where appropriate. This option is under the control of a switch trigform, which is normally on.The following example illustrates the use of these facilities:julia> Algebra.rlet(:xx => :(solve(x^3+x+1,x)))\n \njulia> rcall(:xx)\n(:(x = root_of(x_ ^ 3 + x_ + 1, x_, tag_1)),)\n\njulia> Algebra.on(:fullroots)\n\njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -((sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im - sinh(asinh((3 * sqrt(3)) // 2) // 3))) // sqrt(3))\n :(x = (sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im + sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n :(x = (-2 * sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n\njulia> off(:trigform)\n \njulia> rcall(R\"xx\")\n                             2/3  \n{X=( - (SQRT(31) - 3*SQRT(3))   *SQRT(3)*I  \n \n                             2/3    2/3  \n     - (SQRT(31) - 3*SQRT(3))    - 2   *SQRT(3)*I  \n \n        2/3                           1/3  1/3  \n     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6  \n \n                1/6  \n              *3   ),  \n \n                          2/3  \n X=((SQRT(31) - 3*SQRT(3))   *SQRT(3)*I  \n \n                             2/3    2/3  \n     - (SQRT(31) - 3*SQRT(3))    + 2   *SQRT(3)*I  \n \n        2/3                           1/3  1/3  \n     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6  \n \n                1/6  \n              *3   ),  \n \n                           2/3    2/3  \n     (SQRT(31) - 3*SQRT(3))    - 2  \n X=-------------------------------------}  \n                          1/3  1/3  1/6  \n    (SQRT(31) - 3*SQRT(3))   *6   *3"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16.3-Other-Options-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16.3 Other Options",
+    "category": "section",
+    "text": "If solvesingular is on (the default setting), degenerate systems such as x+y=0, 2x+2y=0 will be solved by introducing appropriate arbitrary constants. The consistent singular equation 0=0 or equations involving functions with multiple inverses may introduce unique new indeterminant kernels arbcomplex(j), or arbint(j), (j=12), representing arbitrary complex or integer numbers respectively. To automatically select the principal branches, do off(:allbranch). To avoid the introduction of new indeterminant kernels do off(:arbvars) – then no equations are generated for the free variables and their original names are used to express the solution forms. To suppress solutions of consistent singular equations do off(:solvesingular).To incorporate additional inverse functions do, for example:R\"put(’sinh,’inverse,’asinh)\"\nR\"put(’asinh,’inverse,’sinh)\"together with any desired simplification rules such asR\"for all x let sinh(asinh(x))=x, asinh(sinh(x))=x\"For completeness, functions with non-unique inverses should be treated as ^, sin, and cos are in the solve module source.Arguments of asin and acos are not checked to ensure that the absolute value of the real part does not exceed 1; and arguments of log are not checked to ensure that the absolute value of the imaginary part does not exceed π; but checks (perhaps involving user response for non-numerical arguments) could be introduced using let statements for these operators."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16.4-Parameters-and-Variable-Dependency-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16.4 Parameters and Variable Dependency",
+    "category": "section",
+    "text": "The proper design of a variable sequence supplied as a second argument to solve is important for the structure of the solution of an equation system. Any unknown in the system not in this list is considered totally free. E.g. the callAlgebra.solve((:(x==2z),:(z==2y)),(:z,))produces an empty list as a result because there is no function z = z(x,y) which fulfills both equations for arbitrary x and y values. In such a case the share variable requirements displays a set of restrictions for the parameters of the system:julia> Reduce.requirements()\n(:(x - 4y),)The non-existence of a formal solution is caused by a contradiction which disappears only if the parameters of the initial system are set such that all members of the requirements list take the value zero. For a linear system the set is complete: a solution of the requirements list makes the initial system solvable. E.g. in the above case a substitution x = 4y makes the equation set consistent. For a non-linear system only one inconsistency is detected. If such a system has more than one inconsistency, you must reduce them one after the other. 1 The set shows you also the dependency among the parameters: here one of x and y is free and a formal solution of the system can be computed by adding it to the variable list of solve. The requirement set is not unique – there may be other such sets. A system with parameters may have a formal solution, e.g. julia> Algebra.solve((:(x==a*z+1),:(0==b*z-y)),(:z,:x))\n(:(z = y // b), :(x = (a * y + b) // b))which is not valid for all possible values of the parameters. The variable assumptions contains then a list of restrictions: the solutions are valid only as long as none of these expressions vanishes. Any zero of one of them represents a special case that is not covered by the formal solution. In the above case the value isjulia> Reduce.assumptions()\n(:b,)which excludes formally the case b = 0; obviously this special parameter value makes the system singular. The set of assumptions is complete for both, linear and non–linear systems.solve rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch varopt, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:julia> rcall(R\"s:= {y^3+3x=0,x^2+y^2=1}\");\n \njulia> Algebra.solve(R\"s\",(:y,:x))\n \n              6       2\n{{y=root_of(y_  + 9*y_  - 9,y_,tag_2),\n\n         3\n      - y\n  x=-------}}\n       3\n\njulia> Algebra.off(:varopt); Algebra.solve(:s,(:y,:x)) |> collect\n2-element Array{Expr,1}:\n :(y = (-(((x ^ 4 - 2 * x ^ 2) + 10)) * x) // 3)                     \n :(x = root_of(((x_ ^ 6 - 3 * x_ ^ 4) + 12 * x_ ^ 2) - 1, x_, tag_3))In the first case, solve forms the solution as a set of pairs (y_ix(y_i)) because the degree of x is higher – such a rearrangement makes the internal computation of the Gröbner basis generally faster. For the second case the explicitly given variable sequence is used such that the solution has now the form (x_i,y(x_i)). Controlling the variable sequence is especially important if the system has one or more free variables. As an alternative to turning off varopt, a partial dependency among the variables can be declared using the depend statement: solve then rearranges the variable sequence but keeps any variable ahead of those on which it depends.julia> Algebra.on(:varopt)\n\njulia> rcall(R\"s:={a^3+b,b^2+c}\");\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n(:(a = arbcomplex(1)), :(b = -(a ^ 3)), :(c = -(a ^ 6))) \n\njulia> Algebra.depend(:a,:c); Algebra.depend(:b,:c)\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n3-element Array{Expr,1}:\n :(c = arbcomplex(2))                  \n :(a = root_of(a_ ^ 6 + c, a_, tag_3))\n :(b = -(a ^ 3)) Here solve is forced to put c after a and after b, but there is no obstacle to interchanging a and b."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.even",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.even",
+    "category": "function",
+    "text": "even(r...)\n\nAn operator can be declared to be even in its first argument by the declarations even. Expressions involving an operator declared in this manner are transformed if the first argument contains a minus sign. Any other arguments are not affected. For example, the declaration\n\njulia> Algebra.even(:f1)\n\nmeans that\n\n        f1(-a)    ->    f1(a)  \n        f1(-a,-b) ->    f1(a,-b)  \n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.odd",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.odd",
+    "category": "function",
+    "text": "odd(r...)\n\nAn operator can be declared to be odd in its first argument by the declarations odd. Expressions involving an operator declared in this manner are transformed if the first argument contains a minus sign. Any other arguments are not affected. In addition, if say f is declared odd, then f(0) is replaced by zero unless f is also declared non zero by the declaration nonzero. For example, the declarations\n\njulia> Algebra.odd(:f2)\n\nmeans that\n\n        f2(-a)    ->   -f2(a)  \n        f2(0)     ->    0\n\nTo inhibit the last transformation, say nonzero(:f2).\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.17-Even-and-Odd-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.17 Even and Odd Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.evenReduce.Algebra.odd"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.linear",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.linear",
+    "category": "function",
+    "text": "linear(r...)\n\nAn operator can be declared to be linear in its first argument over powers of its second argument. If an operator f is so declared, f of any sum is broken up into sums of fs, and any factors that are not powers of the variable are taken outside. This means that f must have (at least) two arguments. In addition, the second argument must be an identifier (or more generally a kernel), not an expression.\n\nExample: If f were declared linear, then\n\nf(a*x^5+b*x+c,x) ->  f(x^5,x)*a + f(x,x)*b + f(1,x)*c\n\nMore precisely, not only will the variable and its powers remain within the scope of the f operator, but so will any variable and its powers that had been declared to depend on the prescribed variable; and so would any expression that contains that variable or a dependent variable on any level, e.g. cos(sin(x)).\n\nTo declare operators f and g to be linear operators, use:\n\njulia> Algebra.linear(:f,:g)\n\nThe analysis is done of the first argument with respect to the second; any other arguments are ignored. It uses the following rules of evaluation:\n\nf(0) 		-> 0\nf(-y,x) 	-> -f(y,x)\nf(y+z,x) 	-> f(y,x)+f(z,x)\nf(y*z,x) 	-> z*f(y,x)   	if z does not depend on x\nf(y/z,x) 	-> f(y,x)/z		if z does not depend on x\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.18-Linear-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.18 Linear Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.linearTo summarize, y “depends” on the indeterminate x in the above if either of the following hold:y is an expression that contains x at any level as a variable, e.g.: cos(sin(x))\nAny variable in the expression y has been declared dependent on x by use of the declaration depend.The use of such linear operators can be seen in the paper Fox, J.A. and A. C. Hearn, “Analytic Computation of Some Integrals in Fourth Order Quantum Electrodynamics” Journ. Comp. Phys. 14 (1974) 301-317, which contains a complete listing of a program for definite integration of some expressions that arise in fourth order quantum electrodynamics."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.noncom",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.noncom",
+    "category": "function",
+    "text": "noncom(r...)\n\nAn operator can be declared to be non-commutative under multiplication by the declaration noncom.\n\nExample: After the declaration\n\njulia> Algebra.noncom(:u,:v);\n\nthe expressions u(x)*u(y)-u(y)*u(x) and u(x)*v(y)-v(y)*u(x) will remain unchanged on simplification, and in particular will not simplify to zero.\n\nNote that it is the operator (u and v in the above example) and not the variable that has the non-commutative property.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.19-Non-Commuting-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.19 Non-Commuting Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.noncomThe let statement may be used to introduce rules of evaluation for such operators. In particular, the boolean operator ordp is useful for introducing an ordering on such expressions.Example: The ruleR\"for all x,y such that x neq y and ordp(x,y) let u(x)*u(y)= u(y)*u(x)+comm(x,y)\"would introduce the commutator of u(x) and u(y) for all x and y. Note that since ordp(x,x) is true, the equality check is necessary in the degenerate case to avoid a circular loop in the rule."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.symmetric",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.symmetric",
+    "category": "function",
+    "text": "symmetric(r...)\n\nAn operator can be declared to be symmetric with respect to its arguments by the declaration symmetric. For example\n\njulia> Algebra.symmetric(:u,:v);\n\nmeans that any expression involving the top level operators u or v will have its arguments reordered to conform to the internal order used by REDUCE. The user can change this order for kernels by the command korder. For example, u(x,v(1,2)) would become u(v(2,1),x), since numbers are ordered in decreasing order, and expressions are ordered in decreasing order of complexity.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.antisymmetric",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.antisymmetric",
+    "category": "function",
+    "text": "antisymmetric(r...)\n\nthe declaration antisymmetric declares an operator antisymmetric. For example,\n\njulia> Algebra.antisymmetric(:l,:m);\n\nmeans that any expression involving the top level operators l or m will have its arguments reordered to conform to the internal order of the system, and the sign of the expression changed if there are an odd number of argument interchanges necessary to bring about the new order.\n\nFor example, l(x,m(1,2)) would become -l(-m(2,1),x) since one interchange occurs with each operator. An expression like l(x,x) would also be replaced by 0.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.20-Symmetric-and-Antisymmetric-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.20 Symmetric and Antisymmetric Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.symmetricReduce.Algebra.antisymmetric"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.operator",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.operator",
+    "category": "function",
+    "text": "operator(r...)\n\nThe user may add new prefix operators to the system by using the declaration operator. For example:\n\njulia> Algebra.operator(:h,:g1,:arctan)\n\nadds the prefix operators h, g1 and arctan to the system.\n\nThis allows symbols like h(w), h(x,y,z), g1(p+q), arctan(u/v) to be used in expressions, but no meaning or properties of the operator are implied. The same operator symbol can be used equally well as a 0-, 1-, 2-, 3-, etc.-place operator.\n\nTo give a meaning to an operator symbol, or express some of its properties, let statements can be used, or the operator can be given a definition as a procedure.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.21-Declaring-New-Prefix-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.21 Declaring New Prefix Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.operatorIf the user forgets to declare an identifier as an operator, the system will prompt the user to do so in interactive mode, or do it automatically in non-interactive mode. A diagnostic message will also be printed if an identifier is declared operator more than once.Operators once declared are global in scope, and so can then be referenced anywhere in the program. In other words, a declaration within a block (or a procedure) does not limit the scope of the operator to that block, nor does the operator go away on exiting the block (use clear instead for this purpose)."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.22-Declaring-New-Infix-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.22 Declaring New Infix Operators",
+    "category": "section",
+    "text": "Users can add new infix operators by using the declarations infix and precedence. For example,julia> Algebra.infix(:mm)\n\njulia> Algebra.precedence(:mm,:-)The declaration infix(:mm) would allow one to use the symbol mm as an infix operator: a mm b instead of mm(a,b).The declaration precedence(:mm,:-) says that mm should be inserted into the infix operator precedence list just after the - operator. This gives it higher precedence than - and lower precedence than * . Thus a - b mm c - d means a - (b mm c) - d, while a * b mm c * d means (a * b) mm (c * d).Both infix and prefix operators have no transformation properties unless let statements or procedure declarations are used to assign a meaning.We should note here that infix operators so defined are always binary: a mm b mm c means (a mm b) mm c."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.depend",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.depend",
+    "category": "function",
+    "text": "depend(r...)\n\nThere are several facilities in REDUCE, such as the differentiation operator and the linear operator facility, that can utilize knowledge of the dependency between various variables, or kernels. Such dependency may be expressed by the command depend. This takes an arbitrary number of arguments and sets up a dependency of the first argument on the remaining arguments. For example,\n\njulia> Algebra.depend(:x,:y,:z)\n\nsays that x is dependent on both y and z.\n\njulia> Algebra.depend(:z,:(cos(x)),:y)\n\nsays that z is dependent on cos(x) and y.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.nodepend",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.nodepend",
+    "category": "function",
+    "text": "nodepend(r...)\n\nDependencies introduced by depend can be removed by nodepend. The arguments of this are the same as for depend. For example, given the above dependencies,\n\njulia> Algebra.nodepend(:z,:(cos(x)))\n\nsays that z is no longer dependent on cos(x), although it remains dependent on y.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.23-Creating/Removing-Variable-Dependency-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.23 Creating/Removing Variable Dependency",
+    "category": "section",
+    "text": "Reduce.Algebra.dependReduce.Algebra.nodepend"
+},
+
+{
     "location": "man/20-maintaining.html#",
     "page": "20 Maintaining REDUCE",
     "title": "20 Maintaining REDUCE",
@@ -638,6 +1206,22 @@ var documenterSearchIndex = {"docs": [
     "title": "Appendix C: Changes since Version 3.8",
     "category": "section",
     "text": "New packages assert bibasis breduce cde cdiff clprl gcref guardian lalr lessons libreduce listvecops lpdo redfront reduce4 sstools utf8Core package rlisp Support for namespaces (::)Default value in switch statementSupport for utf8 charactersCore package poly Improvements for differentiation: new switches expanddf, allowdfint etc (from odesolve)Core package alg New switch precise_complexImprovements for switch combineexpt (exptchk.red)New command unsetNew operators continued_fraction, totaldegOperators now defined in the REDUCE core:changevar, si, ci, gamma, igamma, psi, polygamma, beta, ibeta, euler, bernoulli, pochhammer, lerch_phi, polylog, zeta, besselj, bessely, besseli, besselk, hankel1, hankel2, kummerM, kummerU, struveh, struvel, lommel1, lommel2, whittakerm, whittakerw, Airy_Ai, Airy_Bi, Airy_AiPrime, Airy_biprime, binomial, solidharmonic, sphericalharmonic, fibonacci,fibonaccip, motzkin, hypergeometric, MeijerG.Constants now part of the core:now known as part of the core, as well as constants catalan, euler_gamma, golden_ratio, khinchin.Core Package solve New boolean operator polyp(p,var), to determine whether p is a pure polynomial in var, ie. the coefficients of p do not contain var.Core Package matrix New keyword matrixproc for declaration of matrix-valued procedures.Package defint Added trdefint switch for tracing."
+},
+
+{
+    "location": "man/index.html#",
+    "page": "Index",
+    "title": "Index",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/index.html#Index-1",
+    "page": "Index",
+    "title": "Index",
+    "category": "section",
+    "text": "List of documented methods in Reduce.jl. See upstream index for others."
 },
 
 ]}
