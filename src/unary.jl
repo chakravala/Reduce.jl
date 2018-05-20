@@ -320,11 +320,11 @@ julia> Algebra.ceiling(:(-a))
 This operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:
 
 ```Julia
-julia> Algebra.ceiling(-5/4)
--1
+julia> Algebra.conj(1+im)
+1 - 1im
 
-julia> Algebra.ceiling(:(-a))
-:(ceiling(-a))
+julia> Algebra.conj(:(a+im*b))
+:(repart(a) - ((impart(a) + repart(b)) * im + impart(b)))
 ```
 """ Reduce.Algebra.conj
 
@@ -471,3 +471,27 @@ julia> Algebra.sign(:(-a^2*b))
 ```
 Note that even powers of formal expressions are assumed to be positive only as long as the switch `complex` is off.
 """ Reduce.Algebra.sign
+
+@doc """
+    bernoulli(n)
+
+The unary operator `bernoulli` provides notation and computation for Bernoulli numbers. `bernoulli(n)` evaluates to the `n`th Bernoulli number; all of the odd Bernoulli numbers, except `bernoulli(1)`, are zero.
+
+The algorithms are based upon those by Herbert Wilf, presented by Sandra Fillebrown [?]. If the `rounded` switch is off, the algorithms are exactly those; if it is on, some further rounding may be done to prevent computation of redundant digits. Hence, these functions are particularly fast when used to approximate the Bernoulli numbers in rounded mode.
+""" Reduce.Algebra.bernoulli
+
+@doc """
+    fibonacci(n)
+
+The unary operator `fibonacci` provides notation and computation for Fibonacci numbers. `fibonacci(n)` evaluates to the `n`th Fibonacci number. If `n` is a positive or negative integer, it will be evaluated following the definition:
+
+\$F_0 = 0; F_1 = 1; F_n = F_{n-1} + F_{n-2}\$
+""" Reduce.Algebra.fibonacci
+
+@doc """
+    motzkin(n)
+
+A Motzkin number \$M_n\$ (named after Theodore Motzkin) is the number of different ways of drawing non-intersecting chords on a circle between n points. For a non-negative integer `n`, the operator `motzkin(n)` returns the `n`th Motzkin number, according to the recursion formula
+
+\$M_0 =  1;  M_1 = 1;  M_{n+1}  =  \\frac{2n+3}{n+3}M_n + \\frac{3n}{n+3}M_{n-1}.\$
+""" Reduce.Algebra.motzkin

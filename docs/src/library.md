@@ -33,10 +33,6 @@ load_package
 ```
 
 ```@docs
-sub
-```
-
-```@docs
 squash
 ```
 

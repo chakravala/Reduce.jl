@@ -86,7 +86,7 @@ Intended to represent the base of the natural logarithms. `log(e)`, if it occurs
 #### EULER_GAMMA
 
 ```@docs
-Reduce.euler_gamma
+Reduce.Algebra.euler_gamma
 ```
 
 #### GOLDEN_RATIO
@@ -104,7 +104,7 @@ Intended to represent ∞ in limit and power series calculations for example, as
 #### KHINCHIN
 
 ```@docs
-Reduce.khinchin
+Reduce.Algebra.khinchin
 ```
 
 #### NEGATIVE

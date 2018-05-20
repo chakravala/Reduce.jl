@@ -45,7 +45,7 @@ Reduce.Algebra.max
 ```
 
 ```@docs
-Reduce.Alebra.min
+Reduce.Algebra.min
 ```
 
 ```@docs
@@ -75,18 +75,18 @@ Reduce.Algebra.sign
 ## 7.2 Mathematical Functions
 
 REDUCE knows that the following represent mathematical functions that can take arbitrary scalar expressions as their argument(s):
-
-> acos acosh acot acoth acsc acsch asec asech asin  
-> asinh atan atanh atan2 beta ci cos cosh cot coth csc  
-> csch dilog ei exp gamma hypot ibeta igamma ln log  
-> logb log10 sec sech si sin sinh sqrt tan tanh  
-> airy_ai airy_aiprime airy_bi airy_biprime  
-> besseli besselj besselk bessely  
-> hankel1 hankel2 kummerm kummeru lommel1 lommel2  
-> struveh struvel whittakerm whittakeru  
-> polygamma psi zeta  
-> solidharmonicy sphericalharmonicy
-
+```
+acos acosh acot acoth acsc acsch asec asech asin  
+asinh atan atanh atan2 beta ci cos cosh cot coth csc  
+csch dilog ei exp gamma hypot ibeta igamma ln log  
+logb log10 sec sech si sin sinh sqrt tan tanh  
+airy_ai airy_aiprime airy_bi airy_biprime  
+besseli besselj besselk bessely  
+hankel1 hankel2 kummerm kummeru lommel1 lommel2  
+struveh struvel whittakerm whittakeru  
+polygamma psi zeta  
+solidharmonicy sphericalharmonicy
+```
 where `log` is the natural logarithm (and equivalent to `ln`), and `logb` has two arguments of which the second is the logarithmic base.
 
 The derivatives of all these functions are also known to the system.
@@ -203,7 +203,7 @@ sech sin sinh sqrt tan tanh
 ```
 when given a numerical argument has its value calculated to the current degree of floating point precision. In addition, real (non-integer valued) powers of numbers will also be evaluated.
 
-If the `complex` switch is turned on in addition to `rounded`, these functions will also calculate a real or complex result, again to the current degree of floating point precision, if given complex arguments. For example, with `on(:rounded,:complex)`
+If the `complex` switch is turned on in addition to `rounded`, these functions will also calculate a real or complex result, again to the current degree of floating point precision, if given complex arguments. For example,
 ```Julia
 julia> @rounded @complex 2.3^(5.6im)
 :(-0.0480793490914 - 0.998843519372im)
@@ -214,27 +214,27 @@ julia> @rounded @complex cos(2+3im)
 
 ## 7.3 Bernoulli Numbers and Euler Numbers
 
-The unary operator `bernoulli` provides notation and computation for Bernoulli numbers. `bernoulli(n)` evaluates to the `n`th Bernoulli number; all of the odd Bernoulli numbers, except `bernoulli(1)`, are zero.
-
-The algorithms are based upon those by Herbert Wilf, presented by Sandra Fillebrown [?]. If the `rounded` switch is off, the algorithms are exactly those; if it is on, some further rounding may be done to prevent computation of redundant digits. Hence, these functions are particularly fast when used to approximate the Bernoulli numbers in rounded mode.
+```@docs
+Reduce.Algebra.bernoulli
+```
 
 Euler numbers are computed by the unary operator Euler, which return the nth Euler number. The computation is derived directly from Pascal’s triangle of binomial coefficients.
 
 ## 7.4 Fibonacci Numbers and Fibonacci Polynomials
 
-The unary operator `fibonacci` provides notation and computation for Fibonacci numbers. `fibonacci(n)` evaluates to the `n`th Fibonacci number. If `n` is a positive or negative integer, it will be evaluated following the definition:
+```@docs
+Reduce.Algebra.fibonacci
+```
 
-``F_0 = 0; F_1 = 1; F_n = F_{n-1} + F_{n-2}``
-
-Fibonacci Polynomials are computed by the binary operator `fibonaccip`. `fibonaccip(n,x)` returns the `n`th Fibonacci polynomial in the variable `x`. If `n` is a positive or negative integer, it will be evaluated following the definition:
-
-``F_0(x) = 0; F_1(x) = 1; F_n(x) = xF_{n-1}(x) + F_{n-2}(x)``
+```@docs
+Reduce.Algebra.fibonaccip
+```
 
 ## 7.5 Motzkin numbers
 
-A Motzkin number ``M_n`` (named after Theodore Motzkin) is the number of different ways of drawing non-intersecting chords on a circle between n points. For a non-negative integer `n`, the operator `motzkin(n)` returns the `n`th Motzkin number, according to the recursion formula
-
-``M_0 =  1;  M_1 = 1;  M_{n+1}  =  \frac{2n+3}{n+3}M_n + \frac{3n}{n+3}M_{n-1}.``
+```@docs
+Reduce.Algebra.motzkin
+```
 
 ## 7.6 CHANGEVAR Operator
 
@@ -356,20 +356,9 @@ Not initially supported by Reduce.jl parser, see [upstream docs](http://www.redu
 
 ## 7.12 MKID Operator
 
-In many applications, it is useful to create a set of identifiers for naming objects in a consistent manner. In most cases, it is sufficient to create such names from two components. The operator `mkid` is provided for this purpose. Its syntax is:
-
-```Julia
-R"mkid(U:id,V:id|non-negative integer)"
+```@docs
+Reduce.Algebra.mkid
 ```
-for example
-```Julia
-julia> Algebra.mkid(:a,3)
-:a3
-
-julia> Algebra.mkid(:apple,:s)
-:apples
-```
-while `mkid(:(a+b),2)` gives an error.
 
 The `set` statement can be used to give a value to the identifiers created by `mkid`, for example
 ```Julia
@@ -425,6 +414,14 @@ Not initially supported by Reduce.jl parser, see [upstream docs](http://www.redu
 Reduce.Algebra.solve
 ```
 
+```@docs
+Reduce.Algebra.root_multiplicities
+```
+
+```@docs
+Reduce.multiplicities
+```
+
 ### 7.16.1 Handling of Undetermined Solutions
 
 When `solve` cannot find a solution to an equation, it normally returns an equation for the relevant indeterminates in terms of the operator `root_of`. For example, the expression
@@ -475,34 +472,34 @@ julia> off(:trigform)
  
 julia> rcall(R"xx")
                              2/3  
-{X=( - (SQRT(31) - 3*SQRT(3))   *SQRT(3)*I  
+{x=( - (sqrt(31) - 3*sqrt(3))   *sqrt(3)*i  
  
                              2/3    2/3  
-     - (SQRT(31) - 3*SQRT(3))    - 2   *SQRT(3)*I  
+     - (sqrt(31) - 3*sqrt(3))    - 2   *sqrt(3)*i  
  
         2/3                           1/3  1/3  
-     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6  
+     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6  
  
                 1/6  
               *3   ),  
  
                           2/3  
- X=((SQRT(31) - 3*SQRT(3))   *SQRT(3)*I  
+ x=((sqrt(31) - 3*sqrt(3))   *sqrt(3)*i  
  
                              2/3    2/3  
-     - (SQRT(31) - 3*SQRT(3))    + 2   *SQRT(3)*I  
+     - (sqrt(31) - 3*sqrt(3))    + 2   *sqrt(3)*i  
  
         2/3                           1/3  1/3  
-     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6  
+     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6  
  
                 1/6  
               *3   ),  
  
                            2/3    2/3  
-     (SQRT(31) - 3*SQRT(3))    - 2  
- X=-------------------------------------}  
+     (sqrt(31) - 3*sqrt(3))    - 2  
+ x=-------------------------------------}  
                           1/3  1/3  1/6  
-    (SQRT(31) - 3*SQRT(3))   *6   *3
+    (sqrt(31) - 3*sqrt(3))   *6   *3
 ```
 
 ### 7.16.3 Other Options
@@ -524,29 +521,13 @@ Arguments of `asin` and `acos` are not checked to ensure that the absolute value
 
 ### 7.16.4 Parameters and Variable Dependency
 
-The proper design of a variable sequence supplied as a second argument to `solve` is important for the structure of the solution of an equation system. Any unknown in the system not in this list is considered totally free. E.g. the call
-```Julia
-Algebra.solve((:(x==2z),:(z==2y)),(:z,))
-```
-produces an empty list as a result because there is no function `z = z(x,y)` which fulfills both equations for arbitrary `x` and `y` values. In such a case the share variable `requirements` displays a set of restrictions for the parameters of the system:
-
-```Julia
-julia> Reduce.requirements()
-(:(x - 4y),)
+```@docs
+Reduce.Algebra.requirements
 ```
 
-The non-existence of a formal solution is caused by a contradiction which disappears only if the parameters of the initial system are set such that all members of the requirements list take the value zero. For a linear system the set is complete: a solution of the requirements list makes the initial system solvable. E.g. in the above case a substitution ``x = 4y`` makes the equation set consistent. For a non-linear system only one inconsistency is detected. If such a system has more than one inconsistency, you must reduce them one after the other. 1 The set shows you also the dependency among the parameters: here one of ``x`` and ``y`` is free and a formal solution of the system can be computed by adding it to the variable list of `solve`. The requirement set is not unique – there may be other such sets.
-A system with parameters may have a formal solution, e.g. 
-```Julia
-julia> Algebra.solve((:(x==a*z+1),:(0==b*z-y)),(:z,:x))
-(:(z = y // b), :(x = (a * y + b) // b))
+```@docs
+Reduce.Algebra.assumptions
 ```
-which is not valid for all possible values of the parameters. The variable `assumptions` contains then a list of restrictions: the solutions are valid only as long as none of these expressions vanishes. Any zero of one of them represents a special case that is not covered by the formal solution. In the above case the value is
-```Julia
-julia> Reduce.assumptions()
-(:b,)
-```
-which excludes formally the case ``b = 0``; obviously this special parameter value makes the system singular. The set of assumptions is complete for both, linear and non–linear systems.
 
 `solve` rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch `varopt`, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:
 ```Julia
@@ -646,20 +627,17 @@ Operators once declared are global in scope, and so can then be referenced anywh
 
 ## 7.22 Declaring New Infix Operators
 
-Users can add new infix operators by using the declarations `infix` and `precedence`. For example,
-```Julia
-julia> Algebra.infix(:mm)
-
-julia> Algebra.precedence(:mm,:-)
+```@docs
+Reduce.Algebra.infix
 ```
-The declaration `infix(:mm)` would allow one to use the symbol `mm` as an infix operator:
-`a mm b` instead of `mm(a,b)`.
 
-The declaration `precedence(:mm,:-)` says that `mm` should be inserted into the infix operator precedence list just after the `-` operator. This gives it higher precedence than `-` and lower precedence than `*` . Thus `a - b mm c - d` means `a - (b mm c) - d`, while `a * b mm c * d` means `(a * b) mm (c * d)`.
+```@docs
+Reduce.Algebra.precedence
+```
 
 Both infix and prefix operators have no transformation properties unless `let` statements or procedure declarations are used to assign a meaning.
 
-We should note here that infix operators so defined are always binary: `a mm b mm c` means `(a mm b) mm c`.
+We should note here that infix operators so defined are always binary: `R"a mm b mm c"` means `R"(a mm b) mm c"`.
 
 ## 7.23 Creating/Removing Variable Dependency
 

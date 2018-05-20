@@ -6,7 +6,6 @@ using Documenter, Reduce
 makedocs(
     # options
     modules = [Reduce],
-    repo = "github.com/chakravala/Reduce.jl.git",
     doctest = false,
     format = :html,
     sitename = "Reduce.jl",
@@ -19,8 +18,8 @@ makedocs(
             "man/01-introduction.md",
             "man/02-structure.md",
             "man/03-expressions.md",
-            #"man/04-lists.md",
-            #"man/05-statements.md",
+            "man/04-lists.md",
+            "man/05-statements.md",
             "man/06-commands-declarations.md",
             "man/07-prefix-ops.md",
             #="man/08-display.md",

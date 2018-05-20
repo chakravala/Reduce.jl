@@ -358,7 +358,7 @@ The Pochhammer notation ``(a)_k`` (also called Pochhammer’s symbol) is support
 
 For ``a ⁄= 0,±1,±2,…``, this is equivalent to
 
-``(a)k	= \frac{\Gamma (a+-k-)}{\Gamma (a)}``
+``(a)k	= \\frac{\\Gamma (a+-k-)}{\\Gamma (a)}``
 
 With `rounded` off, this expression is evaluated numerically if `a` and `k` are both integral, and otherwise may be simplified where appropriate. The simplification rules are based upon algorithms supplied by Wolfram Koepf.
 """ Reduce.Algebra.pochhammer
@@ -401,23 +401,7 @@ julia> Algebra.solve(:(x^7-x^6+x^2==1),:x)
 julia> Algebra.solve((:(x+3y==7),:(y-x==1)),(:x,:y))
 (:(x = 1), :(y = 2))
 ```
-The `tag` argument is used to uniquely identify those particular solutions. Solution multiplicities are stored in the global variable `root_multiplicities` rather than the solution list. The value of this variable is a list of the multiplicities of the solutions for the last call of `solve`. For example,
-```Julia
-julia> Algebra.solve(:(x^2==2x-1),:x); Reduce.root_multiplicities()
-```
-gives the results
-```Julia
-(:(x = 1),)
- 
-(2,)
-```
-If you want the multiplicities explicitly displayed, the switch `multiplicities` can be turned on. For example
-```Julia
-julia> Algebra.on(:multiplicities); Algebra.solve(:(x^2==2x-1),:x)
-```
-yields the result
-```Julia
-(:(x = 1), :(x = 1))
+The `tag` argument is used to uniquely identify those particular solutions.
 ```
 """ Reduce.Algebra.solve
 
@@ -471,7 +455,7 @@ f(0) 		-> 0
 f(-y,x) 	-> -f(y,x)
 f(y+z,x) 	-> f(y,x)+f(z,x)
 f(y*z,x) 	-> z*f(y,x)   	if z does not depend on x
-f(y/z,x) 	-> f(y,x)/z		if z does not depend on x
+f(y/z,x) 	-> f(y,x)/z	if z does not depend on x
 ```
 """ Reduce.Algebra.linear
 
@@ -550,3 +534,81 @@ julia> Algebra.nodepend(:z,:(cos(x)))
 ```
 says that `z` is no longer dependent on `cos(x)`, although it remains dependent on `y`.
 """ Reduce.Algebra.nodepend
+
+@doc """
+    set(a,b)
+
+In some cases, it is desirable to perform an assignment in which both the left- and right-hand sides of an assignment are evaluated. In this case, the `set` statement can be used with the syntax:
+```Julia
+R"set(⟨expression⟩,⟨expression⟩)"
+```
+For example, the statements
+```
+        j := 23;  
+        set(mkid(a,j),x);
+```
+assigns the value `x` to `a23`.
+""" Reduce.Algebra.set
+
+@doc """
+    unset(r)
+
+To remove a value from such a variable, the `unset` statement can be used with the syntax:
+```
+R"unset(⟨expression⟩)"
+```
+For example, the statement
+```
+        j := 23;  
+        unset(mkid(a,j));
+```
+clears the value of `a23`.
+""" Reduce.Algebra.unset
+
+@doc """
+    fibonacci(n,x)
+
+Fibonacci Polynomials are computed by the binary operator `fibonaccip`. `fibonaccip(n,x)` returns the `n`th Fibonacci polynomial in the variable `x`. If `n` is a positive or negative integer, it will be evaluated following the definition:
+
+\$F_0(x) = 0; F_1(x) = 1; F_n(x) = xF_{n-1}(x) + F_{n-2}(x)\$
+""" Reduce.Algebra.fibonaccip
+
+@doc """
+    mkid(u,v)
+
+In many applications, it is useful to create a set of identifiers for naming objects in a consistent manner. In most cases, it is sufficient to create such names from two components. The operator `mkid` is provided for this purpose. Its syntax is:
+
+```Julia
+R"mkid(U:id,V:id|non-negative integer)"
+```
+for example
+```Julia
+julia> Algebra.mkid(:a,3)
+:a3
+
+julia> Algebra.mkid(:apple,:s)
+:apples
+```
+while `mkid(:(a+b),2)` gives an error.
+""" Reduce.Algebra.mkid
+
+@doc """
+    infix(r...)
+
+Users can add new infix operators by using the declarations `infix` and `precedence`. For example,
+```Julia
+julia> Algebra.infix(:mm)
+```
+The declaration `infix(:mm)` would allow one to use the symbol `mm` as an infix operator:
+`R"a mm b"` instead of `R"mm(a,b)"`.
+""" Reduce.Algebra.infix
+
+@doc """
+    precedence(a,b)
+
+Users can add new infix operators by using the declarations `infix` and `precedence`. For example,
+```Julia
+julia> Algebra.precedence(:mm,:-)
+```
+The declaration `precedence(:mm,:-)` says that `mm` should be inserted into the infix operator precedence list just after the `-` operator. This gives it higher precedence than `-` and lower precedence than `*` . Thus `R"a - b mm c - d"` means `R"a - (b mm c) - d"`, while `R"a * b mm c * d"` means `R"(a * b) mm (c * d)"`.
+""" Reduce.Algebra.precedence

@@ -70,7 +70,7 @@ println()
 @test 2//Inf == 0
 @test Inf//2 == Inf
 
-@test (rcall("x"); Reduce.ws() == :x)
+@test (rcall("x"); Algebra.ws() == :x)
 @test (operator(:x); operator(:x); clear(:x); true)
 @test try det([:x :y]) catch true end
 @test join([R"1",R"1"]) == R"1;1"

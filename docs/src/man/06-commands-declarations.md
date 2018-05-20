@@ -3,7 +3,7 @@
 A command is an order to the system to do something. Some commands cause visible results (such as calling for input or output); others, usually called declarations, set options, define properties of variables, or define procedures. Commands are formally defined as a statement followed by a terminator
 
 ```Julia
-⟨command⟩ 		::= ⟨statement⟩⟨terminator⟩
+⟨command⟩ 	::= ⟨statement⟩⟨terminator⟩
 ⟨terminator⟩ 	::= ;∣$
 ```
 
@@ -41,7 +41,7 @@ will turn off both the time messages and the demonstration switch.
 
 We note here that while most `on` and `off` commands are obeyed almost instantaneously, some trigger time-consuming actions such as reading in necessary modules from secondary storage.
 
-A diagnostic message is printed if `on` or `off` are used with a switch that is not known to the system. For example, if you misspell i`demo` and type
+A diagnostic message is printed if `on` or `off` are used with a switch that is not known to the system. For example, if you misspell `demo` and type
 ```Julia
 julia> on(:demq)
 ```
@@ -51,18 +51,18 @@ ERROR: Reduce:
 ***** demq not defined as switch 
 ```
 
-# 6.3 END
+## 6.3 END
 
 The identifier `end` has two separate uses.
 
 1. Its use in a `R"begin… end"` bracket has been discussed in connection with compound statements.
 2. Files to be read using `IN` should end with an extra `end;` command. The reason for this is explained in the section on the `IN` command. This use of `END` does not allow an immediately preceding `end` (such as the `end` of a procedure definition), so we advise using `;end;` there.
 
-# 6.4 BYE Command
+## 6.4 BYE Command
 
 The command `R"bye"` (or alternatively `R"quit"`) stops the execution of REDUCE, closes all open output files, and returns you to the calling program (usually the operating system). Your REDUCE session is normally destroyed.
 
-# 6.5 SHOWTIME Command
+## 6.5 SHOWTIME Command
 
 `R"showtime"` prints the elapsed time since the last call of this command or, on its first call, since the current REDUCE session began. The time is normally given in milliseconds and gives the time as measured by a system clock. The operations covered by this measure are system dependent.
 

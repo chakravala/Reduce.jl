@@ -156,11 +156,13 @@ const jl_to_r_utf = Dict(
     #"\""            =>  "~"
 )
 
-
 """
     list(r)
 
-Returns an `RExpr` with list of its arguments.
+The operator `list` is an alternative to the usage of curly brackets. `list` accepts an arbitrary number of arguments and returns a list of its arguments. This operator is useful in cases where operators have to be passed as arguments. E.g.,
+```Julia
+list(:a,list(list(:b,:c),:d),:e)       ->  R"{{a},{{b,c},d},e}"
+```
 """
 list(r::T) where T <: Tuple = RExpr(r)
 list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr

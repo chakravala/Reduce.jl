@@ -4,7 +4,7 @@
 
 # Reduce.jl
 
-*Symbolic parser generator for Julia language expressions using REDUCE algebra term rewrite system*
+*Symbolic parser generator for Julia language expressions using REDUCE algebra term rewriter*
 
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/kaqu2yri4vxyr63n?svg=true)](https://ci.appveyor.com/project/chakravala/reduce-jl)

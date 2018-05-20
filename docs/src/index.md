@@ -1,6 +1,6 @@
 # Reduce.jl
 
-*Symbolic parser generator for Julia language expressions using REDUCE algebra term rewrite system*
+*Symbolic parser generator for Julia language expressions using REDUCE algebra term rewriter*
 
 
 ```@contents
