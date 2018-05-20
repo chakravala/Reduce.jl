@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Reduce.jl",
     "category": "section",
-    "text": "Symbolic parser generator for Julia language expressions using REDUCE algebra term rewrite systemPages = [\"index.md\",\"library.md\",\"docs.md\"]"
+    "text": "Symbolic parser generator for Julia language expressions using REDUCE algebra term rewriterPages = [\"index.md\",\"library.md\",\"docs.md\"]"
 },
 
 {
@@ -361,9 +361,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "man/02-structure.html#Reduce.euler_gamma",
+    "location": "man/02-structure.html#Reduce.Algebra.euler_gamma",
     "page": "2 Structure of Programs",
-    "title": "Reduce.euler_gamma",
+    "title": "Reduce.Algebra.euler_gamma",
     "category": "function",
     "text": "euler_gamma()\n\nEuler\'s constant, also available as -psi(1).\n\n\n\n"
 },
@@ -373,7 +373,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "EULER_GAMMA",
     "category": "section",
-    "text": "Reduce.euler_gamma"
+    "text": "Reduce.Algebra.euler_gamma"
 },
 
 {
@@ -401,9 +401,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "man/02-structure.html#Reduce.khinchin",
+    "location": "man/02-structure.html#Reduce.Algebra.khinchin",
     "page": "2 Structure of Programs",
-    "title": "Reduce.khinchin",
+    "title": "Reduce.Algebra.khinchin",
     "category": "function",
     "text": "khinchin()\n\nKhinchin\'s constant, defined as\n\n$ \\prod_{n=1}^\\infty \\left( 1 + \\frac{1}{n(n+2)} \\right)^{\\log_2 n}. $\n\n\n\n"
 },
@@ -413,7 +413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "2 Structure of Programs",
     "title": "KHINCHIN",
     "category": "section",
-    "text": "Reduce.khinchin"
+    "text": "Reduce.Algebra.khinchin"
 },
 
 {
@@ -561,6 +561,214 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/04-lists.html#",
+    "page": "4 Lists",
+    "title": "4 Lists",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/04-lists.html#Lists-1",
+    "page": "4 Lists",
+    "title": "4 Lists",
+    "category": "section",
+    "text": "A list is an object consisting of a sequence of other objects (including lists themselves), separated by commas and surrounded by braces. Examples of lists are:R\"{a,b,c}\"\nR\"{1,a-b,c=d}\"\nR\"{{a},{{b,c},d},e}\"The empty list is represented asR\"{}\"Pages = [\"04-lists.md\"]"
+},
+
+{
+    "location": "man/04-lists.html#.1-Operations-on-Lists-1",
+    "page": "4 Lists",
+    "title": "4.1 Operations on Lists",
+    "category": "section",
+    "text": "Several operators in the system return their results as lists, and a user can create new lists using braces and commas. Alternatively, one can use the operator list to construct a list. An important class of operations on lists are map and select operations. For details, please refer to the chapters on map, select and the for command. See also the documentation on the ASSIST (chapter 16.5) package.To facilitate the use of lists, a number of operators are also available for manipulating them. R\"part(⟨list⟩,n)\" for example will return the nth element of a list. length will return the length of a list. Several operators are also defined uniquely for lists. For those familiar with them, these operators in fact mirror the operations defined for Lisp lists. These operators are as follows:"
+},
+
+{
+    "location": "man/04-lists.html#Reduce.list",
+    "page": "4 Lists",
+    "title": "Reduce.list",
+    "category": "function",
+    "text": "list(r)\n\nThe operator list is an alternative to the usage of curly brackets. list accepts an arbitrary number of arguments and returns a list of its arguments. This operator is useful in cases where operators have to be passed as arguments. E.g.,\n\nlist(:a,list(list(:b,:c),:d),:e)       ->  R\"{{a},{{b,c},d},e}\"\n\n\n\n"
+},
+
+{
+    "location": "man/04-lists.html#.1.1-LIST-1",
+    "page": "4 Lists",
+    "title": "4.1.1 LIST",
+    "category": "section",
+    "text": "Reduce.list"
+},
+
+{
+    "location": "man/04-lists.html#.1.2-FIRST-1",
+    "page": "4 Lists",
+    "title": "4.1.2 FIRST",
+    "category": "section",
+    "text": "This operator returns the first member of a list. An error occurs if the argument is not a list, or the list is empty."
+},
+
+{
+    "location": "man/04-lists.html#.1.3-SECOND-1",
+    "page": "4 Lists",
+    "title": "4.1.3 SECOND",
+    "category": "section",
+    "text": "second returns the second member of a list. An error occurs if the argument is not a list or has no second element."
+},
+
+{
+    "location": "man/04-lists.html#.1.4-THIRD-1",
+    "page": "4 Lists",
+    "title": "4.1.4 THIRD",
+    "category": "section",
+    "text": "This operator returns the third member of a list. An error occurs if the argument is not a list or has no third element."
+},
+
+{
+    "location": "man/04-lists.html#.1.5-REST-1",
+    "page": "4 Lists",
+    "title": "4.1.5 REST",
+    "category": "section",
+    "text": "rest returns its argument with the first element removed. An error occurs if the argument is not a list, or is empty."
+},
+
+{
+    "location": "man/04-lists.html#.1.6-.-(Cons)-Operator-1",
+    "page": "4 Lists",
+    "title": "4.1.6 . (Cons) Operator",
+    "category": "section",
+    "text": "This operator adds (“conses”) an expression to the front of a list. For example:R\"a . {b,c}\"     ->   R\"{a,b,c}\""
+},
+
+{
+    "location": "man/04-lists.html#.1.7-APPEND-1",
+    "page": "4 Lists",
+    "title": "4.1.7 APPEND",
+    "category": "section",
+    "text": "This operator appends its first argument to its second to form a new list. Examples:R\"append({a,b},{c,d})\"     ->     R\"{a,b,c,d}\"\nR\"append({{a,b}},{c,d})\"   ->     R\"{{a,b},c,d}\""
+},
+
+{
+    "location": "man/04-lists.html#.1.8-REVERSE-1",
+    "page": "4 Lists",
+    "title": "4.1.8 REVERSE",
+    "category": "section",
+    "text": "The operator reverse returns its argument with the elements in the reverse order. It only applies to the top level list, not any lower level lists that may occur. Examples are:R\"reverse({a,b,c})\"        ->     R\"{c,b,a}\"\nR\"reverse({{a,b,c},d})\"    ->     R\"{d,{a,b,c}}\""
+},
+
+{
+    "location": "man/04-lists.html#.1.9-List-Arguments-of-Other-Operators-1",
+    "page": "4 Lists",
+    "title": "4.1.9 List Arguments of Other Operators",
+    "category": "section",
+    "text": "If an operator other than those specifically defined for lists is given a single argument that is a list, then the result of this operation will be a list in which that operator is applied to each element of the list. For example, the result of evaluating R\"log{a,b,c}\" is the expression R\"{LOG(A),LOG(B),LOG(C)}\".There are two ways to inhibit this operator distribution. Firstly, the switch listargs, if on, will globally inhibit such distribution. Secondly, one can inhibit this distribution for a specific operator by the declaration listargp. For example, with the declaration R\"listargp log, log{a,b,c}\" would evaluate to R\"log({a,b,c})\".If an operator has more than one argument, no such distribution occurs."
+},
+
+{
+    "location": "man/04-lists.html#.1.10-Caveats-and-Examples-1",
+    "page": "4 Lists",
+    "title": "4.1.10 Caveats and Examples",
+    "category": "section",
+    "text": "Some of the natural list operations such as member or delete are available only after loading the package ASSIST (chapter 16.5).Please note that a non-list as second argument to cons (a \"dotted pair\" in LISP terms) is not allowed and causes an \"invalid as list\" error.R\"a := 17 . 4\"\n\n***** 17 4 invalid as listAlso, the initialization of a scalar variable is not the empty list – one has to set list type variables explicitly, as in the following example: load_package assist;  \n \n procedure lotto (n,m);  \n  begin scalar list_1_n, luckies, hit;  \n     list_1_n := {};  \n     luckies := {};  \n     for k:=1:n do list_1_n := k . list_1_n;  \n     for k:=1:m do  \n       << hit := part(list_1_n,random(n-k+1) + 1);  \n          list_1_n := delete(hit,list_1_n);  \n          luckies := hit . luckies >>;  \n     return luckies;  \n  end;  \n                 % In Germany, try lotto (49,6);Another example: Find all coefficients of a multivariate polynomial with respect to a list of variables:procedure allcoeffs(q,lis);  \n   % q : polynomial, lis: list of vars  \n   allcoeffs1 (list q,lis);  \n \nprocedure allcoeffs1(q,lis);  \n  if lis={} then q else  \n    allcoeffs1(foreach qq in q join coeff(qq,first lis),  \n               rest lis);"
+},
+
+{
+    "location": "man/05-statements.html#",
+    "page": "5 Statements",
+    "title": "5 Statements",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/05-statements.html#Statements-1",
+    "page": "5 Statements",
+    "title": "5 Statements",
+    "category": "section",
+    "text": "A statement is any combination of reserved words and expressions, and has the syntaxR\"⟨statement⟩ ::= ⟨expression⟩∣⟨proper statement⟩\"A REDUCE program consists of a series of commands which are statements followed by a terminator:⟨terminator⟩ ::= ;∣$The division of the program into lines is arbitrary. Several statements can be on one line, or one statement can be freely broken onto several lines. If the program is run interactively, statements ending with ; or $ are not processed until an end-of-line character is encountered. This character can vary from system to system, but is normally the Return key on an ASCII terminal. Specific systems may also use additional keys as statement terminators.If a statement is a proper statement, the appropriate action takes place.Depending on the nature of the proper statement some result or response may or may not be printed out, and the response may or may not depend on the terminator used.If a statement is an expression, it is evaluated. If the terminator is a semicolon, the result is printed. If the terminator is a dollar sign, the result is not printed. Because it is not usually possible to know in advance how large an expression will be, no explicit format statements are offered to the user. However, a variety of output declarations are available so that the output can be produced in different forms. These output declarations are explained in Section 8.3.3.The following sub-sections describe the types of proper statements in REDUCE.Pages = [\"05-statements.md\"]"
+},
+
+{
+    "location": "man/05-statements.html#.1-Assignment-Statements-1",
+    "page": "5 Statements",
+    "title": "5.1 Assignment Statements",
+    "category": "section",
+    "text": "These statements have the syntax⟨assignment statement⟩ ::= ⟨expression⟩:=⟨expression⟩The ⟨expression⟩ on the left side is normally the name of a variable, an operator symbol with its list of arguments filled in, or an array name with the proper number of integer subscript values within the array bounds. For example:R\"a1 := b + c\"\nR\"h(l,m) := x-2*y\"     	(where h is an operator)\nR\"k(3,5) := x-2*y\"		(where k is a 2-dim. array)More general assignments such as R\"a+b := c\" are also allowed. The effect of these is explained in Section 11.2.5.An assignment statement causes the expression on the right-hand-side to be evaluated. If the left-hand-side is a variable, the value of the right-hand-side is assigned to that unevaluated variable. If the left-hand-side is an operator or array expression, the arguments of that operator or array are evaluated, but no other simplification done. The evaluated right-hand-side is then assigned to the resulting expression. For example, if a is a single-dimensional array, R\"a(1+1) := b\" assigns the value b to the array element a(2).If a semicolon is used as the terminator when an assignment is issued as a command (i.e. not as a part of a group statement or procedure or other similar construct), the left-hand side symbol of the assignment statement is printed out, followed by a “:=”, followed by the value of the expression on the right.It is also possible to write a multiple assignment statement:⟨expression⟩:=…:=⟨expression⟩:=⟨expression⟩In this form, each ⟨expression⟩ but the last is set to the value of the last ⟨expression⟩. If a semicolon is used as a terminator, each expression except the last is printed followed by a “:=” ending with the value of the last expression."
+},
+
+{
+    "location": "man/05-statements.html#Reduce.Algebra.set",
+    "page": "5 Statements",
+    "title": "Reduce.Algebra.set",
+    "category": "function",
+    "text": "set(a,b)\n\nIn some cases, it is desirable to perform an assignment in which both the left- and right-hand sides of an assignment are evaluated. In this case, the set statement can be used with the syntax:\n\nR\"set(⟨expression⟩,⟨expression⟩)\"\n\nFor example, the statements\n\n        j := 23;  \n        set(mkid(a,j),x);\n\nassigns the value x to a23.\n\n\n\n"
+},
+
+{
+    "location": "man/05-statements.html#Reduce.Algebra.unset",
+    "page": "5 Statements",
+    "title": "Reduce.Algebra.unset",
+    "category": "function",
+    "text": "unset(r)\n\nTo remove a value from such a variable, the unset statement can be used with the syntax:\n\nR\"unset(⟨expression⟩)\"\n\nFor example, the statement\n\n        j := 23;  \n        unset(mkid(a,j));\n\nclears the value of a23.\n\n\n\n"
+},
+
+{
+    "location": "man/05-statements.html#.1.1-Set-and-Unset-Statements-1",
+    "page": "5 Statements",
+    "title": "5.1.1 Set and Unset Statements",
+    "category": "section",
+    "text": "Reduce.Algebra.setReduce.Algebra.unset"
+},
+
+{
+    "location": "man/05-statements.html#.2-Group-Statements-1",
+    "page": "5 Statements",
+    "title": "5.2 Group Statements",
+    "category": "section",
+    "text": "The group statement is a construct used where REDUCE expects a single statement, but a series of actions needs to be performed. It is formed by enclosing one or more statements (of any kind) between the symbols << and >>, separated by semicolons or dollar signs – it doesn’t matter which. The statements are executed one after another.Examples will be given in the sections on if and other types of statements in which the <<…>> construct is useful.If the last statement in the enclosed group has a value, then that is also the value of the group statement. Care must be taken not to have a semicolon or dollar sign after the last grouped statement, if the value of the group is relevant: such an extra terminator causes the group to have the value nil or zero."
+},
+
+{
+    "location": "man/05-statements.html#.3-Conditional-Statements-1",
+    "page": "5 Statements",
+    "title": "5.3 Conditional Statements",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/05-statements.html#.4-FOR-Statements-1",
+    "page": "5 Statements",
+    "title": "5.4 FOR Statements",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/05-statements.html#.5-WHILE-…DO-1",
+    "page": "5 Statements",
+    "title": "5.5 WHILE …DO",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/05-statements.html#.6-REPEAT-…UNTIL-1",
+    "page": "5 Statements",
+    "title": "5.6 REPEAT …UNTIL",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/05-statements.html#.7-Compound-Statements-1",
+    "page": "5 Statements",
+    "title": "5.7 Compound Statements",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
     "location": "man/06-commands-declarations.html#",
     "page": "6 Commands and Declarations",
     "title": "6 Commands and Declarations",
@@ -573,7 +781,7 @@ var documenterSearchIndex = {"docs": [
     "page": "6 Commands and Declarations",
     "title": "6 Commands and Declarations",
     "category": "section",
-    "text": "A command is an order to the system to do something. Some commands cause visible results (such as calling for input or output); others, usually called declarations, set options, define properties of variables, or define procedures. Commands are formally defined as a statement followed by a terminator⟨command⟩ 		::= ⟨statement⟩⟨terminator⟩\n⟨terminator⟩ 	::= ;∣$Some REDUCE commands and declarations are described in the following sub-sections.Pages = [\"06-commands-declarations.md\"]"
+    "text": "A command is an order to the system to do something. Some commands cause visible results (such as calling for input or output); others, usually called declarations, set options, define properties of variables, or define procedures. Commands are formally defined as a statement followed by a terminator⟨command⟩ 	::= ⟨statement⟩⟨terminator⟩\n⟨terminator⟩ 	::= ;∣$Some REDUCE commands and declarations are described in the following sub-sections.Pages = [\"06-commands-declarations.md\"]"
 },
 
 {
@@ -605,7 +813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "6 Commands and Declarations",
     "title": "6.2 Mode Handling Declarations",
     "category": "section",
-    "text": "The on and off declarations are available to the user for controlling various system options. Each option is represented by a switch name. on and off take a list of switch names as argument and turn them on and off respectively, e.g.,julia> on(:time)causes the system to print a message after each command giving the elapsed CPU time since the last command, or since time was last turned off, or the session began. Another useful switch with interactive use is demo, which causes the system to pause after each command in a file (with the exception of comments) until a <Return> is typed on the terminal. This enables a user to set up a demonstration file and step through it command by command.Reduce.Algebra.onReduce.Algebra.offAs with most declarations, arguments to on and off may be strung together separated by commas. For example,julia> off(:time,:demo)will turn off both the time messages and the demonstration switch.We note here that while most on and off commands are obeyed almost instantaneously, some trigger time-consuming actions such as reading in necessary modules from secondary storage.A diagnostic message is printed if on or off are used with a switch that is not known to the system. For example, if you misspell idemo and typejulia> on(:demq)you will get the messageERROR: Reduce: \n***** demq not defined as switch "
+    "text": "The on and off declarations are available to the user for controlling various system options. Each option is represented by a switch name. on and off take a list of switch names as argument and turn them on and off respectively, e.g.,julia> on(:time)causes the system to print a message after each command giving the elapsed CPU time since the last command, or since time was last turned off, or the session began. Another useful switch with interactive use is demo, which causes the system to pause after each command in a file (with the exception of comments) until a <Return> is typed on the terminal. This enables a user to set up a demonstration file and step through it command by command.Reduce.Algebra.onReduce.Algebra.offAs with most declarations, arguments to on and off may be strung together separated by commas. For example,julia> off(:time,:demo)will turn off both the time messages and the demonstration switch.We note here that while most on and off commands are obeyed almost instantaneously, some trigger time-consuming actions such as reading in necessary modules from secondary storage.A diagnostic message is printed if on or off are used with a switch that is not known to the system. For example, if you misspell demo and typejulia> on(:demq)you will get the messageERROR: Reduce: \n***** demq not defined as switch "
 },
 
 {
@@ -677,7 +885,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "Reduce.Algebra.conj",
     "category": "function",
-    "text": "conj(r)\n\nThis operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.ceiling(-5/4)\n-1\n\njulia> Algebra.ceiling(:(-a))\n:(ceiling(-a))\n\n\n\n"
+    "text": "conj(r)\n\nThis operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:\n\njulia> Algebra.conj(1+im)\n1 - 1im\n\njulia> Algebra.conj(:(a+im*b))\n:(repart(a) - ((impart(a) + repart(b)) * im + impart(b)))\n\n\n\n"
 },
 
 {
@@ -781,7 +989,15 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.2 Mathematical Functions",
     "category": "section",
-    "text": "REDUCE knows that the following represent mathematical functions that can take arbitrary scalar expressions as their argument(s):acos acosh acot acoth acsc acsch asec asech asin   asinh atan atanh atan2 beta ci cos cosh cot coth csc   csch dilog ei exp gamma hypot ibeta igamma ln log   logb log10 sec sech si sin sinh sqrt tan tanh   airy_ai airy_aiprime airy_bi airy_biprime   besseli besselj besselk bessely   hankel1 hankel2 kummerm kummeru lommel1 lommel2   struveh struvel whittakerm whittakeru   polygamma psi zeta   solidharmonicy sphericalharmonicywhere log is the natural logarithm (and equivalent to ln), and logb has two arguments of which the second is the logarithmic base.The derivatives of all these functions are also known to the system.REDUCE knows various elementary identities and properties of these functions. For example: cos(-x) = cos(x)              sin(-x) = - sin (x)  \n cos(n*pi) = (-1)^n            sin(n*pi) = 0  \n log(e)  = 1                   e^(i*pi/2) = i  \n log(1)  = 0                   e^(i*pi) = -1  \n log(e^x) = x                  e^(3*i*pi/2) = -iBeside these identities, there are a lot of simplifications for elementary functions defined in the REDUCE system as rulelists. In order to view these, the showrules operator can be used, e.g.reduce> showrules tan;  \n \n{tan(~n*arbint(~i)*pi + ~(~ x)) => tan(x) when fixp(n),  \n \n tan(~x)  \n \n  => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),  \n \n      ~x + ~(~ k)*pi  \n tan(----------------)  \n            ~d  \n \n             x                  k                     k     1  \n  =>  - cot(---) + i*pi*impart(---)) when abs(repart(---))=---,  \n             d                  d                     d     2  \n \n      ~(~ w) + ~(~ k)*pi           w      k                k  \n tan(--------------------) => tan(--- + (--- - fix(repart(---)))*pi)  \n            ~(~ d)                 d      d                d  \n \n                              k  \n when whereexp({rp => repart(---)},bool-eval(ratnump(rp) and abs(rp)>=1)),  \n                              d  \n \n tan(atan(~x)) => x,  \n \n                             2  \n df(tan(~x),~x) => 1 + tan(x) }  \nFor further simplification, especially of expressions involving trigonometric functions, see the TRIGSIMP package (chapter 16.72) documentation.Functions not listed above may be defined in the special functions package SPECFN.The user can add further rules for the reduction of expressions involving these operators by using the let command.In many cases it is desirable to expand product arguments of logarithms, or collect a sum of logarithms into a single logarithm. Since these are inverse operations, it is not possible to provide rules for doing both at the same time and preserve the REDUCE concept of idempotent evaluation. As an alternative, REDUCE provides two switches expandlogs and combinelogs to carry out these operations. Both are off by default, and are subject to the value of the switch precise. This switch is on by default and prevents modifications that may be false in a complex domain. Thus to expand log(3*y) into a sum of logs, one can sayjulia> Algebra.on(:expandlogs);\n\njulia> Algebra.log(:(3*y))whereas to expand log(x*y) into a sum of logs, one needs to sayjulia> Algebra.off(:precise); Algebra.on(:expandlogs);\n\njulia> Algebra.log(:(x*y))To combine this sum into a single log:julia> Algebra.off(:precise); Algebra.on(:combinelogs);\n\njulia> Alebra.:+(log(:x),log(:y))These switches affect the logarithmic functions log10 (base 10) and logb (arbitrary base) as well.At the present time, it is possible to have both switches on at once, which could lead to infinite recursion. However, an expression is switched from one form to the other in this case. Users should not rely on this behavior, since it may change in the next release.The current version of REDUCE does a poor job of simplifying surds. In particular, expressions involving the product of variables raised to non-integer powers do not usually have their powers combined internally, even though they are printed as if those powers were combined. For example, the expressionreduce> x^(1/3)*x^(1/6)will print assqrt(x)but will have an internal form containing the two exponentiated terms. If you now subtract sqrt(x) from this expression, you will not get zero. Instead, the confusing formsqrt(x) - sqrt(x)will result. To combine such exponentiated terms, the switch combineexpt should be turned on.The square root function can be input using the name sqrt, or the power operation ^(1/2). On output, unsimplified square roots are normally represented by the operator sqrt rather than a fractional power. With the default system switch settings, the argument of a square root is first simplified, and any divisors of the expression that are perfect squares taken outside the square root argument. The remaining expression is left under the square root. Thus the expressionjulia> Algebra.sqrt(:(-8a^2*b))becomes:(2 * sqrt(b) * sqrt(2) * a * im)Note that such simplifications can cause trouble if A is eventually given a value that is a negative number. If it is important that the positive property of the square root and higher even roots always be preserved, the switch PRECISE should be set on (the default value). This causes any non-numerical factors taken out of surds to be represented by their absolute value form. With PRECISE on then, the above example would become:(2 * sqrt(-2b) * abs(a))However, this is incorrect in the complex domain, where the sqrtx^2 is not identical to x. To avoid the above simplification, the switch precise_complex should be set on (default is off). For example:julia> Algebra.on(:precise_complex); Algebra.sqrt(:(-8a^2*b))yields the output:(2 * sqrt(-2 * a ^ 2 * b))The statement that REDUCE knows very little about these functions applies only in the mathematically exact off rounded mode. If rounded is on, any of the functionsacos acosh acot acoth acsc acsch asec asech asin  \nasinh atan atanh atan2 cos cosh cot coth csc csch  \nexp hypot ibeta igamma ln log logb log10 psi sec  \nsech sin sinh sqrt tan tanhwhen given a numerical argument has its value calculated to the current degree of floating point precision. In addition, real (non-integer valued) powers of numbers will also be evaluated.If the complex switch is turned on in addition to rounded, these functions will also calculate a real or complex result, again to the current degree of floating point precision, if given complex arguments. For example, with on(:rounded,:complex)julia> @rounded @complex 2.3^(5.6im)\n:(-0.0480793490914 - 0.998843519372im)\n\njulia> @rounded @complex cos(2+3im)\n:(-4.18962569097 - 9.10922789376im)"
+    "text": "REDUCE knows that the following represent mathematical functions that can take arbitrary scalar expressions as their argument(s):acos acosh acot acoth acsc acsch asec asech asin  \nasinh atan atanh atan2 beta ci cos cosh cot coth csc  \ncsch dilog ei exp gamma hypot ibeta igamma ln log  \nlogb log10 sec sech si sin sinh sqrt tan tanh  \nairy_ai airy_aiprime airy_bi airy_biprime  \nbesseli besselj besselk bessely  \nhankel1 hankel2 kummerm kummeru lommel1 lommel2  \nstruveh struvel whittakerm whittakeru  \npolygamma psi zeta  \nsolidharmonicy sphericalharmonicywhere log is the natural logarithm (and equivalent to ln), and logb has two arguments of which the second is the logarithmic base.The derivatives of all these functions are also known to the system.REDUCE knows various elementary identities and properties of these functions. For example: cos(-x) = cos(x)              sin(-x) = - sin (x)  \n cos(n*pi) = (-1)^n            sin(n*pi) = 0  \n log(e)  = 1                   e^(i*pi/2) = i  \n log(1)  = 0                   e^(i*pi) = -1  \n log(e^x) = x                  e^(3*i*pi/2) = -iBeside these identities, there are a lot of simplifications for elementary functions defined in the REDUCE system as rulelists. In order to view these, the showrules operator can be used, e.g.reduce> showrules tan;  \n \n{tan(~n*arbint(~i)*pi + ~(~ x)) => tan(x) when fixp(n),  \n \n tan(~x)  \n \n  => trigquot(sin(x),cos(x)) when knowledge_about(sin,x,tan),  \n \n      ~x + ~(~ k)*pi  \n tan(----------------)  \n            ~d  \n \n             x                  k                     k     1  \n  =>  - cot(---) + i*pi*impart(---)) when abs(repart(---))=---,  \n             d                  d                     d     2  \n \n      ~(~ w) + ~(~ k)*pi           w      k                k  \n tan(--------------------) => tan(--- + (--- - fix(repart(---)))*pi)  \n            ~(~ d)                 d      d                d  \n \n                              k  \n when whereexp({rp => repart(---)},bool-eval(ratnump(rp) and abs(rp)>=1)),  \n                              d  \n \n tan(atan(~x)) => x,  \n \n                             2  \n df(tan(~x),~x) => 1 + tan(x) }  \nFor further simplification, especially of expressions involving trigonometric functions, see the TRIGSIMP package (chapter 16.72) documentation.Functions not listed above may be defined in the special functions package SPECFN.The user can add further rules for the reduction of expressions involving these operators by using the let command.In many cases it is desirable to expand product arguments of logarithms, or collect a sum of logarithms into a single logarithm. Since these are inverse operations, it is not possible to provide rules for doing both at the same time and preserve the REDUCE concept of idempotent evaluation. As an alternative, REDUCE provides two switches expandlogs and combinelogs to carry out these operations. Both are off by default, and are subject to the value of the switch precise. This switch is on by default and prevents modifications that may be false in a complex domain. Thus to expand log(3*y) into a sum of logs, one can sayjulia> Algebra.on(:expandlogs);\n\njulia> Algebra.log(:(3*y))whereas to expand log(x*y) into a sum of logs, one needs to sayjulia> Algebra.off(:precise); Algebra.on(:expandlogs);\n\njulia> Algebra.log(:(x*y))To combine this sum into a single log:julia> Algebra.off(:precise); Algebra.on(:combinelogs);\n\njulia> Alebra.:+(log(:x),log(:y))These switches affect the logarithmic functions log10 (base 10) and logb (arbitrary base) as well.At the present time, it is possible to have both switches on at once, which could lead to infinite recursion. However, an expression is switched from one form to the other in this case. Users should not rely on this behavior, since it may change in the next release.The current version of REDUCE does a poor job of simplifying surds. In particular, expressions involving the product of variables raised to non-integer powers do not usually have their powers combined internally, even though they are printed as if those powers were combined. For example, the expressionreduce> x^(1/3)*x^(1/6)will print assqrt(x)but will have an internal form containing the two exponentiated terms. If you now subtract sqrt(x) from this expression, you will not get zero. Instead, the confusing formsqrt(x) - sqrt(x)will result. To combine such exponentiated terms, the switch combineexpt should be turned on.The square root function can be input using the name sqrt, or the power operation ^(1/2). On output, unsimplified square roots are normally represented by the operator sqrt rather than a fractional power. With the default system switch settings, the argument of a square root is first simplified, and any divisors of the expression that are perfect squares taken outside the square root argument. The remaining expression is left under the square root. Thus the expressionjulia> Algebra.sqrt(:(-8a^2*b))becomes:(2 * sqrt(b) * sqrt(2) * a * im)Note that such simplifications can cause trouble if A is eventually given a value that is a negative number. If it is important that the positive property of the square root and higher even roots always be preserved, the switch PRECISE should be set on (the default value). This causes any non-numerical factors taken out of surds to be represented by their absolute value form. With PRECISE on then, the above example would become:(2 * sqrt(-2b) * abs(a))However, this is incorrect in the complex domain, where the sqrtx^2 is not identical to x. To avoid the above simplification, the switch precise_complex should be set on (default is off). For example:julia> Algebra.on(:precise_complex); Algebra.sqrt(:(-8a^2*b))yields the output:(2 * sqrt(-2 * a ^ 2 * b))The statement that REDUCE knows very little about these functions applies only in the mathematically exact off rounded mode. If rounded is on, any of the functionsacos acosh acot acoth acsc acsch asec asech asin  \nasinh atan atanh atan2 cos cosh cot coth csc csch  \nexp hypot ibeta igamma ln log logb log10 psi sec  \nsech sin sinh sqrt tan tanhwhen given a numerical argument has its value calculated to the current degree of floating point precision. In addition, real (non-integer valued) powers of numbers will also be evaluated.If the complex switch is turned on in addition to rounded, these functions will also calculate a real or complex result, again to the current degree of floating point precision, if given complex arguments. For example,julia> @rounded @complex 2.3^(5.6im)\n:(-0.0480793490914 - 0.998843519372im)\n\njulia> @rounded @complex cos(2+3im)\n:(-4.18962569097 - 9.10922789376im)"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.bernoulli",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.bernoulli",
+    "category": "function",
+    "text": "bernoulli(n)\n\nThe unary operator bernoulli provides notation and computation for Bernoulli numbers. bernoulli(n) evaluates to the nth Bernoulli number; all of the odd Bernoulli numbers, except bernoulli(1), are zero.\n\nThe algorithms are based upon those by Herbert Wilf, presented by Sandra Fillebrown [?]. If the rounded switch is off, the algorithms are exactly those; if it is on, some further rounding may be done to prevent computation of redundant digits. Hence, these functions are particularly fast when used to approximate the Bernoulli numbers in rounded mode.\n\n\n\n"
 },
 
 {
@@ -789,7 +1005,15 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.3 Bernoulli Numbers and Euler Numbers",
     "category": "section",
-    "text": "The unary operator bernoulli provides notation and computation for Bernoulli numbers. bernoulli(n) evaluates to the nth Bernoulli number; all of the odd Bernoulli numbers, except bernoulli(1), are zero.The algorithms are based upon those by Herbert Wilf, presented by Sandra Fillebrown [?]. If the rounded switch is off, the algorithms are exactly those; if it is on, some further rounding may be done to prevent computation of redundant digits. Hence, these functions are particularly fast when used to approximate the Bernoulli numbers in rounded mode.Euler numbers are computed by the unary operator Euler, which return the nth Euler number. The computation is derived directly from Pascal’s triangle of binomial coefficients."
+    "text": "Reduce.Algebra.bernoulliEuler numbers are computed by the unary operator Euler, which return the nth Euler number. The computation is derived directly from Pascal’s triangle of binomial coefficients."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.fibonaccip",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.fibonaccip",
+    "category": "function",
+    "text": "fibonacci(n,x)\n\nFibonacci Polynomials are computed by the binary operator fibonaccip. fibonaccip(n,x) returns the nth Fibonacci polynomial in the variable x. If n is a positive or negative integer, it will be evaluated following the definition:\n\nF_0(x) = 0 F_1(x) = 1 F_n(x) = xF_n-1(x) + F_n-2(x)\n\n\n\n"
 },
 
 {
@@ -797,7 +1021,15 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.4 Fibonacci Numbers and Fibonacci Polynomials",
     "category": "section",
-    "text": "The unary operator fibonacci provides notation and computation for Fibonacci numbers. fibonacci(n) evaluates to the nth Fibonacci number. If n is a positive or negative integer, it will be evaluated following the definition:F_0 = 0 F_1 = 1 F_n = F_n-1 + F_n-2Fibonacci Polynomials are computed by the binary operator fibonaccip. fibonaccip(n,x) returns the nth Fibonacci polynomial in the variable x. If n is a positive or negative integer, it will be evaluated following the definition:F_0(x) = 0 F_1(x) = 1 F_n(x) = xF_n-1(x) + F_n-2(x)"
+    "text": "Reduce.Algbera.fibonacciReduce.Algebra.fibonaccip"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.motzkin",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.motzkin",
+    "category": "function",
+    "text": "motzkin(n)\n\nA Motzkin number M_n (named after Theodore Motzkin) is the number of different ways of drawing non-intersecting chords on a circle between n points. For a non-negative integer n, the operator motzkin(n) returns the nth Motzkin number, according to the recursion formula\n\nM_0 =  1  M_1 = 1  M_n+1  =  frac2n+3n+3M_n + frac3nn+3M_n-1\n\n\n\n"
 },
 
 {
@@ -805,7 +1037,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.5 Motzkin numbers",
     "category": "section",
-    "text": "A Motzkin number M_n (named after Theodore Motzkin) is the number of different ways of drawing non-intersecting chords on a circle between n points. For a non-negative integer n, the operator motzkin(n) returns the nth Motzkin number, according to the recursion formulaM_0 =  1  M_1 = 1  M_n+1  =  frac2n+3n+3M_n + frac3nn+3M_n-1"
+    "text": "Reduce.Algebra.motzkin"
 },
 
 {
@@ -921,11 +1153,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.mkid",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.mkid",
+    "category": "function",
+    "text": "mkid(u,v)\n\nIn many applications, it is useful to create a set of identifiers for naming objects in a consistent manner. In most cases, it is sufficient to create such names from two components. The operator mkid is provided for this purpose. Its syntax is:\n\nR\"mkid(U:id,V:id|non-negative integer)\"\n\nfor example\n\njulia> Algebra.mkid(:a,3)\n:a3\n\njulia> Algebra.mkid(:apple,:s)\n:apples\n\nwhile mkid(:(a+b),2) gives an error.\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#.12-MKID-Operator-1",
     "page": "7 Built-in Prefix Operators",
     "title": "7.12 MKID Operator",
     "category": "section",
-    "text": "In many applications, it is useful to create a set of identifiers for naming objects in a consistent manner. In most cases, it is sufficient to create such names from two components. The operator mkid is provided for this purpose. Its syntax is:R\"mkid(U:id,V:id|non-negative integer)\"for examplejulia> Algebra.mkid(:a,3)\n:a3\n\njulia> Algebra.mkid(:apple,:s)\n:appleswhile mkid(:(a+b),2) gives an error.The set statement can be used to give a value to the identifiers created by mkid, for examplejulia> Algebra.set(Algebra.mkid(:a,3),2)will give a3 the value 2. Similarly, the unset statement can be used to remove the value from these identifiers, for examplejulia> Algebra.unset(Algebra.mkid(:a,3))"
+    "text": "Reduce.Algebra.mkidThe set statement can be used to give a value to the identifiers created by mkid, for examplejulia> Algebra.set(Algebra.mkid(:a,3),2)will give a3 the value 2. Similarly, the unset statement can be used to remove the value from these identifiers, for examplejulia> Algebra.unset(Algebra.mkid(:a,3))"
 },
 
 {
@@ -933,7 +1173,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "Reduce.Algebra.pochhammer",
     "category": "function",
-    "text": "pochhammer(a,k)\n\nThe Pochhammer notation (a)_k (also called Pochhammer’s symbol) is supported by the binary operator pochhammer(a,k). For a non-negative integer k, it is defined as (http://dlmf.nist.gov/5.2.iii)\n\n(a)_0	= 1\n\n(a)_k	= a(a + 1)(a + 2)(a + k - 1)\n\nFor a = 012, this is equivalent to\n\n(a)k	= racGamma (a+-k-)Gamma (a)\n\nWith rounded off, this expression is evaluated numerically if a and k are both integral, and otherwise may be simplified where appropriate. The simplification rules are based upon algorithms supplied by Wolfram Koepf.\n\n\n\n"
+    "text": "pochhammer(a,k)\n\nThe Pochhammer notation (a)_k (also called Pochhammer’s symbol) is supported by the binary operator pochhammer(a,k). For a non-negative integer k, it is defined as (http://dlmf.nist.gov/5.2.iii)\n\n(a)_0	= 1\n\n(a)_k	= a(a + 1)(a + 2)(a + k - 1)\n\nFor a = 012, this is equivalent to\n\n(a)k	= fracGamma (a+-k-)Gamma (a)\n\nWith rounded off, this expression is evaluated numerically if a and k are both integral, and otherwise may be simplified where appropriate. The simplification rules are based upon algorithms supplied by Wolfram Koepf.\n\n\n\n"
 },
 
 {
@@ -973,7 +1213,23 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "Reduce.Algebra.solve",
     "category": "function",
-    "text": "solve(r...)\n\nsolve is an operator for solving one or more simultaneous algebraic equations. It is used with the syntax:\n\nR\"SOLVE(⟨EXPRN:algebraic⟩[,⟨VAR:kernel⟩∣,⟨VARLIST:list of kernels⟩])\"\n\nexprn is of the form ⟨expression⟩ or {⟨expression1⟩,⟨expression2⟩, …}. Each expression is an algebraic equation, or is the difference of the two sides of the equation. The second argument is either a kernel or a list of kernels representing the unknowns in the system. This argument may be omitted if the number of distinct, non-constant, top-level kernels equals the number of unknowns, in which case these kernels are presumed to be the unknowns.\n\nFor one equation, solve recursively uses factorization and decomposition, together with the known inverses of log, sin, cos, ^, acos, asin, and linear, quadratic, cubic, quartic, or binomial factors. Solutions of equations built with exponentials or logarithms are often expressed in terms of Lambert’s W function. This function is (partially) implemented in the special functions package.\n\nLinear equations are solved by the multi-step elimination method due to Bareiss, unless the switch cramer is on, in which case Cramer’s method is used. The Bareiss method is usually more efficient unless the system is large and dense.\n\nNon-linear equations are solved using the Groebner basis package (chapter 16.28). Users should note that this can be quite a time consuming process.\n\nExamples:\n\nAlgebra.solve(:(log(sin(x+3))^5 == 8),:x)\nAlgebra.solve(:(a*log(sin(x+3))^5 - b), :(sin(x+3)))\nAlgebra.solve((:(a*x+y==3),:(y=-2)),(:x,:y))\n\nsolve returns a list of solutions. If there is one unknown, each solution is an equation for the unknown. If a complete solution was found, the unknown will appear by itself on the left-hand side of the equation. On the other hand, if the solve package could not find a solution, the “solution” will be an equation for the unknown in terms of the operator root_of. If there are several unknowns, each solution will be a list of equations for the unknowns. For example,\n\njulia> Algebra.solve(:(x^2==1),:x)\n(:(x = 1), :(x = -1))\n\njulia> Algebra.solve(:(x^7-x^6+x^2==1),:x)\n(:(x = root_of(x_ ^ 6 + x_ + 1, x_, tag_1)), :(x = 1))\n\njulia> Algebra.solve((:(x+3y==7),:(y-x==1)),(:x,:y))\n(:(x = 1), :(y = 2))\n\nThe tag argument is used to uniquely identify those particular solutions. Solution multiplicities are stored in the global variable root_multiplicities rather than the solution list. The value of this variable is a list of the multiplicities of the solutions for the last call of solve. For example,\n\njulia> Algebra.solve(:(x^2==2x-1),:x); Reduce.root_multiplicities()\n\ngives the results\n\n(:(x = 1),)\n \n(2,)\n\nIf you want the multiplicities explicitly displayed, the switch multiplicities can be turned on. For example\n\njulia> Algebra.on(:multiplicities); Algebra.solve(:(x^2==2x-1),:x)\n\nyields the result\n\n(:(x = 1), :(x = 1))\n\n\n\n"
+    "text": "solve(r...)\n\nsolve is an operator for solving one or more simultaneous algebraic equations. It is used with the syntax:\n\nR\"SOLVE(⟨EXPRN:algebraic⟩[,⟨VAR:kernel⟩∣,⟨VARLIST:list of kernels⟩])\"\n\nexprn is of the form ⟨expression⟩ or {⟨expression1⟩,⟨expression2⟩, …}. Each expression is an algebraic equation, or is the difference of the two sides of the equation. The second argument is either a kernel or a list of kernels representing the unknowns in the system. This argument may be omitted if the number of distinct, non-constant, top-level kernels equals the number of unknowns, in which case these kernels are presumed to be the unknowns.\n\nFor one equation, solve recursively uses factorization and decomposition, together with the known inverses of log, sin, cos, ^, acos, asin, and linear, quadratic, cubic, quartic, or binomial factors. Solutions of equations built with exponentials or logarithms are often expressed in terms of Lambert’s W function. This function is (partially) implemented in the special functions package.\n\nLinear equations are solved by the multi-step elimination method due to Bareiss, unless the switch cramer is on, in which case Cramer’s method is used. The Bareiss method is usually more efficient unless the system is large and dense.\n\nNon-linear equations are solved using the Groebner basis package (chapter 16.28). Users should note that this can be quite a time consuming process.\n\nExamples:\n\nAlgebra.solve(:(log(sin(x+3))^5 == 8),:x)\nAlgebra.solve(:(a*log(sin(x+3))^5 - b), :(sin(x+3)))\nAlgebra.solve((:(a*x+y==3),:(y=-2)),(:x,:y))\n\nsolve returns a list of solutions. If there is one unknown, each solution is an equation for the unknown. If a complete solution was found, the unknown will appear by itself on the left-hand side of the equation. On the other hand, if the solve package could not find a solution, the “solution” will be an equation for the unknown in terms of the operator root_of. If there are several unknowns, each solution will be a list of equations for the unknowns. For example,\n\njulia> Algebra.solve(:(x^2==1),:x)\n(:(x = 1), :(x = -1))\n\njulia> Algebra.solve(:(x^7-x^6+x^2==1),:x)\n(:(x = root_of(x_ ^ 6 + x_ + 1, x_, tag_1)), :(x = 1))\n\njulia> Algebra.solve((:(x+3y==7),:(y-x==1)),(:x,:y))\n(:(x = 1), :(y = 2))\n\nThe tag argument is used to uniquely identify those particular solutions. ```\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.root_multiplicities",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.root_multiplicities",
+    "category": "function",
+    "text": "root_multiplicities()\n\nSolution multiplicities are stored in the global variable root_multiplicities rather than the solution list. The value of this variable is a list of the multiplicities of the solutions for the last call of solve. For example,\n\njulia> Algebra.solve(:(x^2==2x-1),:x); Algebra.root_multiplicities()\n\ngives the results\n\n(:(x = 1),)\n \n(2,)\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.multiplicities",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.multiplicities",
+    "category": "function",
+    "text": "multiplicities(::Bool)\n\nIf you want the multiplicities explicitly displayed, the switch multiplicities can be turned on. For example\n\njulia> Algebra.on(:multiplicities); Algebra.solve(:(x^2==2x-1),:x)\n\nyields the result ```Julia (:(x = 1), :(x = 1))\n\n\n\n"
 },
 
 {
@@ -981,7 +1237,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.16 SOLVE Operator",
     "category": "section",
-    "text": "Reduce.Algebra.solve"
+    "text": "Reduce.Algebra.solveReduce.Algebra.root_multiplicitiesReduce.multiplicities"
 },
 
 {
@@ -997,7 +1253,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.16.2 Solutions of Equations Involving Cubics and Quartics",
     "category": "section",
-    "text": "Since roots of cubics and quartics can often be very messy, a switch fullroots is available, that, when off (the default), will prevent the production of a result in closed form. The root_of construct will be used in this case instead.In constructing the solutions of cubics and quartics, trigonometrical forms are used where appropriate. This option is under the control of a switch trigform, which is normally on.The following example illustrates the use of these facilities:julia> Algebra.rlet(:xx => :(solve(x^3+x+1,x)))\n \njulia> rcall(:xx)\n(:(x = root_of(x_ ^ 3 + x_ + 1, x_, tag_1)),)\n\njulia> Algebra.on(:fullroots)\n\njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -((sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im - sinh(asinh((3 * sqrt(3)) // 2) // 3))) // sqrt(3))\n :(x = (sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im + sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n :(x = (-2 * sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n\njulia> off(:trigform)\n \njulia> rcall(R\"xx\")\n                             2/3  \n{X=( - (SQRT(31) - 3*SQRT(3))   *SQRT(3)*I  \n \n                             2/3    2/3  \n     - (SQRT(31) - 3*SQRT(3))    - 2   *SQRT(3)*I  \n \n        2/3                           1/3  1/3  \n     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6  \n \n                1/6  \n              *3   ),  \n \n                          2/3  \n X=((SQRT(31) - 3*SQRT(3))   *SQRT(3)*I  \n \n                             2/3    2/3  \n     - (SQRT(31) - 3*SQRT(3))    + 2   *SQRT(3)*I  \n \n        2/3                           1/3  1/3  \n     + 2   )/(2*(SQRT(31) - 3*SQRT(3))   *6  \n \n                1/6  \n              *3   ),  \n \n                           2/3    2/3  \n     (SQRT(31) - 3*SQRT(3))    - 2  \n X=-------------------------------------}  \n                          1/3  1/3  1/6  \n    (SQRT(31) - 3*SQRT(3))   *6   *3"
+    "text": "Since roots of cubics and quartics can often be very messy, a switch fullroots is available, that, when off (the default), will prevent the production of a result in closed form. The root_of construct will be used in this case instead.In constructing the solutions of cubics and quartics, trigonometrical forms are used where appropriate. This option is under the control of a switch trigform, which is normally on.The following example illustrates the use of these facilities:julia> Algebra.rlet(:xx => :(solve(x^3+x+1,x)))\n \njulia> rcall(:xx)\n(:(x = root_of(x_ ^ 3 + x_ + 1, x_, tag_1)),)\n\njulia> Algebra.on(:fullroots)\n\njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -((sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im - sinh(asinh((3 * sqrt(3)) // 2) // 3))) // sqrt(3))\n :(x = (sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im + sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n :(x = (-2 * sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n\njulia> off(:trigform)\n \njulia> rcall(R\"xx\")\n                             2/3  \n{x=( - (sqrt(31) - 3*sqrt(3))   *sqrt(3)*i  \n \n                             2/3    2/3  \n     - (sqrt(31) - 3*sqrt(3))    - 2   *sqrt(3)*i  \n \n        2/3                           1/3  1/3  \n     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6  \n \n                1/6  \n              *3   ),  \n \n                          2/3  \n x=((sqrt(31) - 3*sqrt(3))   *sqrt(3)*i  \n \n                             2/3    2/3  \n     - (sqrt(31) - 3*sqrt(3))    + 2   *sqrt(3)*i  \n \n        2/3                           1/3  1/3  \n     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6  \n \n                1/6  \n              *3   ),  \n \n                           2/3    2/3  \n     (sqrt(31) - 3*sqrt(3))    - 2  \n x=-------------------------------------}  \n                          1/3  1/3  1/6  \n    (sqrt(31) - 3*sqrt(3))   *6   *3"
 },
 
 {
@@ -1009,11 +1265,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.requirements",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.requirements",
+    "category": "function",
+    "text": "requirements()\n\nThe proper design of a variable sequence supplied as a second argument to solve is important for the structure of the solution of an equation system. Any unknown in the system not in this list is considered totally free. E.g. the call\n\nAlgebra.solve((:(x==2z),:(z==2y)),(:z,))\n\nproduces an empty list as a result because there is no function z = z(x,y) which fulfills both equations for arbitrary x and y values. In such a case the share variable requirements displays a set of restrictions for the parameters of the system:\n\njulia> Algebra.requirements()\n(:(x - 4y),)\n\nThe non-existence of a formal solution is caused by a contradiction which disappears only if the parameters of the initial system are set such that all members of the requirements list take the value zero. For a linear system the set is complete: a solution of the requirements list makes the initial system solvable. E.g. in the above case a substitution x = 4y makes the equation set consistent. For a non-linear system only one inconsistency is detected. If such a system has more than one inconsistency, you must reduce them one after the other. 1 The set shows you also the dependency among the parameters: here one of x and y is free and a formal solution of the system can be computed by adding it to the variable list of solve. The requirement set is not unique – there may be other such sets.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.assumptions",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.assumptions",
+    "category": "function",
+    "text": "assumptions()\n\nA system with parameters may have a formal solution, e.g. \n\njulia> Algebra.solve((:(x==a*z+1),:(0==b*z-y)),(:z,:x))\n(:(z = y // b), :(x = (a * y + b) // b))\n\nwhich is not valid for all possible values of the parameters. The variable assumptions contains then a list of restrictions: the solutions are valid only as long as none of these expressions vanishes. Any zero of one of them represents a special case that is not covered by the formal solution. In the above case the value is\n\njulia> Algebra.assumptions()\n(:b,)\n\nwhich excludes formally the case b = 0; obviously this special parameter value makes the system singular. The set of assumptions is complete for both, linear and non–linear systems.\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#.16.4-Parameters-and-Variable-Dependency-1",
     "page": "7 Built-in Prefix Operators",
     "title": "7.16.4 Parameters and Variable Dependency",
     "category": "section",
-    "text": "The proper design of a variable sequence supplied as a second argument to solve is important for the structure of the solution of an equation system. Any unknown in the system not in this list is considered totally free. E.g. the callAlgebra.solve((:(x==2z),:(z==2y)),(:z,))produces an empty list as a result because there is no function z = z(x,y) which fulfills both equations for arbitrary x and y values. In such a case the share variable requirements displays a set of restrictions for the parameters of the system:julia> Reduce.requirements()\n(:(x - 4y),)The non-existence of a formal solution is caused by a contradiction which disappears only if the parameters of the initial system are set such that all members of the requirements list take the value zero. For a linear system the set is complete: a solution of the requirements list makes the initial system solvable. E.g. in the above case a substitution x = 4y makes the equation set consistent. For a non-linear system only one inconsistency is detected. If such a system has more than one inconsistency, you must reduce them one after the other. 1 The set shows you also the dependency among the parameters: here one of x and y is free and a formal solution of the system can be computed by adding it to the variable list of solve. The requirement set is not unique – there may be other such sets. A system with parameters may have a formal solution, e.g. julia> Algebra.solve((:(x==a*z+1),:(0==b*z-y)),(:z,:x))\n(:(z = y // b), :(x = (a * y + b) // b))which is not valid for all possible values of the parameters. The variable assumptions contains then a list of restrictions: the solutions are valid only as long as none of these expressions vanishes. Any zero of one of them represents a special case that is not covered by the formal solution. In the above case the value isjulia> Reduce.assumptions()\n(:b,)which excludes formally the case b = 0; obviously this special parameter value makes the system singular. The set of assumptions is complete for both, linear and non–linear systems.solve rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch varopt, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:julia> rcall(R\"s:= {y^3+3x=0,x^2+y^2=1}\");\n \njulia> Algebra.solve(R\"s\",(:y,:x))\n \n              6       2\n{{y=root_of(y_  + 9*y_  - 9,y_,tag_2),\n\n         3\n      - y\n  x=-------}}\n       3\n\njulia> Algebra.off(:varopt); Algebra.solve(:s,(:y,:x)) |> collect\n2-element Array{Expr,1}:\n :(y = (-(((x ^ 4 - 2 * x ^ 2) + 10)) * x) // 3)                     \n :(x = root_of(((x_ ^ 6 - 3 * x_ ^ 4) + 12 * x_ ^ 2) - 1, x_, tag_3))In the first case, solve forms the solution as a set of pairs (y_ix(y_i)) because the degree of x is higher – such a rearrangement makes the internal computation of the Gröbner basis generally faster. For the second case the explicitly given variable sequence is used such that the solution has now the form (x_i,y(x_i)). Controlling the variable sequence is especially important if the system has one or more free variables. As an alternative to turning off varopt, a partial dependency among the variables can be declared using the depend statement: solve then rearranges the variable sequence but keeps any variable ahead of those on which it depends.julia> Algebra.on(:varopt)\n\njulia> rcall(R\"s:={a^3+b,b^2+c}\");\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n(:(a = arbcomplex(1)), :(b = -(a ^ 3)), :(c = -(a ^ 6))) \n\njulia> Algebra.depend(:a,:c); Algebra.depend(:b,:c)\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n3-element Array{Expr,1}:\n :(c = arbcomplex(2))                  \n :(a = root_of(a_ ^ 6 + c, a_, tag_3))\n :(b = -(a ^ 3)) Here solve is forced to put c after a and after b, but there is no obstacle to interchanging a and b."
+    "text": "Reduce.Algebra.requirementsReduce.Algebra.assumptionssolve rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch varopt, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:julia> rcall(R\"s:= {y^3+3x=0,x^2+y^2=1}\");\n \njulia> Algebra.solve(R\"s\",(:y,:x))\n \n              6       2\n{{y=root_of(y_  + 9*y_  - 9,y_,tag_2),\n\n         3\n      - y\n  x=-------}}\n       3\n\njulia> Algebra.off(:varopt); Algebra.solve(:s,(:y,:x)) |> collect\n2-element Array{Expr,1}:\n :(y = (-(((x ^ 4 - 2 * x ^ 2) + 10)) * x) // 3)                     \n :(x = root_of(((x_ ^ 6 - 3 * x_ ^ 4) + 12 * x_ ^ 2) - 1, x_, tag_3))In the first case, solve forms the solution as a set of pairs (y_ix(y_i)) because the degree of x is higher – such a rearrangement makes the internal computation of the Gröbner basis generally faster. For the second case the explicitly given variable sequence is used such that the solution has now the form (x_i,y(x_i)). Controlling the variable sequence is especially important if the system has one or more free variables. As an alternative to turning off varopt, a partial dependency among the variables can be declared using the depend statement: solve then rearranges the variable sequence but keeps any variable ahead of those on which it depends.julia> Algebra.on(:varopt)\n\njulia> rcall(R\"s:={a^3+b,b^2+c}\");\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n(:(a = arbcomplex(1)), :(b = -(a ^ 3)), :(c = -(a ^ 6))) \n\njulia> Algebra.depend(:a,:c); Algebra.depend(:b,:c)\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n3-element Array{Expr,1}:\n :(c = arbcomplex(2))                  \n :(a = root_of(a_ ^ 6 + c, a_, tag_3))\n :(b = -(a ^ 3)) Here solve is forced to put c after a and after b, but there is no obstacle to interchanging a and b."
 },
 
 {
@@ -1045,7 +1317,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "Reduce.Algebra.linear",
     "category": "function",
-    "text": "linear(r...)\n\nAn operator can be declared to be linear in its first argument over powers of its second argument. If an operator f is so declared, f of any sum is broken up into sums of fs, and any factors that are not powers of the variable are taken outside. This means that f must have (at least) two arguments. In addition, the second argument must be an identifier (or more generally a kernel), not an expression.\n\nExample: If f were declared linear, then\n\nf(a*x^5+b*x+c,x) ->  f(x^5,x)*a + f(x,x)*b + f(1,x)*c\n\nMore precisely, not only will the variable and its powers remain within the scope of the f operator, but so will any variable and its powers that had been declared to depend on the prescribed variable; and so would any expression that contains that variable or a dependent variable on any level, e.g. cos(sin(x)).\n\nTo declare operators f and g to be linear operators, use:\n\njulia> Algebra.linear(:f,:g)\n\nThe analysis is done of the first argument with respect to the second; any other arguments are ignored. It uses the following rules of evaluation:\n\nf(0) 		-> 0\nf(-y,x) 	-> -f(y,x)\nf(y+z,x) 	-> f(y,x)+f(z,x)\nf(y*z,x) 	-> z*f(y,x)   	if z does not depend on x\nf(y/z,x) 	-> f(y,x)/z		if z does not depend on x\n\n\n\n"
+    "text": "linear(r...)\n\nAn operator can be declared to be linear in its first argument over powers of its second argument. If an operator f is so declared, f of any sum is broken up into sums of fs, and any factors that are not powers of the variable are taken outside. This means that f must have (at least) two arguments. In addition, the second argument must be an identifier (or more generally a kernel), not an expression.\n\nExample: If f were declared linear, then\n\nf(a*x^5+b*x+c,x) ->  f(x^5,x)*a + f(x,x)*b + f(1,x)*c\n\nMore precisely, not only will the variable and its powers remain within the scope of the f operator, but so will any variable and its powers that had been declared to depend on the prescribed variable; and so would any expression that contains that variable or a dependent variable on any level, e.g. cos(sin(x)).\n\nTo declare operators f and g to be linear operators, use:\n\njulia> Algebra.linear(:f,:g)\n\nThe analysis is done of the first argument with respect to the second; any other arguments are ignored. It uses the following rules of evaluation:\n\nf(0) 		-> 0\nf(-y,x) 	-> -f(y,x)\nf(y+z,x) 	-> f(y,x)+f(z,x)\nf(y*z,x) 	-> z*f(y,x)   	if z does not depend on x\nf(y/z,x) 	-> f(y,x)/z	if z does not depend on x\n\n\n\n"
 },
 
 {
@@ -1113,11 +1385,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.infix",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.infix",
+    "category": "function",
+    "text": "infix(r...)\n\nUsers can add new infix operators by using the declarations infix and precedence. For example,\n\njulia> Algebra.infix(:mm)\n\nThe declaration infix(:mm) would allow one to use the symbol mm as an infix operator: R\"a mm b\" instead of R\"mm(a,b)\".\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.precedence",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.precedence",
+    "category": "function",
+    "text": "precedence(a,b)\n\nUsers can add new infix operators by using the declarations infix and precedence. For example,\n\njulia> Algebra.precedence(:mm,:-)\n\nThe declaration precedence(:mm,:-) says that mm should be inserted into the infix operator precedence list just after the - operator. This gives it higher precedence than - and lower precedence than * . Thus R\"a - b mm c - d\" means R\"a - (b mm c) - d\", while R\"a * b mm c * d\" means R\"(a * b) mm (c * d)\".\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#.22-Declaring-New-Infix-Operators-1",
     "page": "7 Built-in Prefix Operators",
     "title": "7.22 Declaring New Infix Operators",
     "category": "section",
-    "text": "Users can add new infix operators by using the declarations infix and precedence. For example,julia> Algebra.infix(:mm)\n\njulia> Algebra.precedence(:mm,:-)The declaration infix(:mm) would allow one to use the symbol mm as an infix operator: a mm b instead of mm(a,b).The declaration precedence(:mm,:-) says that mm should be inserted into the infix operator precedence list just after the - operator. This gives it higher precedence than - and lower precedence than * . Thus a - b mm c - d means a - (b mm c) - d, while a * b mm c * d means (a * b) mm (c * d).Both infix and prefix operators have no transformation properties unless let statements or procedure declarations are used to assign a meaning.We should note here that infix operators so defined are always binary: a mm b mm c means (a mm b) mm c."
+    "text": "Reduce.Algebra.infixReduce.Algebra.precedenceBoth infix and prefix operators have no transformation properties unless let statements or procedure declarations are used to assign a meaning.We should note here that infix operators so defined are always binary: R\"a mm b mm c\" means R\"(a mm b) mm c\"."
 },
 
 {
