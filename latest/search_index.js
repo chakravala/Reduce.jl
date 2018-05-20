@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Library",
     "title": "Reduce Interface",
     "category": "section",
-    "text": "Reduce.ResetRExprrcallparseload_packagesubsquash"
+    "text": "Reduce.ResetRExprrcallparseload_packagesquash"
 },
 
 {
@@ -929,6 +929,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.min",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.min",
+    "category": "function",
+    "text": "min(r...)\n\nmin can take an arbitrary number of expressions as their arguments. If all arguments evaluate to numerical values, the minimum of the argument list is returned. If any argument is non-numeric, an appropriately reduced expression is returned. For example:\n\njulia> Algebra.min(2,-2)\n-2\n\njulia> Algebra.min(:x)\n:x\n\nmin of an empty list returns 0.\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#Reduce.Algebra.nextprime",
     "page": "7 Built-in Prefix Operators",
     "title": "Reduce.Algebra.nextprime",
@@ -981,7 +989,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.1 Numerical Operators",
     "category": "section",
-    "text": "REDUCE includes a number of functions that are analogs of those found in most numerical systems. With numerical arguments, such functions return the expected result. However, they may also be called with non-numerical arguments. In such cases, except where noted, the system attempts to simplify the expression as far as it can. In such cases, a residual expression involving the original operator usually remains. These operators are as follows:Reduce.Algebra.absReduce.Algebra.ceilingReduce.Algebra.conjReduce.Algebra.factorialReduce.Algebra.fixReduce.Algebra.floorReduce.Algebra.impartReduce.Algebra.maxReduce.Alebra.minReduce.Algebra.nextprimeReduce.Algebra.randomReduce.Algebra.random_new_seedReduce.Algebra.repartReduce.Algebra.roundReduce.Algebra.sign"
+    "text": "REDUCE includes a number of functions that are analogs of those found in most numerical systems. With numerical arguments, such functions return the expected result. However, they may also be called with non-numerical arguments. In such cases, except where noted, the system attempts to simplify the expression as far as it can. In such cases, a residual expression involving the original operator usually remains. These operators are as follows:Reduce.Algebra.absReduce.Algebra.ceilingReduce.Algebra.conjReduce.Algebra.factorialReduce.Algebra.fixReduce.Algebra.floorReduce.Algebra.impartReduce.Algebra.maxReduce.Algebra.minReduce.Algebra.nextprimeReduce.Algebra.randomReduce.Algebra.random_new_seedReduce.Algebra.repartReduce.Algebra.roundReduce.Algebra.sign"
 },
 
 {
@@ -1009,6 +1017,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.fibonacci",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.fibonacci",
+    "category": "function",
+    "text": "fibonacci(n)\n\nThe unary operator fibonacci provides notation and computation for Fibonacci numbers. fibonacci(n) evaluates to the nth Fibonacci number. If n is a positive or negative integer, it will be evaluated following the definition:\n\nF_0 = 0 F_1 = 1 F_n = F_n-1 + F_n-2\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#Reduce.Algebra.fibonaccip",
     "page": "7 Built-in Prefix Operators",
     "title": "Reduce.Algebra.fibonaccip",
@@ -1021,7 +1037,7 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.4 Fibonacci Numbers and Fibonacci Polynomials",
     "category": "section",
-    "text": "Reduce.Algbera.fibonacciReduce.Algebra.fibonaccip"
+    "text": "Reduce.Algebra.fibonacciReduce.Algebra.fibonaccip"
 },
 
 {
