@@ -95,6 +95,7 @@ const sfun = [
     :reverse,
     :lhs,
     :rhs,
+    :saveas
 ]
 
 const snan = [
@@ -199,7 +200,53 @@ end
 """
     rlet(::Union{Dict,Pair},expr)
 
-Unlike substitutions via `sub`, `rlet` rules are global in scope and stay in effect until replaced or `clear`ed.
+The simplest use of the `let` statement is in the form
+```
+R"let ⟨substitution list⟩"
+```
+where `⟨substitution list⟩` is a list of rules separated by commas, each of the form:
+```
+⟨variable⟩ = ⟨expression⟩
+```
+or
+```
+⟨prefix operator⟩(⟨argument⟩,…,⟨argument⟩) = ⟨expression⟩
+```
+or
+```
+⟨argument⟩⟨infix operator⟩,…,⟨argument⟩ = ⟨expression⟩
+```
+For example,
+```
+        let {x => y^2,
+             h(u,v) => u - v,
+             cos(pi/3) => 1/2,
+             a*b => c,
+             l+m => n,
+             w^3 => 2*z - 3,
+             z^10 => 0}
+```
+The list brackets can be left out if preferred. The above rules could also have been entered as seven separate `let` statements.
+
+After such `let` rules have been input, `x` will always be evaluated as the square of `y`, and so on. This is so even if at the time the `let` rule was input, the variable `y` had a value other than `y`. (In contrast, the assignment `R"x:=y^2"` will set `x` equal to the square of the current value of `y`, which could be quite different.)
+
+The rule `let a\*b=c` means that whenever `a` and `b` are both factors in an expression their product will be replaced by `c`. For example, `a^5*b^7*w` would be replaced by `c^5*b^2*w`.
+
+The rule for `l+m` will not only replace all occurrences of `l+m` by `n`, but will also normally replace `l` by `n-m`, but not `m` by `n-l`. A more complete description of this case is given in Section 11.2.5.
+
+The rule pertaining to `w^3` will apply to any power of `w` greater than or equal to the third.
+
+Note especially the last example, `let z^10=0`. This declaration means, in effect: ignore the tenth or any higher power of `z`. Such declarations, when appropriate, often speed up a computation to a considerable degree. (See Section 11.4 for more details.)
+
+Any new operators occurring in such `let` rules will be automatically declared `operator` by the system, if the rules are being read from a file. If they are being entered interactively, the system will ask `Declare… Operator?`. Answer `Y` or `N` and hit `<Return>`.
+
+In each of these examples, substitutions are only made for the explicit expressions given; i.e., none of the variables may be considered arbitrary in any sense. For example, the command
+```Julia
+julia> Algebra.rlet( :(h(u,v)) => :(u - v) )
+```
+will cause `h(u,v)` to evaluate to `u - v`, but will not affect `h(u,z)` or `h` with any arguments other than precisely the symbols `u,v`.
+
+These simple `let` rules are on the same logical level as assignments made with the `:=` operator. An assignment `R"x := p+q"` cancels a rule `rlet( :x => :(y^2) )` made earlier, and vice versa.
 """
 rlet(r::Dict{String,String}) = rlet(sub_list(r))
 rlet(s::Dict{<:Any,<:Any}) = rlet(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...))
@@ -495,3 +542,156 @@ A Motzkin number \$M_n\$ (named after Theodore Motzkin) is the number of differe
 
 \$M_0 =  1;  M_1 = 1;  M_{n+1}  =  \\frac{2n+3}{n+3}M_n + \\frac{3n}{n+3}M_{n-1}.\$
 """ Reduce.Algebra.motzkin
+
+@doc """
+    saveas(expr)
+
+If the user wishes to assign the workspace to a variable or expression for later use, the `saveas` statement can be used. It has the syntax
+```Julia
+R"saveas ⟨expression⟩"
+```
+For example, after the differentiation in the last example, the workspace holds the expression `2*x+2*y`. If we wish to assign this to the variable `z` we can now say
+```Julia
+julia> Algebra.saveas(:z)
+```
+If the user wishes to save the expression in a form that allows him to use some of its variables as arbitrary parameters, the `for all` command can be used.
+
+*Example:*
+```Julia
+R"for all x saveas h(x)"
+```
+with the above expression would mean that `h(z)` evaluates to `2*y+2*z`.
+""" Reduce.Algebra.saveas
+
+@doc """
+    decompose(p)
+
+The `decompose` operator takes a multivariate polynomial as argument, and returns an expression and a list of equations from which the original polynomial can be found by composition. Its syntax is:
+```Julia
+R"decompose(EXPRN:polynomial)"
+```
+For example:
+```
+     decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-  
+                    218900*x^3+65690*x^2-7700*x+234)  
+                   2                  2            2  
+              -> {U  + 35*U + 234, U=V  + 10*V, V=X  - 22*X}  
+                                     2  
+     decompose(u^2+v^2+2u*v+1)  -> {W  + 1, W=U + V}
+```
+Users should note however that, unlike factorization, this decomposition is not unique.
+""" Reduce.Algebra.decompose
+
+@doc """
+    den(r)
+
+This is used with the syntax:
+```Julia
+R"den(EXPRN:rational)"
+```
+It returns the denominator of the rational expression `EXPRN`. If `EXPRN` is a polynomial, 1 is returned.
+
+*Examples:*
+```
+        den(x/y^2)   ->  Y**2  
+        den(100/6)   ->  3  
+                [since 100/6 is first simplified to 50/3]  
+        den(a/4+b/6) ->  12  
+        den(a+b)     ->  1
+```
+""" Reduce.Algebra.den
+
+@doc """
+    mainvar(exprn)
+
+Syntax:
+```Julia
+R"mainvar(EXPRN:polynomial)"
+```
+Returns the main variable (based on the internal polynomial representation) of `EXPRN`. If `EXPRN` is a domain element, 0 is returned.
+
+*Examples:* Assuming `a` has higher kernel order than `b`, `c`, or `d`:
+```
+        mainvar((a+b)*(c+2*d)^2) ->  a
+        mainvar(2)               ->  0
+```
+""" Reduce.Algebra.mainvar
+
+@doc """
+    num(exprn)
+
+Syntax:
+```Julia
+R"num(EXPRN:rational)"
+```
+Returns the numerator of the rational expression `EXPRN`. If `EXPRN` is a polynomial, that polynomial is returned.
+
+*Examples:*
+```
+        num(x/y^2)  ->  x  
+        num(100/6)   ->  50  
+        num(a/4+b/6) ->  3*a+2*b  
+        num(a+b)     ->  a+b
+```
+""" Reduce.Algebra.num
+
+@doc """
+    setmod(::Integer)
+
+REDUCE includes facilities for manipulating polynomials whose coefficients are computed modulo a given base. To use this option, two commands must be used; `R"setmod ⟨integer⟩"`, to set the prime modulus, and `on(:modular)` to cause the actual modular calculations to occur. For example, with `R"setmod 3"` and `R"on modular"`, the polynomial `(a+2*b)^3` would become `a^3+2*n^3`.
+
+The argument of `setmod` is evaluated algebraically, except that non-modular (integer) arithmetic is used. Thus the sequence
+```Julia
+R"setmod 3; on modular; setmod 7"
+```
+will correctly set the modulus to 7.
+""" Reduce.Algebra.setmod
+
+@doc """
+    root_val(exprn)
+
+The `root_val` operator takes a single univariate polynomial as argument, and returns a list of root values at system precision (or greater if required to separate roots). It is used with the syntax
+```Julia
+R"root_val(EXPRN:univariate polynomial)"
+```
+For example, the sequence
+```Julia
+reduce> on rounded; root_val(x^3-x-1);
+```
+gives the result
+```
+{0.562279512062*I - 0.662358978622, - 0.562279512062*I  
+ 
+  - 0.662358978622,1.32471795724}
+```
+""" Reduce.Algebra.root_val
+
+@doc """
+    clearrules(r)
+
+`clearrules` has the syntax
+```Julia
+R"clearrules <rule list>|<name of rule list>(,...)"
+```
+""" Reduce.Algebra.clearrules
+
+@doc """
+    showrules(r)
+
+The operator `showrules` takes a single identifier as argument, and returns in rule-list form the operator rules associated with that argument. For example:
+```Julia
+reduce> showrules log;  
+ 
+{log(e) => 1,  
+ 
+ log(1) => 0,  
+ 
+      ~x  
+ log(e  ) => ~x,  
+ 
+                    1  
+ df(log(~x),~x) => ----}  
+                    ~x
+```
+Such rules can then be manipulated further as with any list. For example `R"rhs first ws"` has the value `1`. Note that an operator may have other properties that cannot be displayed in such a form, such as the fact it is an odd function, or has a definition defined as a procedure.
+""" Reduce.Algebra.showrules

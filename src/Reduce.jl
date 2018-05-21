@@ -126,6 +126,18 @@ for var ∈ [variables;[:ws]]
 end
 
 @doc """
+    ws()
+
+Several mechanisms are available for saving and retrieving previously evaluated expressions. The simplest of these refers to the last algebraic expression simplified. When an assignment of an algebraic expression is made, or an expression is evaluated at the top level, (i.e., not inside a compound statement or procedure) the results of the evaluation are automatically saved in a variable `ws` that we shall refer to as the workspace. (More precisely, the expression is assigned to the variable `ws` that is then available for further manipulation.)
+
+*Example:* If we evaluate the expression `(x+y)^2` at the top level and next wish to differentiate it with respect to `y`, we can simply say
+``
+julia> Algebra.df(Algebra.ws(),:y)
+```
+to get the desired answer.
+""" Reduce.Algebra.ws
+
+@doc """
     root_multiplicities()
 
 Solution multiplicities are stored in the global variable `root_multiplicities` rather than the solution list. The value of this variable is a list of the multiplicities of the solutions for the last call of `solve`. For example,

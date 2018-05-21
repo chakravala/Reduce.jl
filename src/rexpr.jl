@@ -91,6 +91,15 @@ show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
 
 cols = 80
 
+"""
+    linelength()
+
+This operator is used with the syntax
+```Julia
+Reduce.linelength()::Integer
+```
+and sets the output line length to the integer `tput cols`. It returns the output line length (so that it can be stored for later resetting of the output line if needed).
+"""
 function linelength()
     c = readstring(`tput cols`) |> parse
     global cols

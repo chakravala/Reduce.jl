@@ -15,6 +15,7 @@ const calculus = [
     :factorize,
     :remainder,
     :resultant,
+    :interpol,
     :deg,
     :lcof,
     :lpower,
@@ -23,6 +24,8 @@ const calculus = [
     :totaldeg,
     :pochhammer,
     :fibonaccip,
+    :factor,
+    :remfac
 ]
 
 const cnan = [
@@ -219,7 +222,31 @@ export ∑, ∏, sub
 """
     sub(::Union{Dict,Pair},expr)
 
-Make variable substitutions using Reduce's native sub command
+Make variable substitutions using Reduce's native sub command. Syntax:
+```
+R"(⟨substitution_list⟩,⟨EXPRN1:algebraic⟩)"
+```
+where `⟨substitution_list⟩` is a list of one or more equations of the form
+```
+⟨VAR:kernel⟩ = ⟨EXPRN:algebraic⟩
+```
+or a kernel that evaluates to such a list.
+
+The `sub` operator gives the algebraic result of replacing every occurrence of the variable `var` in the expression `EXPRN1` by the expression `EXPRN`. Specifically, `EXPRN1` is first evaluated using all available rules. Next the substitutions are made, and finally the substituted expression is reevaluated. When more than one variable occurs in the substitution list, the substitution is performed by recursively walking down the tree representing `EXPRN1`, and replacing every `VAR` found by the appropriate `EXPRN`. The `EXPRN` are not themselves searched for any occurrences of the various `VAR`s. The trivial case `sub`(EXPRN1)` returns the algebraic value of `EXPRN1`.
+
+*Examples:*
+```
+                                    2              2
+     sub({x=a+y,y=y+1},x^2+y^2) -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+```
+and with `R"s := {x=a+y,y=y+1}"`,
+```
+                                    2              2
+     sub(s,x^2+y^2)             -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+```
+Note that the global assignments `R"x:=a+y"`, etc., do not take place.
+
+`EXPRN1` can be any valid algebraic expression whose type is such that a substitution process is defined for it (e.g., scalar expressions, lists and matrices). An error will occur if an expression of an invalid type for substitution occurs either in `EXPRN` or `EXPRN1`.
 """
 sub(syme::String,expr::RExpr) = "sub($syme,$expr)" |> rcall |> RExpr
 sub(syme::String,expr::T) where T = convert(T,sub(syme,RExpr(expr)))
@@ -577,7 +604,6 @@ Fibonacci Polynomials are computed by the binary operator `fibonaccip`. `fibonac
     mkid(u,v)
 
 In many applications, it is useful to create a set of identifiers for naming objects in a consistent manner. In most cases, it is sufficient to create such names from two components. The operator `mkid` is provided for this purpose. Its syntax is:
-
 ```Julia
 R"mkid(U:id,V:id|non-negative integer)"
 ```
@@ -612,3 +638,288 @@ julia> Algebra.precedence(:mm,:-)
 ```
 The declaration `precedence(:mm,:-)` says that `mm` should be inserted into the infix operator precedence list just after the `-` operator. This gives it higher precedence than `-` and lower precedence than `*` . Thus `R"a - b mm c - d"` means `R"a - (b mm c) - d"`, while `R"a * b mm c * d"` means `R"(a * b) mm (c * d)"`.
 """ Reduce.Algebra.precedence
+
+@doc """
+    order(r...)
+
+The declaration `order` may be used to order variables on output. The syntax is:
+```Julia
+julia> Algebra.order(v1,...vn)
+```
+where the `vi` are kernels. Thus,
+```Julia
+julia> Algebra.order(:x,:y,:z)
+```
+orders `x` ahead of `y`, `y` ahead of `z` and all three ahead of other variables not given an order. `order(nothing)` resets the output order to the system default. The order of variables may be changed by further calls of `order`, but then the reordered variables would have an order lower than those in earlier `order` calls. Thus,
+```Julia
+julia> Algebra.order(:x,:y,:z)  
+
+julia> Algebra.order(:y,:x)
+```
+would order `z` ahead of `y` and `x`. The default ordering is usually alphabetic.
+""" Reduce.Algebra.order
+
+@doc """
+    factor(r...)
+
+
+This declaration takes a list of identifiers or kernels as argument. `factor` is not a factoring command (use `factorize` or the `factor` switch for this purpose); rather it is a separation command. All terms involving fixed powers of the declared expressions are printed as a product of the fixed powers and a sum of the rest of the terms.
+
+For example, after the declaration
+```Julia
+julia> Algebra.factor(:x)
+```
+the polynomial \$(x + y + 1)^2\$ will be printed as
+```
+         2                  2  
+        x  + 2*x*(y + 1) + y  + 2*y + 1
+```
+All expressions involving a given prefix operator may also be factored by putting the operator name in the list of factored identifiers. For example:
+```Julia
+julia> Algebra.factor(:x,:cos,:(sin(x))
+```
+causes all powers of `x` and `sin(x)` and all functions of `cos` to be factored.
+""" Reduce.Algebra.factor
+
+@doc """
+    remfac(r...)
+
+The declaration `remfac(v1,...,vn)` removes the factoring flag from the expressions `v1` through `vn`.
+""" Reduce.Algebra.remfac
+
+@doc """
+    korder(r...)
+
+The internal ordering of variables (more specifically kernels) can have a significant effect on the space and time associated with a calculation. In its default state, REDUCE uses a specific order for this which may vary between sessions. However, it is possible for the user to change this internal order by means of the declaration `korder`. The syntax for this is:
+```Julia
+julia> Algebra.korder(v1,...,vn)
+```
+where the `vi` are kernels. With this declaration, the `vi` are ordered internally ahead of any other kernels in the system. `v1` has the highest order, `v2` the next highest, and so on. A further call of `korder` replaces a previous one. `korder(nothing)` resets the internal order to the system default.
+""" Reduce.Algebra.korder
+
+@doc """
+    realvalued(r...)
+
+The declaration `realvalued` may be used to restrict variables to the real numbers. The syntax is:
+```Julia
+	Algebra.realvalued(v1,...vn)
+```
+For such variables the operator `impart` gives the result zero. Thus, with
+```Julia
+julia> Algebra.realvalued(:x,:y)
+```
+the expression `impart(x+sin(y))` is evaluated as zero. You may also declare an operator as real valued with the meaning, that this operator maps real arguments always to real values. Example:
+```Julia
+julia> Algebra.operator(:h); Algebra.realvalued(:h,:x)
+
+julia> Algebra.impart(:(h(x)))
+0  
+ 
+julia> Algebra.impart(:(h(w)))
+:(impart(h(w)))
+```
+Such declarations are not needed for the standard elementary functions.
+""" Reduce.Algebra.realvalued
+
+@doc """
+    notrealvalued(r...)
+
+To remove the `realvalued` propery from a variable or an operator use the declaration `notrealvalued` with the syntax:
+```Julia
+julia> Algebra.notrealvalued(v1,...vn)
+```
+""" Reduce.Algebra.notrealvalued
+
+@doc """
+    factorize(r...)
+
+It is also possible to factorize a given expression explicitly. The operator `factorize` that invokes this facility is used with the syntax
+```Julia
+R"factorize(EXPRN:polynomial[,INTEXP:prime integer])"
+```
+the optional argument of which will be described later. Thus to find and display all factors of the cyclotomic polynomial ``x^{105} - 1``, one could write:
+```
+julia> Algebra.factorize(:(x^105-1))
+```
+The result is a list of factor,exponent pairs. In the above example, there is no overall numerical factor in the result, so the results will consist only of polynomials in x. The number of such polynomials can be found by using the operator `length`. If there is a numerical factor, as in factorizing ``12x^2 - 12``, that factor will appear as the first member of the result. It will however not be factored further. Prime factors of such numbers can be found, using a probabilistic algorithm, by turning on the switch `ifactor`. For example,
+```
+julia> Algebra.on(:ifactor); Algebra.factorize(:(12x^2-12))
+```
+would result in the output
+```
+((2, 2), (3, 1), (:(x ^ 2 + 1), 1), (:(x + 1), 1), (:(x - 1), 1))
+```
+If the first argument of `factorize` is an integer, it will be decomposed into its prime components, whether or not `ifactor` is on.
+
+Note that the `ifactor` switch only affects the result of `factorize`. It has no effect if the `factor` switch is also on.
+""" Reduce.Algebra.factorize
+
+@doc """
+    remainder(a,b)
+
+This operator is used with the syntax
+```Julia
+R"REMAINDER(EXPRN1:polynomial,EXPRN2:polynomial)"
+```
+It returns the remainder when `EXPRN1` is divided by `EXPRN2`. This is the true remainder based on the internal ordering of the variables, and not the pseudo-remainder. The pseudo-remainder and in general pseudo-division of polynomials can be calculated after loading the `polydiv` package. Please refer to the documentation of this package for details.
+
+*Examples:*
+```
+        remainder((x+y)*(x+2*y),x+3*y) ->  2*y**2  
+        remainder(2*x+y,2)             ->  Y
+```
+""" Reduce.Algebra.remainder
+
+@doc """
+    resultant(a,b,var)
+
+This is used with the syntax
+```Julia
+R"resultant(EXPRN1:polynomial,EXPRN2:polynomial,VAR:kernel)"
+```
+It computes the resultant of the two given polynomials with respect to the given variable, the coefficients of the polynomials can be taken from any domain. The result can be identified as the determinant of a Sylvester matrix, but can often also be thought of informally as the result obtained when the given variable is eliminated between the two input polynomials. If the two input polynomials have a non-trivial GCD their resultant vanishes.
+
+The switch `bezout` controls the computation of the resultants. It is off by default. In this case a subresultant algorithm is used. If the switch Bezout is turned on, the resultant is computed via the Bezout Matrix. However, in the latter case, only polynomial coefficients are permitted.
+""" Reduce.Algebra.resultant
+
+@doc """
+    interpol(val,var,mp)
+
+Syntax:
+```Julia
+R"interpol(⟨values⟩,⟨variable⟩,metapoints)"
+```
+where `⟨values⟩` and `⟨points⟩` are lists of equal length and `<variable>` is an algebraic expression (preferably a kernel).
+
+`interpol` generates an interpolation polynomial ``f`` in the given variable of degree `length(⟨values⟩)-1`. The unique polynomial ``f`` is defined by the property that for corresponding elements ``v`` of `⟨values⟩` and ``p`` of `⟨points⟩` the relation ``f(p) = v`` holds.
+
+The Aitken-Neville interpolation algorithm is used which guarantees a stable result even with rounded numbers and an ill-conditioned problem.
+""" Reduce.Algebra.interpol
+
+@doc """
+    deg(p,var)
+
+This operator is used with the syntax
+```Julia
+R"deg(EXPRN:polynomial,VAR:kernel)"
+```
+It returns the leading degree of the polynomial `EXPRN` in the variable `VAR`. If `VAR` does not occur as a variable in `EXPRN`, 0 is returned.
+
+*Examples:*
+```
+        deg((a+b)*(c+2*d)^2,a) ->  1  
+        deg((a+b)*(c+2*d)^2,d) ->  2  
+        deg((a+b)*(c+2*d)^2,e) ->  0
+```
+Note also that if `ratarg` is on,
+```
+        deg((a+b)^3/a,a)       ->  3
+```
+since in this case, the denominator `a` is considered part of the coefficients of the numerator in `a`. With `ratarg` off, however, an error would result in this case.
+""" Reduce.Algebra.deg
+
+@doc """
+    lcof(expr,var)
+
+`lcof` is used with the syntax
+```Julia
+R"lcof(EXPRN:polynomial,VAR:kernel)"
+```
+It returns the leading coefficient of the polynomial `EXPRN` in the variable `VAR`. If `VAR` does not occur as a variable in `EXPRN`, `EXPRN` is returned.
+
+*Examples:*
+```
+        lcof((a+b)*(c+2*d)^2,a) ->  c**2+4*c*d+4*d**2  
+        lcof((a+b)*(c+2*d)^2,d) ->  4*(a+b)  
+        lcof((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
+```
+""" Reduce.Algebra.lcof
+
+@doc """
+    lpower(exprn,var)
+
+Syntax:
+```Julia
+R"lpower(EXPRN:polynomial,VAR:kernel)"
+```
+`lpower` returns the leading power of `EXPRN` with respect to `VAR`. If `EXPRN` does not depend on `VAR`, 1 is returned.
+*Examples:*
+```
+        lpower((a+b)*(c+2*d)^2,a) ->  a  
+        lpower((a+b)*(c+2*d)^2,d) ->  d**2  
+        lpower((a+b)*(c+2*d),e)   ->  1
+```
+""" Reduce.Algebra.lpower
+
+@doc """
+    lterm(exprn,var)
+
+Syntax:
+```Julia
+R"lterm(EXPRN:polynomial,VAR:kernel)"
+```
+`lterm` returns the leading term of `EXPRN` with respect to `VAR`. If `EXPRN` does not depend on `VAR`, `EXPRN` is returned.
+
+*Examples:*
+```
+        lterm((a+b)*(c+2*d)^2,a) ->  a*(c**2+4*c*d+4*d**2)  
+        lterm((a+b)*(c+2*d)^2,d) ->  4*d**2*(a+b)  
+        lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
+```
+""" Reduce.Algebra.lterm
+
+@doc """
+    reduct(exprn,var)
+
+Syntax:
+```Julia
+R"reduct(EXPRN:polynomial,VAR:kernel)"
+```
+Returns the reductum of `EXPRN` with respect to `VAR` (i.e., the part of `EXPRN` left after the leading term is removed). If `EXPRN` does not depend on the variable `VAR`, 0 is returned.
+
+*Examples:*
+```
+     reduct((a+b)*(c+2*d),a) ->  b*(c + 2*d)  
+     reduct((a+b)*(c+2*d),d) ->  c*(a + b)  
+     reduct((a+b)*(c+2*d),e) ->  0
+```
+""" Reduce.Algebra.reduct
+
+@doc """
+    totaldeg(expr,var)
+
+Syntax:
+```
+     totaldeg(a*x^2+b*x+c, x)  => 2  
+     totaldeg(a*x^2+b*x+c, {a,b,c})  => 1  
+     totaldeg(a*x^2+b*x+c, {x, a})  => 3  
+     totaldeg(a*x^2+b*x+c, {x,b})  => 2  
+     totaldeg(a*x^2+b*x+c, {p,q,r})  => 0
+```
+`totaldeg(u, kernlist)` finds the total degree of the polynomial `u` in the variables in `kernlist`. If `kernlist` is not a list it is treated as a simple single variable. The denominator of `u` is ignored, and "degree" here does not pay attention to fractional powers. Mentions of a kernel within the argument to any operator or function (eg `sin`, `cos`, `log`, `sqrt`) are ignored. Really `u` is expected to be just a polynomial.
+""" Reduce.Algebra.totaldeg
+
+@doc """
+    clear(r...)
+
+The user may remove all assignments and substitution rules from any expression by the command `clear`, in the form
+```
+R"clear ⟨expression⟩,…,⟨expression⟩ = ⟨terminator⟩"
+e.g.
+```Julia
+julia> Algebra.clear(:x,:(h(x,y)))
+```
+Because of their *instant evaluation* property, array and matrix elements cannot be cleared with `clear`. For example, if `a` is an array, you must say
+```Julia
+R"a(3) := 0"
+```
+rather than
+```Julia
+R"clear a(3)"
+```
+to “clear” element `a(3)`.
+
+On the other hand, a whole array (or matrix) `a` can be cleared by the command `clear(:a)`. This means much more than resetting to 0 all the elements of `a`. The fact that `a` is an array, and what its dimensions are, are forgotten, so `a` can be redefined as another type of object, for example an operator.
+
+If you need to clear a variable whose name must be computed, see the `unset` statement.
+""" Reduce.Algebra.clear
