@@ -1449,6 +1449,766 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/08-display.html#",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8 Display and Structuring of Expressions",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/08-display.html#Display-and-Structuring-of-Expressions-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8 Display and Structuring of Expressions",
+    "category": "section",
+    "text": "In this section, we consider a variety of commands and operators that permit the user to obtain various parts of algebraic expressions and also display their structure in a variety of forms. Also presented are some additional concepts in the REDUCE design that help the user gain a better understanding of the structure of the system."
+},
+
+{
+    "location": "man/08-display.html#.1-Kernels-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.1 Kernels",
+    "category": "section",
+    "text": "REDUCE is designed so that each operator in the system has an evaluation (or simplification) function associated with it that transforms the expression into an internal canonical form. This form, which bears little resemblance to the original expression, is described in detail in Hearn, A. C., “REDUCE 2: A System and Language for Algebraic Manipulation,” Proc. of the Second Symposium on Symbolic and Algebraic Manipulation, ACM, New York (1971) 128-133.The evaluation function may transform its arguments in one of two alternative ways. First, it may convert the expression into other operators in the system, leaving no functions of the original operator for further manipulation. This is in a sense true of the evaluation functions associated with the operators +, * and / , for example, because the canonical form does not include these operators explicitly. It is also true of an operator such as the determinant operator det because the relevant evaluation function calculates the appropriate determinant, and the operator det no longer appears. On the other hand, the evaluation process may leave some residual functions of the relevant operator. For example, with the operator cos, a residual expression like cos(x) may remain after evaluation unless a rule for the reduction of cosines into exponentials, for example, were introduced. These residual functions of an operator are termed kernels and are stored uniquely like variables. Subsequently, the kernel is carried through the calculation as a variable unless transformations are introduced for the operator at a later stage.In those cases where the evaluation process leaves an operator expression with non-trivial arguments, the form of the argument can vary depending on the state of the system at the point of evaluation. Such arguments are normally produced in expanded form with no terms factored or grouped in any way. For example, the expression cos(2*x+2*y) will normally be returned in the same form. If the argument 2*x+2*y were evaluated at the top level, however, it would be printed as 2*(x+y). If it is desirable to have the arguments themselves in a similar form, the switch intstr (for “internal structure”), if on, will cause this to happen. In cases where the arguments of the kernel operators may be reordered, the system puts them in a canonical order, based on an internal intrinsic ordering of the variables. However, some commands allow arguments in the form of kernels, and the user has no way of telling what internal order the system will assign to these arguments. To resolve this difficulty, we introduce the notion of a kernel form as an expression that transforms to a kernel on evaluation.Examples of kernel forms are:R\"a\"\nR\"cos(x*y)\"\nR\"log(sin(x))\"whereasR\"a*b\"\nR\"(a+b)^4\"are not.We see that kernel forms can usually be used as generalized variables, and most algebraic properties associated with variables may also be associated with kernels."
+},
+
+{
+    "location": "man/08-display.html#Reduce.Algebra.ws",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.Algebra.ws",
+    "category": "function",
+    "text": "ws()\n\nSeveral mechanisms are available for saving and retrieving previously evaluated expressions. The simplest of these refers to the last algebraic expression simplified. When an assignment of an algebraic expression is made, or an expression is evaluated at the top level, (i.e., not inside a compound statement or procedure) the results of the evaluation are automatically saved in a variable ws that we shall refer to as the workspace. (More precisely, the expression is assigned to the variable ws that is then available for further manipulation.)\n\nExample: If we evaluate the expression (x+y)^2 at the top level and next wish to differentiate it with respect to y, we can simply say julia Algebradf(Algebraws()y)` to get the desired answer.\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#Reduce.Algebra.saveas",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.Algebra.saveas",
+    "category": "function",
+    "text": "saveas(expr)\n\nIf the user wishes to assign the workspace to a variable or expression for later use, the saveas statement can be used. It has the syntax\n\nR\"saveas ⟨expression⟩\"\n\nFor example, after the differentiation in the last example, the workspace holds the expression 2*x+2*y. If we wish to assign this to the variable z we can now say\n\njulia> Algebra.saveas(:z)\n\nIf the user wishes to save the expression in a form that allows him to use some of its variables as arbitrary parameters, the for all command can be used.\n\nExample:\n\nR\"for all x saveas h(x)\"\n\nwith the above expression would mean that h(z) evaluates to 2*y+2*z.\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#.2-The-Expression-Workspace-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.2 The Expression Workspace",
+    "category": "section",
+    "text": "Reduce.Algebra.ws\nReduce.Algebra.saveasA further method for referencing more than the last expression is described in chapter 13 on interactive use of REDUCE."
+},
+
+{
+    "location": "man/08-display.html#.3-Output-of-Expressions-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3 Output of Expressions",
+    "category": "section",
+    "text": "A considerable degree of flexibility is available in REDUCE in the printing of expressions generated during calculations. No explicit format statements are supplied, as these are in most cases of little use in algebraic calculations, where the size of output or its composition is not generally known in advance. Instead, REDUCE provides a series of mode options to the user that should enable him to produce his output in a comprehensible and possibly pleasing form.The most extreme option offered is to suppress the output entirely from any top level evaluation. This is accomplished by turning off the switch output which is normally on. It is useful for limiting output when loading large files or producing “clean” output from the prettyprint programs.In most circumstances, however, we wish to view the output, so we need to know how to format it appropriately. As we mentioned earlier, an algebraic expression is normally printed in an expanded form, filling the whole output line with terms. Certain output declarations, however, can be used to affect this format. To begin with, we look at an operator for changing the length of the output line."
+},
+
+{
+    "location": "man/08-display.html#Reduce.linelength",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.linelength",
+    "category": "function",
+    "text": "linelength()\n\nThis operator is used with the syntax\n\nReduce.linelength()::Integer\n\nand sets the output line length to the integer tput cols. It returns the output line length (so that it can be stored for later resetting of the output line if needed).\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#.3.1-LINELENGTH-Operator-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.1 LINELENGTH Operator",
+    "category": "section",
+    "text": "Reduce.linelength"
+},
+
+{
+    "location": "man/08-display.html#.3.2-Output-Declarations-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.2 Output Declarations",
+    "category": "section",
+    "text": "We now describe a number of switches and declarations that are available for controlling output formats. It should be noted, however, that the transformation of large expressions to produce these varied output formats can take a lot of computing time and space. If a user wishes to speed up the printing of the output in such cases, he can turn off the switch pri. If this is done, then output is produced in one fixed format, which basically reflects the internal form of the expression, and none of the options below apply. pri is normally on.With pri on, the output declarations and switches available are as follows:"
+},
+
+{
+    "location": "man/08-display.html#Reduce.Algebra.order",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.Algebra.order",
+    "category": "function",
+    "text": "order(r...)\n\nThe declaration order may be used to order variables on output. The syntax is:\n\njulia> Algebra.order(v1,...vn)\n\nwhere the vi are kernels. Thus,\n\njulia> Algebra.order(:x,:y,:z)\n\norders x ahead of y, y ahead of z and all three ahead of other variables not given an order. order(nothing) resets the output order to the system default. The order of variables may be changed by further calls of order, but then the reordered variables would have an order lower than those in earlier order calls. Thus,\n\njulia> Algebra.order(:x,:y,:z)  \n\njulia> Algebra.order(:y,:x)\n\nwould order z ahead of y and x. The default ordering is usually alphabetic.\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#ORDER-Declaration-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "ORDER Declaration",
+    "category": "section",
+    "text": "Reduce.Algebra.order"
+},
+
+{
+    "location": "man/08-display.html#Reduce.factor",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.factor",
+    "category": "function",
+    "text": "factor(r...)\n\nThis declaration takes a list of identifiers or kernels as argument. factor is not a factoring command (use factorize or the factor switch for this purpose); rather it is a separation command. All terms involving fixed powers of the declared expressions are printed as a product of the fixed powers and a sum of the rest of the terms.\n\nFor example, after the declaration\n\njulia> Algebra.factor(:x)\n\nthe polynomial (x + y + 1)^2 will be printed as\n\n         2                  2  \n        x  + 2*x*(y + 1) + y  + 2*y + 1\n\nAll expressions involving a given prefix operator may also be factored by putting the operator name in the list of factored identifiers. For example:\n\njulia> Algebra.factor(:x,:cos,:(sin(x))\n\ncauses all powers of x and sin(x) and all functions of cos to be factored.\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#Reduce.Algebra.remfac",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.Algebra.remfac",
+    "category": "function",
+    "text": "remfac(r...)\n\nThe declaration remfac(v1,...,vn) removes the factoring flag from the expressions v1 through vn.\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#FACTOR-Declaration-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "FACTOR Declaration",
+    "category": "section",
+    "text": "Reduce.Algebra.factorNote that factor does not affect the order of its arguments. You should also use order if this is important.Reduce.Algebra.remfac"
+},
+
+{
+    "location": "man/08-display.html#.3.3-Output-Control-Switches-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.3 Output Control Switches",
+    "category": "section",
+    "text": "In addition to these declarations, the form of the output can be modified by switching various output control switches using the declarations on and off. We shall illustrate the use of these switches by an example, namely the printing of the expressionR\"x^2*(y^2+2*y)+x*(y^2+z)/(2*a)\"The relevant switches are as follows:"
+},
+
+{
+    "location": "man/08-display.html#ALLFAC-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "ALLFAC Switch",
+    "category": "section",
+    "text": "This switch will cause the system to search the whole expression, or any sub-expression enclosed in parentheses, for simple multiplicative factors and print them outside the parentheses. Thus our expression with allfac off will print as    2  2        2          2  \n(2*x *y *a + 4*x *y*a + x*y  + x*z)/(2*a)and with allfac on as        2                2  \nx*(2*x*y *a + 4*x*y*a + y  + z)/(2*a)allfac is normally on, and is on in the following examples, except where otherwise stated."
+},
+
+{
+    "location": "man/08-display.html#DIV-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "DIV Switch",
+    "category": "section",
+    "text": "This switch makes the system search the denominator of an expression for simple factors that it divides into the numerator, so that rational fractions and negative powers appear in the output. With div on, our expression would print as      2                2  (-1)        (-1)  \nx*(x*y  + 2*x*y + 1/2*y *a     + 1/2*a    *z)div is normally off."
+},
+
+{
+    "location": "man/08-display.html#LIST-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "LIST Switch",
+    "category": "section",
+    "text": "This switch causes the system to print each term in any sum on a separate line. With list on, our expression prints as        2  \nx*(2*x*y *a  \n\n    + 4*x*y*a  \n\n       2  \n    + y  \n\n    + z)/(2*a)list is normally off."
+},
+
+{
+    "location": "man/08-display.html#NOSPLIT-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "NOSPLIT Switch",
+    "category": "section",
+    "text": "Under normal circumstances, the printing routines try to break an expression across lines at a natural point. This is a fairly expensive process. If you are not overly concerned about where the end-of-line breaks come, you can speed up the printing of expressions by turning off the switch nosplit. This switch is normally on."
+},
+
+{
+    "location": "man/08-display.html#RAT-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "RAT Switch",
+    "category": "section",
+    "text": "This switch is only useful with expressions in which variables are factored with factor. With this mode, the overall denominator of the expression is printed with each factored sub-expression. We assume a prior declaration factor(:x) in the following output. We first print the expression with rat set to off:    2                   2  \n(2*x *y*a*(y + 2) + x*(y  + z))/(2*a)With rat on the output becomes: 2                 2  \nx *y*(y + 2) + x*(y  + z)/(2*a)rat is normally off.Next, if we leave x factored, and turn on both div and rat, the result becomes 2                    (-1)   2  \nx *y*(y + 2) + 1/2*x*a    *(y  + z)Finally, with x factored, rat on and allfac off we retrieve the original structure 2   2              2  \nx *(y  + 2*y) + x*(y  + z)/(2*a)"
+},
+
+{
+    "location": "man/08-display.html#RATPRI-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "RATPRI Switch",
+    "category": "section",
+    "text": "If the numerator and denominator of an expression can each be printed in one line, the output routines will print them in a two dimensional notation, with numerator and denominator on separate lines and a line of dashes in between. For example, (a+b)/2 will print asA + B  \n-----  \n  2Turning this switch off causes such expressions to be output in a linear form."
+},
+
+{
+    "location": "man/08-display.html#REVPRI-Switch-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "REVPRI Switch",
+    "category": "section",
+    "text": "The normal ordering of terms in output is from highest to lowest power. In some situations (e.g., when a power series is output), the opposite ordering is more convenient. The switch revpri if on causes such a reverse ordering of terms. For example, the expression y*(x+1)^2+(y+3)^2 will normally print as 2              2  \nX *Y + 2*X*Y + Y  + 7*Y + 9whereas with revpri on, it will print as           2            2  \n9 + 7*Y + Y  + 2*X*Y + X *Y"
+},
+
+{
+    "location": "man/08-display.html#.3.4-WRITE-Command-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.4 WRITE Command",
+    "category": "section",
+    "text": "In simple cases no explicit output command is necessary in REDUCE, since the value of any expression is automatically printed if a semicolon is used as a delimiter. There are, however, several situations in which such a command is useful.In a for, while, or repeat statement it may be desired to output something each time the statement within the loop construct is repeated.It may be desired for a procedure to output intermediate results or other information while it is running. It may be desired to have results labeled in special ways, especially if the output is directed to a file or device other than the terminal.The write command consists of the word write followed by one or more items separated by commas, and followed by a terminator. There are three kinds of items that can be used:Expressions (including variables and constants). The expression is evaluated, and the result is printed out.\nAssignments. The expression on the right side of the := operator is evaluated, and is assigned to the variable on the left; then the symbol on the left is printed, followed by a “:=”, followed by the value of the expression on the right – almost exactly the way an assignment followed by a semicolon prints out normally. (The difference is that if the write is in a for statement and the left-hand side of the assignment is an array position or something similar containing the variable of the for iteration, then the value of that variable is inserted in the printout.)\nArbitrary strings of characters, preceded and followed by double-quote marks (e.g., R\"~string~\").The items specified by a single write statement print side by side on one line. (The line is broken automatically if it is too long.) Strings print exactly as quoted. The write command itself however does not return a value.The print line is closed at the end of a write command evaluation. Therefore the command R\"write ~~\" (specifying nothing to be printed except the empty string) causes a line to be skipped.Examples:If a is x+5, b is itself, c is 123, m is an array, and q=3, thenR\"write m(q):=a,~ ~,b/c,~ THANK YOU~\"will set m(3) to x+5 and printm(q) := x + 5 b/123 THANK YOUThe blanks between the 5 and b, and the 3 and t, come from the blanks in the quoted strings.To print a table of the squares of the integers from 1 to 20:R\"for i:=1:20 do write i,~ ~,i^2\"To print a table of the squares of the integers from 1 to 20, and at the same time store them in positions 1 to 20 of an array a:R\"for i:=1:20 do <<a(i):=i^2; write i,~ ~,a(i)>>\"This will give us two columns of numbers. If we had usedR\"for i:=1:20 do write i,~ ~,a(i):=i^2\"we would also get a(i) := repeated on each line.The following more complete example calculates the famous f and g series, first reported in Sconzo, P., LeSchack, A. R., and Tobey, R., “Symbolic Computation of f and g Series by Computer”, Astronomical Journal 70 (May 1965). x1:= -sig*(mu+2*eps)$  \n x2:= eps - 2*sig^2$  \n x3:= -3*mu*sig$  \n f:= 1$  \n g:= 0$  \n for i:= 1 step 1 until 10 do begin  \n    f1:= -mu*g+x1*df(f,eps)+x2*df(f,sig)+x3*df(f,mu);  \n    write ~f(~,i,~) := ~,f1;  \n    g1:= f+x1*df(g,eps)+x2*df(g,sig)+x3*df(g,mu);  \n    write ~g(~,i,~) := ~,g1;  \n    f:=f1$  \n    g:=g1$  \n   end;A portion of the output, to illustrate the printout from the write command, is as follows:                ... <prior output> ...  \n \n                           2  \n F(4) := MU*(3*EPS - 15*SIG  + MU)  \n \n G(4) := 6*SIG*MU  \n \n                                    2  \n F(5) := 15*SIG*MU*( - 3*EPS + 7*SIG  - MU)  \n \n                           2  \n G(5) := MU*(9*EPS - 45*SIG  + MU)  \n \n                ... <more output> ...  "
+},
+
+{
+    "location": "man/08-display.html#.3.5-Suppression-of-Zeros-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.5 Suppression of Zeros",
+    "category": "section",
+    "text": "It is sometimes annoying to have zero assignments (i.e. assignments of the form <expression> := 0) printed, especially in printing large arrays with many zero elements. The output from such assignments can be suppressed by turning on the switch nero."
+},
+
+{
+    "location": "man/08-display.html#.3.6-FORTRAN-Style-Output-Of-Expressions-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.6 FORTRAN Style Output Of Expressions",
+    "category": "section",
+    "text": "It is naturally possible to evaluate expressions numerically in REDUCE by giving all variables and sub-expressions numerical values. However, as we pointed out elsewhere the user must declare real arithmetical operation by turning on the switch rounded. However, it should be remembered that arithmetic in REDUCE is not particularly fast, since results are interpreted rather than evaluated in a compiled form. The user with a large amount of numerical computation after all necessary algebraic manipulations have been performed is therefore well advised to perform these calculations in a FORTRAN or similar system. For this purpose, REDUCE offers facilities for users to produce FORTRAN compatible files for numerical processing.First, when the switch fort is on, the system will print expressions in a FORTRAN notation. Expressions begin in column seven. If an expression extends over one line, a continuation mark (.) followed by a blank appears on subsequent cards. After a certain number of lines have been produced (according to the value of the variable card_no), a new expression is started. If the expression printed arises from an assignment to a variable, the variable is printed as the name of the expression. Otherwise the expression is given the default name ans. An error occurs if identifiers or numbers are outside the bounds permitted by FORTRAN.A second option is to use the write command to produce other programs.Example: The following REDUCE statements on fort;  \n out ~forfil~;  \n write ~C     this is a fortran program~;  \n write ~ 1    format(e13.5)~;  \n write ~      u=1.23~;  \n write ~      v=2.17~;  \n write ~      w=5.2~;  \n x:=(u+v+w)^11;  \n write ~C     it was foolish to expand this expression~;  \n write ~      print 1,x~;  \n write ~      end~;  \n shut ~forfil~;  \n off fort;will generate a file forfil that contains:c this is a fortran program  \n 1    format(e13.5)  \n      u=1.23  \n      v=2.17  \n      w=5.2  \n      ans1=1320.*u**3*v*w**7+165.*u**3*w**8+55.*u**2*v**9+495.*u  \n     . **2*v**8*w+1980.*u**2*v**7*w**2+4620.*u**2*v**6*w**3+  \n     . 6930.*u**2*v**5*w**4+6930.*u**2*v**4*w**5+4620.*u**2*v**3*  \n     . w**6+1980.*u**2*v**2*w**7+495.*u**2*v*w**8+55.*u**2*w**9+  \n     . 11.*u*v**10+110.*u*v**9*w+495.*u*v**8*w**2+1320.*u*v**7*w  \n     . **3+2310.*u*v**6*w**4+2772.*u*v**5*w**5+2310.*u*v**4*w**6  \n     . +1320.*u*v**3*w**7+495.*u*v**2*w**8+110.*u*v*w**9+11.*u*w  \n     . **10+v**11+11.*v**10*w+55.*v**9*w**2+165.*v**8*w**3+330.*  \n     . v**7*w**4+462.*v**6*w**5+462.*v**5*w**6+330.*v**4*w**7+  \n     . 165.*v**3*w**8+55.*v**2*w**9+11.*v*w**10+w**11  \n      x=u**11+11.*u**10*v+11.*u**10*w+55.*u**9*v**2+110.*u**9*v*  \n     . w+55.*u**9*w**2+165.*u**8*v**3+495.*u**8*v**2*w+495.*u**8  \n     . *v*w**2+165.*u**8*w**3+330.*u**7*v**4+1320.*u**7*v**3*w+  \n     . 1980.*u**7*v**2*w**2+1320.*u**7*v*w**3+330.*u**7*w**4+462.  \n     . *u**6*v**5+2310.*u**6*v**4*w+4620.*u**6*v**3*w**2+4620.*u  \n     . **6*v**2*w**3+2310.*u**6*v*w**4+462.*u**6*w**5+462.*u**5*  \n     . v**6+2772.*u**5*v**5*w+6930.*u**5*v**4*w**2+9240.*u**5*v  \n     . **3*w**3+6930.*u**5*v**2*w**4+2772.*u**5*v*w**5+462.*u**5  \n     . *w**6+330.*u**4*v**7+2310.*u**4*v**6*w+6930.*u**4*v**5*w  \n     . **2+11550.*u**4*v**4*w**3+11550.*u**4*v**3*w**4+6930.*u**  \n     . 4*v**2*w**5+2310.*u**4*v*w**6+330.*u**4*w**7+165.*u**3*v  \n     . **8+1320.*u**3*v**7*w+4620.*u**3*v**6*w**2+9240.*u**3*v**  \n     . 5*w**3+11550.*u**3*v**4*w**4+9240.*u**3*v**3*w**5+4620.*u  \n     . **3*v**2*w**6+ans1  \nc     it was foolish to expand this expression  \n      print 1,x  \n      endIf the arguments of a write statement include an expression that requires continuation records, the output will need editing, since the output routine prints the arguments of write sequentially, and the continuation mechanism therefore generates its auxiliary variables after the preceding expression has been printed.Finally, since there is no direct analog of list in FORTRAN, a comment line of the formc ***** invalid fortran construct (list) not printedwill be printed if you try to print a list with fort on."
+},
+
+{
+    "location": "man/08-display.html#FORTRAN-Output-Options-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "FORTRAN Output Options",
+    "category": "section",
+    "text": "There are a number of methods available to change the default format of the FORTRAN output.The breakup of the expression into subparts is such that the number of continuation lines produced is less than a given number. This number can be modified by the assignmentR\"card_no := ⟨number⟩\"where ⟨number⟩ is the total number of cards allowed in a statement. The default value of card_no is 20.The width of the output expression is also adjustable by the assignmentR\"fort_width := ⟨integer⟩\"fort_width which sets the total width of a given line to ⟨integer⟩. The initial FORTRAN output width is 70.REDUCE automatically inserts a decimal point after each isolated integer coefficient in a FORTRAN expression (so that, for example, 4 becomes 4.). To prevent this, set the period mode switch to off.FORTRAN output is normally produced in lower case. If upper case is desired, the switch FORTUPPER should be turned on.Finally, the default name ans assigned to an unnamed expression and its subparts can be changed by the operator varname. This takes a single identifier as argument, which then replaces ANS as the expression name. The value of varname is its argument.Further facilities for the production of FORTRAN and other language output are provided by the SCOPE and GENTRAN packagesdescribed in chapters 16.26 and 16.60."
+},
+
+{
+    "location": "man/08-display.html#.3.7-Saving-Expressions-for-Later-Use-as-Input-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.7 Saving Expressions for Later Use as Input",
+    "category": "section",
+    "text": "It is often useful to save an expression on an external file for use later as input in further calculations. The commands for opening and closing output files are explained elsewhere. However, we see in the examples on output of expressions that the standard “natural” method of printing expressions is not compatible with the input syntax. So to print the expression in an input compatible form we must inhibit this natural style by turning off the switch nat. If this is done, a dollar sign will also be printed at the end of the expression.Example: The following sequence of commands        off nat; out ~out~; x := (y+z)^2; write ~end~;  \n        shut ~out~; on nat;will generate a file out that contains        X := Y**2 + 2*Y*Z + Z**2$  \n        END$"
+},
+
+{
+    "location": "man/08-display.html#.3.8-Displaying-Expression-Structure-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.3.8 Displaying Expression Structure",
+    "category": "section",
+    "text": "In those cases where the final result has a complicated form, it is often convenient to display the skeletal structure of the answer. The operator structr, that takes a single expression as argument, will do this for you. Its syntax is:R\"structr(EXPRN:algebraic[,ID1:identifier[,ID2:identifier]])\"The structure is printed effectively as a tree, in which the subparts are laid out with auxiliary names. If the optional ID1 is absent, the auxiliary names are prefixed by the root ans. This root may be changed by the operator varname. If the optional ID1 is present, and is an array name, the subparts are named as elements of that array, otherwise ID1 is used as the root prefix. (The second optional argument ID2 is explained later.)The EXPRN can be either a scalar or a matrix expression. Use of any other will result in an error.Example: Let us suppose that the workspace contains ((a+b)^2+c)^3+d. Then the input R\"structr ws\" will (withexp` off) result in the output:ans3\n\n   where\n\n                  3\n      ans3 := ans2  + d\n\n                  2\n      ans2 := ans1  + c\n\n      ans1 := a + bThe workspace remains unchanged after this operation, since structr in the default situation returns no value (if structr is used as a sub-expression, its value is taken to be 0). In addition, the sub-expressions are normally only displayed and not retained. If you wish to access the sub-expressions with their displayed names, the switch savestructr should be turned on. In this case, structr returns a list whose first element is a representation for the expression, and subsequent elements are the sub-expression relations. Thus, with savestructr on, R\"structr ws\" in the above example would return               3              2\n{ans3,ans3=ans2  + d,ans2=ans1  + c,ans1=a + b}The part operator can be used to retrieve the required parts of the expression. For example, to get the value of ans2 in the above, one could say:R\"part(ws,3,2)\"If fort is on, then the results are printed in the reverse order; the algorithm in fact guaranteeing that no sub-expression will be referenced before it is defined. The second optional argument ID2 may also be used in this case to name the actual expression (or expressions in the case of a matrix argument).Example: Let us suppose that m, a 2 by 1 matrix, contains the elements ((a+b)^2 + c)^3 + d and (a + b)\\*(c + d) respectively, and that V has been declared to be an array. With exp off and fort on, the statement R\"structr(2\\*m,v,k);\" will result in the outputv(1)=a+b  \nv(2)=v(1)**2+c  \nv(3)=v(2)**3+d  \nv(4)=c+d  \nk(1,1)=2.*v(3)  \nk(2,1)=2.*v(1)*v(4)"
+},
+
+{
+    "location": "man/08-display.html#Reduce.Algebra.korder",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "Reduce.Algebra.korder",
+    "category": "function",
+    "text": "korder(r...)\n\nThe internal ordering of variables (more specifically kernels) can have a significant effect on the space and time associated with a calculation. In its default state, REDUCE uses a specific order for this which may vary between sessions. However, it is possible for the user to change this internal order by means of the declaration korder. The syntax for this is:\n\njulia> Algebra.korder(v1,...,vn)\n\nwhere the vi are kernels. With this declaration, the vi are ordered internally ahead of any other kernels in the system. v1 has the highest order, v2 the next highest, and so on. A further call of korder replaces a previous one. korder(nothing) resets the internal order to the system default.\n\n\n\n"
+},
+
+{
+    "location": "man/08-display.html#.4-Changing-the-Internal-Order-of-Variables-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.4 Changing the Internal Order of Variables",
+    "category": "section",
+    "text": "Reduce.Algebra.korderUnlike the order declaration, that has a purely cosmetic effect on the way results are printed, the use of korder can have a significant effect on computation time. In critical cases then, the user can experiment with the ordering of the variables used to determine the optimum set for a given problem."
+},
+
+{
+    "location": "man/08-display.html#.5-Obtaining-Parts-of-Algebraic-Expressions-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.5 Obtaining Parts of Algebraic Expressions",
+    "category": "section",
+    "text": "There are many occasions where it is desirable to obtain a specific part of an expression, or even change such a part to another expression. A number of operators are available in REDUCE for this purpose, and will be described in this section. In addition, operators for obtaining specific parts of polynomials and rational functions (such as a denominator) are described in another section."
+},
+
+{
+    "location": "man/08-display.html#.5.1-COEFF-Operator-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.5.1 COEFF Operator",
+    "category": "section",
+    "text": "Syntax:R\"coeff(EXPRN:polynomial,VAR:kernel)\"coeff is an operator that partitions EXPRN into its various coefficients with respect to VAR and returns them as a list, with the coefficient independent of VAR first.Under normal circumstances, an error results if EXPRN is not a polynomial in VAR, although the coefficients themselves can be rational as long as they do not depend on VAR. However, if the switch ratarg is on, denominators are not checked for dependence on VAR, and are taken to be part of the coefficients.Example:reduce> coeff((y^2+z)^3/z,y);returns the result  2  \n{Z ,0,3*Z,0,3,0,1/Z}whereasreduce> coeff((y^2+z)^3/y,y);gives an error if ratarg is off, and the result  3        2  \n{Z /Y,0,3*Z /Y,0,3*Z/Y,0,1/Y}if ratarg is on.The length of the result of coeff is the highest power of VAR encountered plus 1. In the above examples it is 7. In addition, the variable high_pow is set to the highest non-zero power found in EXPRN during the evaluation, and low_pow to the lowest non-zero power, or zero if there is a constant term. If EXPRN is a constant, then high_pow and low_pow are both set to zero."
+},
+
+{
+    "location": "man/08-display.html#.5.2-COEFFN-Operator-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.5.2 COEFFN Operator",
+    "category": "section",
+    "text": "The coeffn operator is designed to give the user a particular coefficient of a variable in a polynomial, as opposed to coeff that returns all coefficients. coeffn is used with the syntaxR\"coeffn(EXPRN:polynomial,VAR:kernel,N:integer)\"It returns the nth coefficient of VAR in the polynomial EXPRN."
+},
+
+{
+    "location": "man/08-display.html#.5.3-PART-Operator-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.5.3 PART Operator",
+    "category": "section",
+    "text": "Syntax:R\"part(EXPRN:algebraic[,INTEXP:integer])\"This operator works on the form of the expression as printed or as it would have been printed at that point in the calculation bearing in mind all the relevant switch settings at that point. The reader therefore needs some familiarity with the way that expressions are represented in prefix form in REDUCE to use these operators effectively. Furthermore, it is assumed that pri is on at that point in the calculation. The reason for this is that with pri off, an expression is printed by walking the tree representing the expression internally. To save space, it is never actually transformed into the equivalent prefix expression as occurs when pri is on. However, the operations on polynomials described elsewhere can be equally well used in this case to obtain the relevant parts.The evaluation proceeds recursively down the integer expression list. In other words,part(⟨expression⟩,⟨integer1⟩,⟨integer2⟩)\n→part(part(⟨expression⟩,⟨integer1⟩),⟨integer2⟩)and so on, andPART(⟨expression⟩)→⟨expression⟩intexp can be any expression that evaluates to an integer. If the integer is positive, then that term of the expression is found. If the integer is 0, the operator is returned. Finally, if the integer is negative, the counting is from the tail of the expression rather than the head.For example, if the expression a+b is printed as a+b (i.e., the ordering of the variables is alphabetical), then        part(a+b,2)  ->   b  \n        part(a+b,-1) ->   b  and        part(a+b,0)  ->  plusAn operator arglength is available to determine the number of arguments of the top level operator in an expression. If the expression does not contain a top level operator, then -1 is returned. For example,        arglength(a+b+c) ->  3  \n        arglength(f())   ->  0  \n        arglength(a)     ->  -1"
+},
+
+{
+    "location": "man/08-display.html#.5.4-Substituting-for-Parts-of-Expressions-1",
+    "page": "8 Display and Structuring of Expressions",
+    "title": "8.5.4 Substituting for Parts of Expressions",
+    "category": "section",
+    "text": "part may also be used to substitute for a given part of an expression. In this case, the part construct appears on the left-hand side of an assignment statement, and the expression to replace the given part on the right-hand side.For example, with the normal settings of the REDUCE switches:        xx := a+b;  \n        part(xx,2) := c;   ->  A+C  \n        part(c+d,0) := -;   -> C-DNote that xx in the above is not changed by this substitution. In addition, unlike expressions such as array and matrix elements that have an instant evaluation property, the values of part(xx,2) and part(c+d,0) are also not changed."
+},
+
+{
+    "location": "man/09-polynomials.html#",
+    "page": "9 Polynomials and Rationals",
+    "title": "9 Polynomials and Rationals",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/09-polynomials.html#Polynomials-and-Rationals-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9 Polynomials and Rationals",
+    "category": "section",
+    "text": "Many operations in computer algebra are concerned with polynomials and rational functions. In this section, we review some of the switches and operators available for this purpose. These are in addition to those that work on general expressions (such as df and int) described elsewhere. In the case of operators, the arguments are first simplified before the operations are applied. In addition, they operate only on arguments of prescribed types, and produce a type mismatch error if given arguments which cannot be interpreted in the required mode with the current switch settings. For example, if an argument is required to be a kernel and a/2 is used (with no other rules for a), an error        A/2 invalid as kernelwill result.With the exception of those that select various parts of a polynomial or rational function, these operations have potentially significant effects on the space and time associated with a given calculation. The user should therefore experiment with their use in a given calculation in order to determine the optimum set for a given problem.One such operation provided by the system is an operator length which returns the number of top level terms in the numerator of its argument. For example,julia> Algebra.length(:((a+b+c)^3/(c+d)))has the value 10. To get the number of terms in the denominator, one would first select the denominator by the operator den and then call length, as injulia> Algebra.length(Algebra.den(:((a+b+c)^3/(c+d))))Other operations currently supported, the relevant switches and operators, and the required argument and value modes of the latter, follow.Pages = [\"09-polynomials.md\"]"
+},
+
+{
+    "location": "man/09-polynomials.html#.1-Controlling-the-Expansion-of-Expressions-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.1 Controlling the Expansion of Expressions",
+    "category": "section",
+    "text": "The switch exp controls the expansion of expressions. If it is off, no expansion of powers or products of expressions occurs. Users should note however that in this case results come out in a normal but not necessarily canonical form. This means that zero expressions simplify to zero, but that two equivalent expressions need not necessarily simplify to the same form.Example: With exp on, the two expressions(a+b)*(a+2*b)anda^2+3*a*b+2*b^2will both simplify to the latter form. With exp off, they would remain unchanged, unless the complete factoring (allfac) option were in force. exp is normally on.Note that in Reduce.jl exp is turned off by default on initializationSeveral operators that expect a polynomial as an argument behave differently when exp is off, since there is often only one term at the top level. For example, with exp offjulia> Algebra.length(:((a+b+c)^3/(c+d)))returns the value 1."
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.factorize",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.factorize",
+    "category": "function",
+    "text": "factorize(r...)\n\nIt is also possible to factorize a given expression explicitly. The operator factorize that invokes this facility is used with the syntax\n\nR\"factorize(EXPRN:polynomial[,INTEXP:prime integer])\"\n\nthe optional argument of which will be described later. Thus to find and display all factors of the cyclotomic polynomial x^105 - 1, one could write:\n\njulia> Algebra.factorize(:(x^105-1))\n\nThe result is a list of factor,exponent pairs. In the above example, there is no overall numerical factor in the result, so the results will consist only of polynomials in x. The number of such polynomials can be found by using the operator length. If there is a numerical factor, as in factorizing 12x^2 - 12, that factor will appear as the first member of the result. It will however not be factored further. Prime factors of such numbers can be found, using a probabilistic algorithm, by turning on the switch ifactor. For example,\n\njulia> Algebra.on(:ifactor); Algebra.factorize(:(12x^2-12))\n\nwould result in the output\n\n((2, 2), (3, 1), (:(x ^ 2 + 1), 1), (:(x + 1), 1), (:(x - 1), 1))\n\nIf the first argument of factorize is an integer, it will be decomposed into its prime components, whether or not ifactor is on.\n\nNote that the ifactor switch only affects the result of factorize. It has no effect if the factor switch is also on.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.2-Factorization-of-Polynomials-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.2 Factorization of Polynomials",
+    "category": "section",
+    "text": "REDUCE is capable of factorizing univariate and multivariate polynomials that have integer coefficients, finding all factors that also have integer coefficients. The package for doing this was written by Dr. Arthur C. Norman and Ms. P. Mary Ann Moore at The University of Cambridge. It is described in P. M. A. Moore and A. C. Norman, “Implementing a Polynomial Factorization and GCD Package”, Proc. SYMSAC ’81, ACM (New York) (1981), 109-116.The easiest way to use this facility is to turn on the switch factor, which causes all expressions to be output in a factored form. For example, with factor on, the expression a^2-b^2 is returned as (a+b)*(a-b).Reduce.Algebra.factorizeThe order in which the factors occur in the result (with the exception of a possible overall numerical coefficient which comes first) can be system dependent and should not be relied on. Similarly it should be noted that any pair of individual factors can be negated without altering their product, and that REDUCE may sometimes do that.The factorizer works by first reducing multivariate problems to univariate ones and then solving the univariate ones modulo small primes. It normally selects both evaluation points and primes using a random number generator that should lead to different detailed behavior each time any particular problem is tackled. If, for some reason, it is known that a certain (probably univariate) factorization can be performed effectively with a known prime, p say, this value of p can be handed to factorize as a second argument. An error will occur if a non-prime is provided to factorize in this manner. It is also an error to specify a prime that divides the discriminant of the polynomial being factored, but users should note that this condition is not checked by the program, so this capability should be used with care.Factorization can be performed over a number of polynomial coefficient domains in addition to integers. The particular description of the relevant domain should be consulted to see if factorization is supported. For example, the following statements will factorize x^4 + 1 modulo 7:        setmod 7;  \n        on modular;  \n        factorize(x^4+1);The factorization module is provided with a trace facility that may be useful as a way of monitoring progress on large problems, and of satisfying curiosity about the internal workings of the package. The most simple use of this is enabled by issuing the REDUCE command on(:trfac). Following this, all calls to the factorizer will generate informative messages reporting on such things as the reduction of multivariate to univariate cases, the choice of a prime and the reconstruction of full factors from their images. Further levels of detail in the trace are intended mainly for system tuners and for the investigation of suspected bugs. For example, trallfac gives tracing information at all levels of detail. The switch that can be set by on(:timings) makes it possible for one who is familiar with the algorithms used to determine what part of the factorization code is consuming the most resources. on(:overview) reduces the amount of detail presented in other forms of trace. Other forms of trace output are enabled by directives of the form        symbolic set!-trace!-factor(<number>,<filename>);where useful numbers are 1, 2, 3 and 100, 101, ... . This facility is intended to make it possible to discover in fairly great detail what just some small part of the code has been doing — the numbers refer mainly to depths of recursion when the factorizer calls itself, and to the split between its work forming and factorizing images and reconstructing full factors from these. If nil is used in place of a filename the trace output requested is directed to the standard output stream. After use of this trace facility the generated trace files should be closed by calling        symbolic close!-trace!-files();NOTE: Using the factorizer with mcd off will result in an error."
+},
+
+{
+    "location": "man/09-polynomials.html#.3-Cancellation-of-Common-Factors-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.3 Cancellation of Common Factors",
+    "category": "section",
+    "text": "Facilities are available in REDUCE for cancelling common factors in the numerators and denominators of expressions, at the option of the user. The system will perform this greatest common divisor computation if the switch gcd is on. (gcd is normally off.)A check is automatically made, however, for common variable and numerical products in the numerators and denominators of expressions, and the appropriate cancellations made.When gcd is on, and exp is off, a check is made for square free factors in an expression. This includes separating out and independently checking the content of a given polynomial where appropriate. (For an explanation of these terms, see Anthony C. Hearn, “Non-Modular Computation of Polynomial GCDs Using Trial Division”, Proc. EUROSAM 79, published as Lecture Notes on Comp. Science, Springer-Verlag, Berlin, No 72 (1979) 227-239.)Example: With exp off and gcd on, the polynomial a*c+a*d+b*c+b*d would be returned as (a+b)*(c+d).Under normal circumstances, GCDs are computed using an algorithm described in the above paper. It is also possible in REDUCE to compute GCDs using an alternative algorithm, called the EZGCD Algorithm, which uses modular arithmetic. The switch ezgcd, if on in addition to gcd, makes this happen.In non-trivial cases, the EZGCD algorithm is almost always better than the basic algorithm, often by orders of magnitude. We therefore strongly advise users to use the ezgcd switch where they have the resources available for supporting the package.For a description of the EZGCD algorithm, see J. Moses and D.Y.Y. Yun, “The EZ GCD Algorithm”, Proc. ACM 1973, ACM, New York (1973) 159-166.NOTE: This package shares code with the factorizer, so a certain amount of trace information can be produced using the factorizer trace switches.An implementation of the heuristic GCD algorithm, first introduced by B.W. Char, K.O. Geddes and G.H. Gonnet, as described in J.H. Davenport and J. Padget, “HEUGCD: How Elementary Upperbounds Generate Cheaper Data”, Proc. of EUROCAL ’85, Vol 2, 18-28, published as Lecture Notes on Comp. Science, No. 204, Springer-Verlag, Berlin, 1985, is also available on an experimental basis. To use this algorithm, the switch heugcd should be on in addition to gcd. Note that if both ezgcd and heugcd are on, the former takes precedence."
+},
+
+{
+    "location": "man/09-polynomials.html#.3.1-Determining-the-GCD-of-Two-Polynomials-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.3.1 Determining the GCD of Two Polynomials",
+    "category": "section",
+    "text": "This operator, used with the syntaxR\"gcd(EXPRN1:polynomial,EXPRN2:polynomial)\"returns the greatest common divisor of the two polynomials EXPRN1 and EXPRN2. Examples:        gcd(x^2+2*x+1,x^2+3*x+2) ->  x+1  \n        gcd(2*x^2-2*y^2,4*x+4*y) ->  2*x+2*y  \n        gcd(x^2+y^2,x-y)         ->  1."
+},
+
+{
+    "location": "man/09-polynomials.html#.4-Working-with-Least-Common-Multiples-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.4 Working with Least Common Multiples",
+    "category": "section",
+    "text": "Greatest common divisor calculations can often become expensive if extensive work with large rational expressions is required. However, in many cases, the only significant cancellations arise from the fact that there are often common factors in the various denominators which are combined when two rationals are added. Since these denominators tend to be smaller and more regular in structure than the numerators, considerable savings in both time and space can occur if a full GCD check is made when the denominators are combined and only a partial check when numerators are constructed. In other words, the true least common multiple of the denominators is computed at each step. The switch lcm is available for this purpose, and is normally on.In addition, the operator lcm, used with the syntaxR\"lcm(EXPRN1:polynomial,EXPRN2:polynomial)\"returns the least common multiple of the two polynomials EXPRN1 and EXPRN2.Examples:        lcm(x^2+2*x+1,x^2+3*x+2) ->  X**3 + 4*X**2 + 5*X + 2  \n        lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(X**2 - Y**2)9.4 "
+},
+
+{
+    "location": "man/09-polynomials.html#.5-Controlling-Use-of-Common-Denominators-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.5 Controlling Use of Common Denominators",
+    "category": "section",
+    "text": "When two rational functions are added, REDUCE normally produces an expression over a common denominator. However, if the user does not want denominators combined, he or she can turn off the switch mcd which controls this process. The latter switch is particularly useful if no greatest common divisor calculations are desired, or excessive differentiation of rational functions is required.CAUTION: With mcd off, results are not guaranteed to come out in either normal or canonical form. In other words, an expression equivalent to zero may in fact not be simplified to zero. This option is therefore most useful for avoiding expression swell during intermediate parts of a calculation.mcd is normally on."
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.remainder",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.remainder",
+    "category": "function",
+    "text": "remainder(a,b)\n\nThis operator is used with the syntax\n\nR\"REMAINDER(EXPRN1:polynomial,EXPRN2:polynomial)\"\n\nIt returns the remainder when EXPRN1 is divided by EXPRN2. This is the true remainder based on the internal ordering of the variables, and not the pseudo-remainder. The pseudo-remainder and in general pseudo-division of polynomials can be calculated after loading the polydiv package. Please refer to the documentation of this package for details.\n\nExamples:\n\n        remainder((x+y)*(x+2*y),x+3*y) ->  2*y**2  \n        remainder(2*x+y,2)             ->  Y\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.6-REMAINDER-Operator-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.6 REMAINDER Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.remainderCAUTION: In the default case, remainders are calculated over the integers. If you need the remainder with respect to another domain, it must be declared explicitly.Example:        remainder(x^2-2,x+sqrt(2)); -> x^2 - 2  \n        load_package arnum;  \n        defpoly sqrt2**2-2;  \n        remainder(x^2-2,x+sqrt2); -> 0"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.resultant",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.resultant",
+    "category": "function",
+    "text": "resultant(a,b,var)\n\nThis is used with the syntax\n\nR\"resultant(EXPRN1:polynomial,EXPRN2:polynomial,VAR:kernel)\"\n\nIt computes the resultant of the two given polynomials with respect to the given variable, the coefficients of the polynomials can be taken from any domain. The result can be identified as the determinant of a Sylvester matrix, but can often also be thought of informally as the result obtained when the given variable is eliminated between the two input polynomials. If the two input polynomials have a non-trivial GCD their resultant vanishes.\n\nThe switch bezout controls the computation of the resultants. It is off by default. In this case a subresultant algorithm is used. If the switch Bezout is turned on, the resultant is computed via the Bezout Matrix. However, in the latter case, only polynomial coefficients are permitted.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.7-RESULTANT-Operator-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.7 RESULTANT Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.resultantThe sign conventions used by the resultant function follow those in R. Loos, “Computing in Algebraic Extensions” in “Computer Algebra — Symbolic and Algebraic Computation”, Second Ed., Edited by B. Buchberger, G.E. Collins and R. Loos, Springer-Verlag, 1983. Namely, with a and b not dependent on x:                               deg(p)*deg(q)  \n   resultant(p(x),q(x),x)= (-1)             *resultant(q,p,x)  \n \n                            deg(p)  \n   resultant(a,p(x),x)   = a  \n \n   resultant(a,b,x)      = 1Examples:                                     2  \n   resultant(x/r*u+y,u*y,u)   ->  - ycalculation in an algebraic extension:   load arnum;  \n   defpoly sqrt2**2 - 2;  \n \n   resultant(x + sqrt2,sqrt2 * x +1,x) -> -1or in a modular domain:   setmod 17;  \n   on modular;  \n \n   resultant(2x+1,3x+4,x)    -> 5"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.decompose",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.decompose",
+    "category": "function",
+    "text": "decompose(p)\n\nThe decompose operator takes a multivariate polynomial as argument, and returns an expression and a list of equations from which the original polynomial can be found by composition. Its syntax is:\n\nR\"decompose(EXPRN:polynomial)\"\n\nFor example:\n\n     decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-  \n                    218900*x^3+65690*x^2-7700*x+234)  \n                   2                  2            2  \n              -> {U  + 35*U + 234, U=V  + 10*V, V=X  - 22*X}  \n                                     2  \n     decompose(u^2+v^2+2u*v+1)  -> {W  + 1, W=U + V}\n\nUsers should note however that, unlike factorization, this decomposition is not unique.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.8-DECOMPOSE-Operator-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.8 DECOMPOSE Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.decompose"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.interpol",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.interpol",
+    "category": "function",
+    "text": "interpol(val,var,mp)\n\nSyntax:\n\nR\"interpol(⟨values⟩,⟨variable⟩,metapoints)\"\n\nwhere ⟨values⟩ and ⟨points⟩ are lists of equal length and <variable> is an algebraic expression (preferably a kernel).\n\ninterpol generates an interpolation polynomial f in the given variable of degree length(⟨values⟩)-1. The unique polynomial f is defined by the property that for corresponding elements v of ⟨values⟩ and p of ⟨points⟩ the relation f(p) = v holds.\n\nThe Aitken-Neville interpolation algorithm is used which guarantees a stable result even with rounded numbers and an ill-conditioned problem.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.9-INTERPOL-operator-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.9 INTERPOL operator",
+    "category": "section",
+    "text": "Reduce.Algebra.interpol"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.deg",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.deg",
+    "category": "function",
+    "text": "deg(p,var)\n\nThis operator is used with the syntax\n\nR\"deg(EXPRN:polynomial,VAR:kernel)\"\n\nIt returns the leading degree of the polynomial EXPRN in the variable VAR. If VAR does not occur as a variable in EXPRN, 0 is returned.\n\nExamples:\n\n        deg((a+b)*(c+2*d)^2,a) ->  1  \n        deg((a+b)*(c+2*d)^2,d) ->  2  \n        deg((a+b)*(c+2*d)^2,e) ->  0\n\nNote also that if ratarg is on,\n\n        deg((a+b)^3/a,a)       ->  3\n\nsince in this case, the denominator a is considered part of the coefficients of the numerator in a. With ratarg off, however, an error would result in this case.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.den",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.den",
+    "category": "function",
+    "text": "den(r)\n\nThis is used with the syntax:\n\nR\"den(EXPRN:rational)\"\n\nIt returns the denominator of the rational expression EXPRN. If EXPRN is a polynomial, 1 is returned.\n\nExamples:\n\n        den(x/y^2)   ->  Y**2  \n        den(100/6)   ->  3  \n                [since 100/6 is first simplified to 50/3]  \n        den(a/4+b/6) ->  12  \n        den(a+b)     ->  1\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.lcof",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.lcof",
+    "category": "function",
+    "text": "lcof(expr,var)\n\nlcof is used with the syntax\n\nR\"lcof(EXPRN:polynomial,VAR:kernel)\"\n\nIt returns the leading coefficient of the polynomial EXPRN in the variable VAR. If VAR does not occur as a variable in EXPRN, EXPRN is returned.\n\nExamples:\n\n        lcof((a+b)*(c+2*d)^2,a) ->  c**2+4*c*d+4*d**2  \n        lcof((a+b)*(c+2*d)^2,d) ->  4*(a+b)  \n        lcof((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.lpower",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.lpower",
+    "category": "function",
+    "text": "lpower(exprn,var)\n\nSyntax:\n\nR\"lpower(EXPRN:polynomial,VAR:kernel)\"\n\nlpower returns the leading power of EXPRN with respect to VAR. If EXPRN does not depend on VAR, 1 is returned. Examples:\n\n        lpower((a+b)*(c+2*d)^2,a) ->  a  \n        lpower((a+b)*(c+2*d)^2,d) ->  d**2  \n        lpower((a+b)*(c+2*d),e)   ->  1\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.lterm",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.lterm",
+    "category": "function",
+    "text": "lterm(exprn,var)\n\nSyntax:\n\nR\"lterm(EXPRN:polynomial,VAR:kernel)\"\n\nlterm returns the leading term of EXPRN with respect to VAR. If EXPRN does not depend on VAR, EXPRN is returned.\n\nExamples:\n\n        lterm((a+b)*(c+2*d)^2,a) ->  a*(c**2+4*c*d+4*d**2)  \n        lterm((a+b)*(c+2*d)^2,d) ->  4*d**2*(a+b)  \n        lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.mainvar",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.mainvar",
+    "category": "function",
+    "text": "mainvar(exprn)\n\nSyntax:\n\nR\"mainvar(EXPRN:polynomial)\"\n\nReturns the main variable (based on the internal polynomial representation) of EXPRN. If EXPRN is a domain element, 0 is returned.\n\nExamples: Assuming a has higher kernel order than b, c, or d:\n\n        mainvar((a+b)*(c+2*d)^2) ->  a\n        mainvar(2)               ->  0\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.num",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.num",
+    "category": "function",
+    "text": "num(exprn)\n\nSyntax:\n\nR\"num(EXPRN:rational)\"\n\nReturns the numerator of the rational expression EXPRN. If EXPRN is a polynomial, that polynomial is returned.\n\nExamples:\n\n        num(x/y^2)  ->  x  \n        num(100/6)   ->  50  \n        num(a/4+b/6) ->  3*a+2*b  \n        num(a+b)     ->  a+b\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.reduct",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.reduct",
+    "category": "function",
+    "text": "reduct(exprn,var)\n\nSyntax:\n\nR\"reduct(EXPRN:polynomial,VAR:kernel)\"\n\nReturns the reductum of EXPRN with respect to VAR (i.e., the part of EXPRN left after the leading term is removed). If EXPRN does not depend on the variable VAR, 0 is returned.\n\nExamples:\n\n     reduct((a+b)*(c+2*d),a) ->  b*(c + 2*d)  \n     reduct((a+b)*(c+2*d),d) ->  c*(a + b)  \n     reduct((a+b)*(c+2*d),e) ->  0\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.totaldeg",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.totaldeg",
+    "category": "function",
+    "text": "totaldeg(expr,var)\n\nSyntax:\n\n     totaldeg(a*x^2+b*x+c, x)  => 2  \n     totaldeg(a*x^2+b*x+c, {a,b,c})  => 1  \n     totaldeg(a*x^2+b*x+c, {x, a})  => 3  \n     totaldeg(a*x^2+b*x+c, {x,b})  => 2  \n     totaldeg(a*x^2+b*x+c, {p,q,r})  => 0\n\ntotaldeg(u, kernlist) finds the total degree of the polynomial u in the variables in kernlist. If kernlist is not a list it is treated as a simple single variable. The denominator of u is ignored, and \"degree\" here does not pay attention to fractional powers. Mentions of a kernel within the argument to any operator or function (eg sin, cos, log, sqrt) are ignored. Really u is expected to be just a polynomial.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.10-Obtaining-Parts-of-Polynomials-and-Rationals-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.10 Obtaining Parts of Polynomials and Rationals",
+    "category": "section",
+    "text": "These operators select various parts of a polynomial or rational function structure. Except for the cost of rearrangement of the structure, these operations take very little time to perform.For those operators in this section that take a kernel VAR as their second argument, an error results if the first expression is not a polynomial in VAR, although the coefficients themselves can be rational as long as they do not depend on VAR. However, if the switch ratarg is on, denominators are not checked for dependence on VAR, and are taken to be part of the coefficients.Reduce.Algebra.deg\nReduce.Algebra.den\nReduce.Algebra.lcof\nReduce.Algebra.lpower\nReduce.Algebra.ltermCompatibility Note:  In some earlier versions of REDUCE, lterm returned 0 if the EXPRN did not depend on VAR. In the present version, EXPRN is always equal to lterm(EXPRN,VAR) + reduct(EXPRN,VAR).Reduce.Algebra.mainvar\nReduce.Algebra.num\nReduce.Algebra.reductCompatibility Note:  In some earlier versions of REDUCE, reduct returned EXPRN if it did not depend on VAR. In the present version, EXPRN is always equal to lterm(EXPRN,VAR) + reduct(EXPRN,VAR).Reduce.Algebra.totaldeg"
+},
+
+{
+    "location": "man/09-polynomials.html#.11-Polynomial-Coefficient-Arithmetic-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.11 Polynomial Coefficient Arithmetic",
+    "category": "section",
+    "text": "REDUCE allows for a variety of numerical domains for the numerical coefficients of polynomials used in calculations. The default mode is integer arithmetic, although the possibility of using real coefficients has been discussed elsewhere. Rational coefficients have also been available by using integer coefficients in both the numerator and denominator of an expression, using the on(:div) option to print the coefficients as rationals. However, REDUCE includes several other coefficient options in its basic version which we shall describe in this section. All such coefficient modes are supported in a table-driven manner so that it is straightforward to extend the range of possibilities. A description of how to do this is given in R.J. Bradford, A.C. Hearn, J.A. Padget and E. Schrüfer, “Enlarging the REDUCE Domain of Computation,” Proc. of SYMSAC ’86, ACM, New York (1986), 100–106."
+},
+
+{
+    "location": "man/09-polynomials.html#.11.1-Rational-Coefficients-in-Polynomials-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.11.1 Rational Coefficients in Polynomials",
+    "category": "section",
+    "text": "Instead of treating rational numbers as the numerator and denominator of a rational expression, it is also possible to use them as polynomial coefficients directly. This is accomplished by turning on the switch rational.Example: With rational off, the input expression a/2 would be converted into a rational expression, whose numerator was a and denominator 2. With rational on, the same input would become a rational expression with numerator 1/2*a and denominator 1. Thus the latter can be used in operations that require polynomial input whereas the former could not."
+},
+
+{
+    "location": "man/09-polynomials.html#.11.2-Real-Coefficients-in-Polynomials-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.11.2 Real Coefficients in Polynomials",
+    "category": "section",
+    "text": "The switch rounded permits the use of arbitrary sized real coefficients in polynomial expressions. The actual precision of these coefficients can be set by the operator precision. For example, precision(50) sets the precision to fifty decimal digits. The default precision is system dependent and can be found by precision(0). In this mode, denominators are automatically made monic, and an appropriate adjustment is made to the numerator.Example: With rounded on, the input expression a/2 would be converted into a rational expression whose numerator is 0.5*a and denominator 1.Internally, REDUCE uses floating point numbers up to the precision supported by the underlying machine hardware, and so-called bigfloats for higher precision or whenever necessary to represent numbers whose value cannot be represented in floating point. The internal precision is two decimal digits greater than the external precision to guard against roundoff inaccuracies. Bigfloats represent the fraction and exponent parts of a floating-point number by means of (arbitrary precision) integers, which is a more precise representation in many cases than the machine floating point arithmetic, but not as efficient. If a case arises where use of the machine arithmetic leads to problems, a user can force REDUCE to use the bigfloat representation at all precisions by turning on the switch roundbf. In rare cases, this switch is turned on by the system, and the user informed by the message        ROUNDBF turned on to increase accuracyRounded numbers are normally printed to the specified precision. However, if the user wishes to print such numbers with less precision, the printing precision can be set by the command print_precision. For example, print_precision(5) will cause such numbers to be printed with five digits maximum.Under normal circumstances when rounded is on, REDUCE converts the number 1.0 to the integer 1. If this is not desired, the switch noconvert can be turned on.Numbers that are stored internally as bigfloats are normally printed with a space between every five digits to improve readability. If this feature is not required, it can be suppressed by turning off the switch bfspace.Further information on the bigfloat arithmetic may be found in T. Sasaki, “Manual for Arbitrary Precision Real Arithmetic System in REDUCE”, Department of Computer Science, University of Utah, Technical Note No. TR-8 (1979).When a real number is input, it is normally truncated to the precision in effect at the time the number is read. If it is desired to keep the full precision of all numbers input, the switch adjprec (for adjust precision) can be turned on. While on, adjprec will automatically increase the precision, when necessary, to match that of any integer or real input, and a message printed to inform the user of the precision increase.When rounded is on, rational numbers are normally converted to rounded representation. However, if a user wishes to keep such numbers in a rational form until used in an operation that returns a real number, the switch roundall can be turned off. This switch is normally on.Results from rounded calculations are returned in rounded form with two exceptions: if the result is recognized as 0 or 1 to the current precision, the integer result is returned."
+},
+
+{
+    "location": "man/09-polynomials.html#Reduce.Algebra.setmod",
+    "page": "9 Polynomials and Rationals",
+    "title": "Reduce.Algebra.setmod",
+    "category": "function",
+    "text": "setmod(::Integer)\n\nREDUCE includes facilities for manipulating polynomials whose coefficients are computed modulo a given base. To use this option, two commands must be used; R\"setmod ⟨integer⟩\", to set the prime modulus, and on(:modular) to cause the actual modular calculations to occur. For example, with R\"setmod 3\" and R\"on modular\", the polynomial (a+2*b)^3 would become a^3+2*n^3.\n\nThe argument of setmod is evaluated algebraically, except that non-modular (integer) arithmetic is used. Thus the sequence\n\nR\"setmod 3; on modular; setmod 7\"\n\nwill correctly set the modulus to 7.\n\n\n\n"
+},
+
+{
+    "location": "man/09-polynomials.html#.11.3-Modular-Number-Coefficients-in-Polynomials-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.11.3 Modular Number Coefficients in Polynomials",
+    "category": "section",
+    "text": "Reduce.Algebra.setmodModular numbers are by default represented by integers in the interval 0p-1 where p is the current modulus. Sometimes it is more convenient to use an equivalent symmetric representation in the interval -p2+1p2, or more precisely -floor((p-1)2) ceiling((p-1)2), especially if the modular numbers map objects that include negative quantities. The switch balanced_mod allows you to select the symmetric representation for output.Users should note that the modular calculations are on the polynomial coefficients only. It is not currently possible to reduce the exponents since no check for a prime modulus is made (which would allow x^p-1 to be reduced to 1 mod p). Note also that any division by a number not co-prime with the modulus will result in the error “Invalid modular division”."
+},
+
+{
+    "location": "man/09-polynomials.html#.11.4-Complex-Number-Coefficients-in-Polynomials-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.11.4 Complex Number Coefficients in Polynomials",
+    "category": "section",
+    "text": "Although REDUCE routinely treats the square of the variable i as equivalent to -1, this is not sufficient to reduce expressions involving i to lowest terms, or to factor such expressions over the complex numbers. For example, in the default case,julia> Algebra.factorize(:(a^2+1))gives the result(:(a ^ 2 + 1), 1)and        (a^2+b^2)/(a+i*b)is not reduced further. However, if the switch complex is turned on, full complex arithmetic is then carried out. In other words, the above factorization will give the result(:(a + im, 1), (a - im, 1))and the quotient will be reduced to a-I*b.The switch complex may be combined with rounded to give complex real numbers; the appropriate arithmetic is performed in this case.Complex conjugation is used to remove complex numbers from denominators of expressions. To do this if complex is off, you must turn the switch rationalize on."
+},
+
+{
+    "location": "man/09-polynomials.html#.12-ROOT_VAL-Operator-1",
+    "page": "9 Polynomials and Rationals",
+    "title": "9.12 ROOT_VAL Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.root_val"
+},
+
+{
+    "location": "man/10-properties.html#",
+    "page": "10 Assigning and Testing Algebraic Properties",
+    "title": "10 Assigning and Testing Algebraic Properties",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/10-properties.html#Assigning-and-Testing-Algebraic-Properties-1",
+    "page": "10 Assigning and Testing Algebraic Properties",
+    "title": "10 Assigning and Testing Algebraic Properties",
+    "category": "section",
+    "text": "Sometimes algebraic expressions can be further simplified if there is additional information about the value ranges of its components. The following section describes how to inform REDUCE of such assumptions.Pages = [\"10-properties.md\"]"
+},
+
+{
+    "location": "man/10-properties.html#Reduce.Algebra.realvalued",
+    "page": "10 Assigning and Testing Algebraic Properties",
+    "title": "Reduce.Algebra.realvalued",
+    "category": "function",
+    "text": "realvalued(r...)\n\nThe declaration realvalued may be used to restrict variables to the real numbers. The syntax is:\n\n	Algebra.realvalued(v1,...vn)\n\nFor such variables the operator impart gives the result zero. Thus, with\n\njulia> Algebra.realvalued(:x,:y)\n\nthe expression impart(x+sin(y)) is evaluated as zero. You may also declare an operator as real valued with the meaning, that this operator maps real arguments always to real values. Example:\n\njulia> Algebra.operator(:h); Algebra.realvalued(:h,:x)\n\njulia> Algebra.impart(:(h(x)))\n0  \n \njulia> Algebra.impart(:(h(w)))\n:(impart(h(w)))\n\nSuch declarations are not needed for the standard elementary functions.\n\n\n\n"
+},
+
+{
+    "location": "man/10-properties.html#Reduce.Algebra.notrealvalued",
+    "page": "10 Assigning and Testing Algebraic Properties",
+    "title": "Reduce.Algebra.notrealvalued",
+    "category": "function",
+    "text": "notrealvalued(r...)\n\nTo remove the realvalued propery from a variable or an operator use the declaration notrealvalued with the syntax:\n\njulia> Algebra.notrealvalued(v1,...vn)\n\n\n\n"
+},
+
+{
+    "location": "man/10-properties.html#.1-REALVALUED-Declaration-and-Check-1",
+    "page": "10 Assigning and Testing Algebraic Properties",
+    "title": "10.1 REALVALUED Declaration and Check",
+    "category": "section",
+    "text": "Reduce.Algebra.realvalued\nReduce.Algebra.notrealvaluedThe boolean operator realvaluedp allows you to check if a variable, an operator, or an operator expression is known as real valued. Thus,julia> Algebra.realvalued(:x)\n\njulia> R\"write if realvaluedp(sin x) then ~yes~ else ~no~\"\n\njulia> R\"write if realvaluedp(sin z) then ~yes~ else ~no~\"would print first yes and then no. For general expressions test the impart for checking the value range:julia> Alebra.realvalued(:x,:y); R\"w:=(x+i*y); w1:=conj w\" |> rcall\n\njulia> Algebra.impart(:(w*w1))\n0  \n\njulia> Algebra.impart(:(w*w))\n:(2x*y)"
+},
+
+{
+    "location": "man/10-properties.html#.2-Declaring-Expressions-Positive-or-Negative-1",
+    "page": "10 Assigning and Testing Algebraic Properties",
+    "title": "10.2 Declaring Expressions Positive or Negative",
+    "category": "section",
+    "text": "Detailed knowlege about the sign of expressions allows REDUCE to simplify expressions involving exponentials or abs. You can express assumptions about the positivity or negativity of expressions by rules for the operator sign. Examples:julia> Algebra.abs(:(a*b*c))\n:(abs(a*b*c))\n\njulia> Algebra.rlet((:(sign(a))=>1,:(sign(b))=>1)); :(abs(a*b*c) |> rcall\n:(abs(c) * a * b)\n \njulia> Algebra.on(:precise); Algebra.sqrt(:(x^2-2x+1))\n:(abs(x - 1))\n\nreduce> ws where sign(x-1)=>1;\n\nx - 1Here factors with known sign are factored out of an abs expression.julia> Algebra.on(:precise); Algebra.on(:factor)\n \nreduce> (q*x-2q)^w;  \n\n           w\n((x - 2)*q) \n\nreduce> ws where sign(x-2)=>1;\n\n w        w  \nq *(x - 2)  In this case the factor (x - 2)^w may be extracted from the base of the exponential because it is known to be positive.Note that REDUCE knows a lot about sign propagation. For example, with x and y also x + y, x + y +  and (x + e)y^2 are known as positive. Nevertheless, it is often necessary to declare additionally the sign of a combined expression. E.g. at present a positivity declaration of x- 2 does not automatically lead to sign evaluation for x- 1 or for x."
+},
+
+{
+    "location": "man/11-substitution.html#",
+    "page": "11 Substitution Commands",
+    "title": "11 Substitution Commands",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/11-substitution.html#Substitution-Commands-1",
+    "page": "11 Substitution Commands",
+    "title": "11 Substitution Commands",
+    "category": "section",
+    "text": "An important class of commands in REDUCE define substitutions for variables and expressions to be made during the evaluation of expressions. Such substitutions use the prefix operator SUB, various forms of the command let, and rule sets."
+},
+
+{
+    "location": "man/11-substitution.html#Reduce.Algebra.sub",
+    "page": "11 Substitution Commands",
+    "title": "Reduce.Algebra.sub",
+    "category": "function",
+    "text": "sub(::Union{Dict,Pair},expr)\n\nMake variable substitutions using Reduce\'s native sub command. Syntax:\n\nR\"(⟨substitution_list⟩,⟨EXPRN1:algebraic⟩)\"\n\nwhere ⟨substitution_list⟩ is a list of one or more equations of the form\n\n⟨VAR:kernel⟩ = ⟨EXPRN:algebraic⟩\n\nor a kernel that evaluates to such a list.\n\nThe sub operator gives the algebraic result of replacing every occurrence of the variable var in the expression EXPRN1 by the expression EXPRN. Specifically, EXPRN1 is first evaluated using all available rules. Next the substitutions are made, and finally the substituted expression is reevaluated. When more than one variable occurs in the substitution list, the substitution is performed by recursively walking down the tree representing EXPRN1, and replacing every VAR found by the appropriate EXPRN. The EXPRN are not themselves searched for any occurrences of the various VARs. The trivial case sub(EXPRN1)returns the algebraic value ofEXPRN1`.\n\nExamples:\n\n                                    2              2\n     sub({x=a+y,y=y+1},x^2+y^2) -> A  + 2*A*Y + 2*Y  + 2*Y + 1\n\nand with R\"s := {x=a+y,y=y+1}\",\n\n                                    2              2\n     sub(s,x^2+y^2)             -> A  + 2*A*Y + 2*Y  + 2*Y + 1\n\nNote that the global assignments R\"x:=a+y\", etc., do not take place.\n\nEXPRN1 can be any valid algebraic expression whose type is such that a substitution process is defined for it (e.g., scalar expressions, lists and matrices). An error will occur if an expression of an invalid type for substitution occurs either in EXPRN or EXPRN1.\n\n\n\nsub(T::DataType,expr::Expr)\n\nMake a substitution to convert numerical values to type T\n\n\n\n"
+},
+
+{
+    "location": "man/11-substitution.html#.1-SUB-Operator-1",
+    "page": "11 Substitution Commands",
+    "title": "11.1 SUB Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.subThe braces around the substitution list may also be omitted, as in:                                    2              2  \n     sub(x=a+y,y=y+1,x^2+y^2)   -> A  + 2*A*Y + 2*Y  + 2*Y + 1"
+},
+
+{
+    "location": "man/11-substitution.html#Reduce.Algebra.rlet",
+    "page": "11 Substitution Commands",
+    "title": "Reduce.Algebra.rlet",
+    "category": "function",
+    "text": "rlet(::Union{Dict,Pair},expr)\n\nThe simplest use of the let statement is in the form\n\nR\"let ⟨substitution list⟩\"\n\nwhere ⟨substitution list⟩ is a list of rules separated by commas, each of the form:\n\n⟨variable⟩ = ⟨expression⟩\n\nor\n\n⟨prefix operator⟩(⟨argument⟩,…,⟨argument⟩) = ⟨expression⟩\n\nor\n\n⟨argument⟩⟨infix operator⟩,…,⟨argument⟩ = ⟨expression⟩\n\nFor example,\n\n        let {x => y^2,\n             h(u,v) => u - v,\n             cos(pi/3) => 1/2,\n             a*b => c,\n             l+m => n,\n             w^3 => 2*z - 3,\n             z^10 => 0}\n\nThe list brackets can be left out if preferred. The above rules could also have been entered as seven separate let statements.\n\nAfter such let rules have been input, x will always be evaluated as the square of y, and so on. This is so even if at the time the let rule was input, the variable y had a value other than y. (In contrast, the assignment R\"x:=y^2\" will set x equal to the square of the current value of y, which could be quite different.)\n\nThe rule let a*b=c means that whenever a and b are both factors in an expression their product will be replaced by c. For example, a^5*b^7*w would be replaced by c^5*b^2*w.\n\nThe rule for l+m will not only replace all occurrences of l+m by n, but will also normally replace l by n-m, but not m by n-l. A more complete description of this case is given in Section 11.2.5.\n\nThe rule pertaining to w^3 will apply to any power of w greater than or equal to the third.\n\nNote especially the last example, let z^10=0. This declaration means, in effect: ignore the tenth or any higher power of z. Such declarations, when appropriate, often speed up a computation to a considerable degree. (See Section 11.4 for more details.)\n\nAny new operators occurring in such let rules will be automatically declared operator by the system, if the rules are being read from a file. If they are being entered interactively, the system will ask Declare… Operator?. Answer Y or N and hit <Return>.\n\nIn each of these examples, substitutions are only made for the explicit expressions given; i.e., none of the variables may be considered arbitrary in any sense. For example, the command\n\njulia> Algebra.rlet( :(h(u,v)) => :(u - v) )\n\nwill cause h(u,v) to evaluate to u - v, but will not affect h(u,z) or h with any arguments other than precisely the symbols u,v.\n\nThese simple let rules are on the same logical level as assignments made with the := operator. An assignment R\"x := p+q\" cancels a rule rlet( :x => :(y^2) ) made earlier, and vice versa.\n\n\n\n"
+},
+
+{
+    "location": "man/11-substitution.html#.2-LET-Rules-1",
+    "page": "11 Substitution Commands",
+    "title": "11.2 LET Rules",
+    "category": "section",
+    "text": "Unlike substitutions introduced via sub, let rules are global in scope and stay in effect until replaced or cleared.Reduce.Algebra.rletCAUTION: A recursive rule such asjulia> Algebra.rlet( :x => :(x + 1) )is erroneous, since any subsequent evaluation of x would lead to a non-terminating chain of substitutions:      x -> x + 1 -> (x + 1) + 1 -> ((x + 1) + 1) + 1 -> ...Similarly, coupled substitutions such asjulia> Algebra.rlet([:l => :(m + n), :n => :(l + r)])would lead to the same error. As a result, if you try to evaluate an x, l or n defined as above, you will get an error such as        X improperly defined in terms of itselfArray and matrix elements can appear on the left-hand side of a let statement. However, because of their instant evaluation property, it is the value of the element that is substituted for, rather than the element itself. E.g.,        array a(5);  \n        a(2) := b;  \n        let a(2) = c;results in b being substituted by c; the assignment for a(2) does not change.Finally, if an error occurs in any equation in a let statement (including generalized statements involving for all and such that), the remaining rules are not evaluated."
+},
+
+{
+    "location": "man/11-substitution.html#.2.1-FOR-ALL-…-LET-1",
+    "page": "11 Substitution Commands",
+    "title": "11.2.1 FOR ALL … LET",
+    "category": "section",
+    "text": "If a substitution for all possible values of a given argument of an operator is required, the declaration FOR ALL may be used. The syntax of such a command isR\"for all ⟨variable⟩,…,⟨variable⟩ ⟨LET statement⟩⟨terminator⟩\"e.g.,R\"for all x,y let h(x,y) = x-y\"\nR\"for all x let k(x,y) = x^y\"The first of these declarations would cause h(a,b) to be evaluated as a-b, h(u+v,u+w) to be v-w, etc. If the operator symbol h is used with more or fewer argument places, not two, the let would have no effect, and no error would result.The second declaration would cause k(a,y) to be evaluated as a^y, but would have no effect on k(a,z) since the rule didn’t say for all y….Where we used x and y in the examples, any variables could have been used. This use of a variable doesn’t affect the value it may have outside the let statement. However, you should remember what variables you actually used. If you want to delete the rule subsequently, you must use the same variables in the clear command.It is possible to use more complicated expressions as a template for a let statement, as explained in the section on substitutions for general expressions. In nearly all cases, the rule will be accepted, and a consistent application made by the system. However, if there is a sole constant or a sole free variable on the left-hand side of a rule (e.g., R\"let 2=3 or for all x let x=2\"), then the system is unable to handle the rule, and the error message        Substitution for ... not allowedwill be issued. Any variable listed in the for all part will have its symbol preceded by an equal sign: x in the above example will appear as =x. An error will also occur if a variable in the for all part is not properly matched on both sides of the let equation."
+},
+
+{
+    "location": "man/11-substitution.html#.2.2-FOR-ALL-…-SUCH-THAT-…-LET-1",
+    "page": "11 Substitution Commands",
+    "title": "11.2.2 FOR ALL … SUCH THAT … LET",
+    "category": "section",
+    "text": "If a substitution is desired for more than a single value of a variable in an operator or other expression, but not all values, a conditional form of the for all … let declaration can be used.Example:R\"for all x such that numberp x and x<0 let h(x)=0\"will cause h(-5) to be evaluated as 0, but h of a positive integer, or of an argument that is not an integer at all, would not be affected. Any boolean expression can follow the such that keywords."
+},
+
+{
+    "location": "man/11-substitution.html#Reduce.Algebra.clear",
+    "page": "11 Substitution Commands",
+    "title": "Reduce.Algebra.clear",
+    "category": "function",
+    "text": "clear(r...)\n\nThe user may remove all assignments and substitution rules from any expression by the command clear, in the form\n\nR\"clear ⟨expression⟩,…,⟨expression⟩ = ⟨terminator⟩\"\ne.g.\n\nJulia julia> Algebra.clear(:x,:(h(x,y)))\n\nBecause of their *instant evaluation* property, array and matrix elements cannot be cleared with `clear`. For example, if `a` is an array, you must say\n\nJulia R\"a(3) := 0\"\n\nrather than\n\nJulia R\"clear a(3)\" ``to “clear” elementa(3)`.\n\nOn the other hand, a whole array (or matrix) a can be cleared by the command clear(:a). This means much more than resetting to 0 all the elements of a. The fact that a is an array, and what its dimensions are, are forgotten, so a can be redefined as another type of object, for example an operator.\n\nIf you need to clear a variable whose name must be computed, see the unset statement.\n\n\n\n"
+},
+
+{
+    "location": "man/11-substitution.html#.2.3-Removing-Assignments-and-Substitution-Rules-1",
+    "page": "11 Substitution Commands",
+    "title": "11.2.3 Removing Assignments and Substitution Rules",
+    "category": "section",
+    "text": "Reduce.Algebra.clearThe more general types of let declarations can also be deleted by using clear. Simply repeat the let rule to be deleted, using clear in place of let, and omitting the equal sign and right-hand part. The same dummy variables must be used in the for all part, and the boolean expression in the such  that part must be written the same way. (The placing of blanks doesn’t have to be identical.)Example: The let ruleR\"for all x such that numberp x and x<0 let h(x)=0\"can be erased by the commandR\"for all x such that numberp x and x<0 clear h(x)\""
+},
+
+{
+    "location": "man/11-substitution.html#.2.4-Overlapping-LET-Rules-1",
+    "page": "11 Substitution Commands",
+    "title": "11.2.4 Overlapping LET Rules",
+    "category": "section",
+    "text": "clear is not the only way to delete a let rule. A new let rule identical to the first, but with a different expression after the equal sign, replaces the first. Replacements are also made in other cases where the existing rule would be in conflict with the new rule. For example, a rule for x^4 would replace a rule for x^5. The user should however be cautioned against having several let rules in effect that relate to the same expression. No guarantee can be given as to which rules will be applied by REDUCE or in what order. It is best to clear an old rule before entering a new related let rule."
+},
+
+{
+    "location": "man/11-substitution.html#.2.5-Substitutions-for-General-Expressions-1",
+    "page": "11 Substitution Commands",
+    "title": "11.2.5 Substitutions for General Expressions",
+    "category": "section",
+    "text": "The examples of substitutions discussed in other sections have involved very simple rules. However, the substitution mechanism used in REDUCE is very general, and can handle arbitrarily complicated rules without difficulty.The general substitution mechanism used in REDUCE is discussed in Hearn, A. C., “REDUCE, A User-Oriented Interactive System for Algebraic Simplification,” Interactive Systems for Experimental Applied Mathematics, (edited by M. Klerer and J. Reinfelds), Academic Press, New York (1968), 79-90, and Hearn. A. C., “The Problem of Substitution,” Proc. 1968 Summer Institute on Symbolic Mathematical Computation, IBM Programming Laboratory Report FSC 69-0312 (1969). For the reasons given in these references, REDUCE does not attempt to implement a general pattern matching algorithm. However, the present system uses far more sophisticated techniques than those discussed in the above papers. It is now possible for the rules appearing in arguments of let to have the form⟨substitution expression⟩ = ⟨expression⟩where any rule to which a sensible meaning can be assigned is permitted. However, this meaning can vary according to the form of ⟨substitution expression⟩. The semantic rules associated with the application of the substitution are completely consistent, but somewhat complicated by the pragmatic need to perform such substitutions as efficiently as possible. The following rules explain how the majority of the cases are handled.To begin with, the ⟨substitution expression⟩ is first partly simplified by collecting like terms and putting identifiers (and kernels) in the system order. However, no substitutions are performed on any part of the expression with the exception of expressions with the instant evaluation property, such as array and matrix elements, whose actual values are used. It should also be noted that the system order used is not changeable by the user, even with the korder command. Specific cases are then handled as follows:If the resulting simplified rule has a left-hand side that is an identifier, an expression with a top-level algebraic operator or a power, then the rule is added without further change to the appropriate table.\nIf the operator * appears at the top level of the simplified left-hand side, then any constant arguments in that expression are moved to the right-hand side of the rule. The remaining left-hand side is then added to the appropriate table. For example,julia> Algebra.rlet(:(2*x*y) => 3)becomesjulia> Algebra.rlet(:(x*y) => 3/2)so that x*y is added to the product substitution table, and when this rule is applied, the expression x*y becomes 3/2, but x or y by themselves are not replaced.If the operators +, - or / appear at the top level of the simplified left-hand side, all but the first term is moved to the right-hand side of the rule. Thus the rulesjulia> Algebra.rlet(:(l+m)=>:n, :(x/2)=>:y, :(a-b)=>:c)becomejulia> Algebra.rlet(:l=>:(n-m), :x=>:(2*y), :a=:(c+b))One problem that can occur in this case is that if a quantified expression is moved to the right-hand side, a given free variable might no longer appear on the left-hand side, resulting in an error because of the unmatched free variable. E.g.,R\"for all x,y let f(x)+f(y)=x*y\"would becomeR\"for all x,y let f(x)=x*y-f(y)\"which no longer has y on both sides.The fact that array and matrix elements are evaluated in the left-hand side of rules can lead to confusion at times. Consider for example the statementsR\"array a(5); let x+a(2)=3; let a(3)=4\"The left-hand side of the first rule will become x, and the second 0. Thus the first rule will be instantiated as a substitution for x, and the second will result in an error.The order in which a list of rules is applied is not easily understandable without a detailed knowledge of the system simplification protocol. It is also possible for this order to change from release to release, as improved substitution techniques are implemented. Users should therefore assume that the order of application of rules is arbitrary, and program accordingly.After a substitution has been made, the expression being evaluated is reexamined in case a new allowed substitution has been generated. This process is continued until no more substitutions can be made.As mentioned elsewhere, when a substitution expression appears in a product, the substitution is made if that expression divides the product. For example, the rulejulia> Algebra.rlet(:(a^2*c) => :(3*z))would cause a^2*c*x to be replaced by 3*z*x and a^2*c^2 by 3*z*c. If the substitution is desired only when the substitution expression appears in a product with the explicit powers supplied in the rule, the command match should be used instead.For example,R\"match a^2*c = 3*z\"would cause a^2*c*x to be replaced by 3*z*x, but a^2*c^2 would not be replaced. match can also be used with the for all constructions described above.To remove substitution rules of the type discussed in this section, the clear command can be used, combined, if necessary, with the same for all clause with which the rule was defined, for example:R\"for all x clear log(e^x),e^log(x),cos(w*t+theta(x))\"Note, however, that the arbitrary variable names in this case must be the same as those used in defining the substitution."
+},
+
+{
+    "location": "man/11-substitution.html#Reduce.Algebra.clearrules",
+    "page": "11 Substitution Commands",
+    "title": "Reduce.Algebra.clearrules",
+    "category": "function",
+    "text": "clearrules(r)\n\nclearrules has the syntax\n\nR\"clearrules <rule list>|<name of rule list>(,...)\"\n\n\n\n"
+},
+
+{
+    "location": "man/11-substitution.html#.3-Rule-Lists-1",
+    "page": "11 Substitution Commands",
+    "title": "11.3 Rule Lists",
+    "category": "section",
+    "text": "Rule lists offer an alternative approach to defining substitutions that is different from either sub or let. In fact, they provide the best features of both, since they have all the capabilities of let, but the rules can also be applied locally as is possible with sub. In time, they will be used more and more in REDUCE. However, since they are relatively new, much of the REDUCE code you see uses the older constructs.A rule list is a list of rules that have the syntax     <expression> => <expression> (WHEN <boolean expression>)For example,        {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,  \n         cos(~n*pi)      => (-1)^n when remainder(n,2)=0}The tilde preceding a variable marks that variable as free for that rule, much as a variable in a for all clause in a let statement. The first occurrence of that variable in each relevant rule must be so marked on input, otherwise inconsistent results can occur. For example, the rule list        {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,  \n         cos(x)^2        => (1+cos(2x))/2}designed to replace products of cosines, would not be correct, since the second rule would only apply to the explicit argument x. Later occurrences in the same rule may also be marked, but this is optional (internally, all such rules are stored with each relevant variable explicitly marked). The optional when clause allows constraints to be placed on the application of the rule, much as the such that clause in a let statement.A rule list may be named, for example        trig1 := {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2,  \n                  cos(~x)*sin(~y) => (sin(x+y)-sin(x-y))/2,  \n                  sin(~x)*sin(~y) => (cos(x-y)-cos(x+y))/2,  \n                  cos(~x)^2       => (1+cos(2*x))/2,  \n                  sin(~x)^2       => (1-cos(2*x))/2};Such named rule lists may be inspected as needed. E.g., the command R trig1\" would cause the above list to be printed.Rule lists may be used in two ways. They can be globally instantiated by means of the command let. For example,julia> Algebra.rlet(:trig1)would cause the above list of rules to be globally active from then on until cancelled by the command clearrules, as injulia> Algebra.clearrules(:trig1)Reduce.Algebra.clearrulesThe second way to use rule lists is to invoke them locally by means of a where clause. For example        cos(a)*cos(b+c)  \n           where {cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2};orR\"cos(a)*sin(b) where trigrules\"The syntax of an expression with a where clause is:        <expression>  \n            WHERE <rule>|<rule list>(,<rule>|<rule list> ...)so the first example above could also be written        cos(a)*cos(b+c)  \n           where cos(~x)*cos(~y) => (cos(x+y)+cos(x-y))/2;The effect of this construct is that the rule list(s) in the where clause only apply to the expression on the left of where. They have no effect outside the expression. In particular, they do not affect previously defined where clauses or let statements. For example, the sequence     let a=2;  \n     a where a=>4;  \n     a;would result in the output     4  \n \n     2Although where has a precedence less than any other infix operator, it still binds higher than keywords such as else, then, do, repeat and so on. Thus the expressionR\"if a=2 then 3 else a+2 where a=3\"will parse asR\"if a=2 then 3 else (a+2 where a=3)\"where may be used to introduce auxiliary variables in symbolic mode expressions, as described in Section 17.4. However, the symbolic mode use has different semantics, so expressions do not carry from one mode to the other.Compatibility Note: In order to provide compatibility with older versions of rule lists released through the Network Library, it is currently possible to use an equal sign interchangeably with the replacement sign => in rules and let statements. However, since this will change in future versions, the replacement sign is preferable in rules and the equal sign in non-rule-based let statements."
+},
+
+{
+    "location": "man/11-substitution.html#Advanced-Use-of-Rule-Lists-1",
+    "page": "11 Substitution Commands",
+    "title": "Advanced Use of Rule Lists",
+    "category": "section",
+    "text": "Some advanced features of the rule list mechanism make it possible to write more complicated rules than those discussed so far, and in many cases to write more compact rule lists. These features are:Free operators\nDouble slash operator\nDouble tilde variables.A free operator in the left hand side of a pattern will match any operator with the same number of arguments. The free operator is written in the same style as a variable. For example, the implementation of the product rule of differentiation can be written as:operator diff, !~f, !~g;  \n \nprule := {diff(~f(~x) * ~g(~x),x) =>  \n             diff(f(x),x) * g(x) + diff(g(x),x) * f(x)};  \n \nlet prule;  \n \ndiff(sin(z)*cos(z),z);  \n \n         cos(z)*diff(sin(z),z) + diff(cos(z),z)*sin(z)The double slash operator may be used as an alternative to a single slash (quotient) in order to match quotients properly. E.g., in the example of the Gamma function above, one can use:gammarule :=  \n   {gamma(~z)//(~c*gamma(~zz))  => gamma(z)/(c*gamma(zz-1)*zz)  \n                  when fixp(zz -z) and (zz -z) >0,  \n    gamma(~z)//gamma(~zz) => gamma(z)/(gamma(zz-1)*zz)  \n                  when fixp(zz -z) and (zz -z) >0};  \n \nlet gammarule;  \n \ngamma(z)/gamma(z+3);  \n \n          1  \n----------------------  \n  3      2  \n z  + 6*z  + 11*z + 6The above example suffers from the fact that two rules had to be written in order to perform the required operation. This can be simplified by the use of double tilde variables. E.g. the rule list GGrule :=  {  \n    gamma(~z)//(~~c*gamma(~zz))  => gamma(z)/(c*gamma(zz-1)*zz)  \n     when fixp(zz -z) and (zz -z) >0};will implement the same operation in a much more compact way. In general, double tilde variables are bound to the neutral element with respect to the operation in which they are used.Pattern given	Argument used	Binding\n~z + ~~y	x	z=x; y=0\n~z + ~~y	x+3	z=x; y=3 or z=3; y=x\n~z * ~~y	x	z=x; y=1\n~z * ~~y	x*3	z=x; y=3 or z=3; y=x\n~z / ~~y	x	z=x; y=1\n~z / ~~y	x/3	z=x; y=3Remarks: A double tilde variable as the numerator of a pattern is not allowed. Also, using double tilde variables may lead to recursion errors when the zero case is not handled properly.let f(~~a * ~x,x)  => a * f(x,x) when freeof (a,x);  \n \nf(z,z);  \n \n***** f(z,z) improperly defined in terms of itself  \n \n% BUT:  \n \nlet ff(~~a * ~x,x)  \n       => a * ff(x,x) when freeof (a,x) and a neq 1;  \n \nff(z,z);  \n                 ff(z,z)  \n \nff(3*z,z);  \n                 3*ff(z,z)"
+},
+
+{
+    "location": "man/11-substitution.html#Reduce.Algebra.showrules",
+    "page": "11 Substitution Commands",
+    "title": "Reduce.Algebra.showrules",
+    "category": "function",
+    "text": "showrules(r)\n\nThe operator showrules takes a single identifier as argument, and returns in rule-list form the operator rules associated with that argument. For example:\n\nreduce> showrules log;  \n \n{log(e) => 1,  \n \n log(1) => 0,  \n \n      ~x  \n log(e  ) => ~x,  \n \n                    1  \n df(log(~x),~x) => ----}  \n                    ~x\n\nSuch rules can then be manipulated further as with any list. For example R\"rhs first ws\" has the value 1. Note that an operator may have other properties that cannot be displayed in such a form, such as the fact it is an odd function, or has a definition defined as a procedure.\n\n\n\n"
+},
+
+{
+    "location": "man/11-substitution.html#Displaying-Rules-Associated-with-an-Operator-1",
+    "page": "11 Substitution Commands",
+    "title": "Displaying Rules Associated with an Operator",
+    "category": "section",
+    "text": "Reduce.Algebra.showrules"
+},
+
+{
+    "location": "man/11-substitution.html#Order-of-Application-of-Rules-1",
+    "page": "11 Substitution Commands",
+    "title": "Order of Application of Rules",
+    "category": "section",
+    "text": "If rules have overlapping domains, their order of application is important. In general, it is very difficult to specify this order precisely, so that it is best to assume that the order is arbitrary. However, if only one operator is involved, the order of application of the rules for this operator can be determined from the following:Rules containing at least one free variable apply before all rules without free variables.\nRules activated in the most recent let command are applied first.\nlet with several entries generate the same order of application as a corresponding sequence of commands with one rule or rule set each.\nWithin a rule set, the rules containing at least one free variable are applied in their given order. In other words, the first member of the list is applied first.\nConsistent with the first item, any rule in a rule list that contains no free variables is applied after all rules containing free variables.Example: The following rule set enables the computation of exact values of the Gamma function:        operator gamma,gamma_error;  \n        gamma_rules :=  \n        {gamma(~x)=>sqrt(pi)/2 when x=1/2,  \n         gamma(~n)=>factorial(n-1) when fixp n and n>0,  \n         gamma(~n)=>gamma_error(n) when fixp n,  \n         gamma(~x)=>(x-1)*gamma(x-1) when fixp(2*x) and x>1,  \n         gamma(~x)=>gamma(x+1)/x when fixp(2*x)};Here, rule by rule, cases of known or definitely uncomputable values are sorted out; e.g. the rule leading to the error expression will be applied for negative integers only, since the positive integers are caught by the preceding rule, and the last rule will apply for negative odd multiples of 1∕2 only. Alternatively the first rule could have been written as        gamma(1/2) => sqrt(pi)/2but then the case x = 12 should be excluded in the when part of the last rule explicitly because a rule without free variables cannot take precedence over the other rules."
+},
+
+{
+    "location": "man/11-substitution.html#.4-Asymptotic-Commands-1",
+    "page": "11 Substitution Commands",
+    "title": "11.4 Asymptotic Commands",
+    "category": "section",
+    "text": "In expansions of polynomials involving variables that are known to be small, it is often desirable to throw away all powers of these variables beyond a certain point to avoid unnecessary computation. The command let may be used to do this. For example, if only powers of x up to x^7 are needed, the commandjulia> Algebra.rlet(:(x^8) => 0)will cause the system to delete all powers of x higher than 7.CAUTION: This particular simplification works differently from most substitution mechanisms in REDUCE in that it is applied during polynomial manipulation rather than to the whole evaluated expression. Thus, with the above rule in effect, x^10/x^5 would give the result zero, since the numerator would simplify to zero. Similarly x^20/x^10 would give a Zero divisor error message, since both numerator and denominator would first simplify to zero.The method just described is not adequate when expressions involve several variables having different degrees of smallness. In this case, it is necessary to supply an asymptotic weight to each variable and count up the total weight of each product in an expanded expression before deciding whether to keep the term or not. There are two associated commands in the system to permit this type of asymptotic constraint. The command WEIGHT takes a list of equations of the form⟨kernel form⟩ = ⟨number⟩where ⟨number⟩ must be a positive integer (not just evaluate to a positive integer). This command assigns the weight ⟨number⟩ to the relevant kernel form. A check is then made in all algebraic evaluations to see if the total weight of the term is greater than the weight level assigned to the calculation. If it is, the term is deleted. To compute the total weight of a product, the individual weights of each kernel form are multiplied by their corresponding powers and then added.The weight level of the system is initially set to 1. The user may change this setting by the commandR\"wtlevel <number>\"which sets ⟨number⟩ as the new weight level of the system. meta must evaluate to a positive integer. wtlevel will also allow nil as an argument, in which case the current weight level is returned."
+},
+
+{
     "location": "man/20-maintaining.html#",
     "page": "20 Maintaining REDUCE",
     "title": "20 Maintaining REDUCE",
