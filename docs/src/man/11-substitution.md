@@ -2,6 +2,10 @@
 
 An important class of commands in REDUCE define substitutions for variables and expressions to be made during the evaluation of expressions. Such substitutions use the prefix operator SUB, various forms of the command `let`, and rule sets.
 
+```@contents
+Pages = ["11-substitution.md"]
+```
+
 ## 11.1 SUB Operator
 
 ```@docs

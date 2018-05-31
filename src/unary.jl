@@ -102,6 +102,7 @@ const snan = [
     :rlet,
     :clearrules,
     :scientific_notation,
+    :optimize,
 ]
 
 const snum = [

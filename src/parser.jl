@@ -35,7 +35,7 @@ const parens = r"\(((?>[^\(\)]+)|(?R))*\)"
 const braces = r"{((?>[^{}]+)|(?R))*}"
 const infix1 = r"^(([\^\+\/])|([*]{1,2})|( -)|( \+)|( [*]{1,2})|( /)|( \^))"
 const infix2 = r"(([\^+\/])|([*]{1,2}))$"
-const assign = r"^([A-Za-z_][A-Za-z_0-9]*)(:=)"
+const assign = r"^([A-Za-z_ ][A-Za-z_0-9 ]*)(:=)"
 
 @inline function argrfun(mode::Symbol,rfun::Symbol,sep,be=:be)
     if mode == :expr
@@ -155,7 +155,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
                     rp = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...))))
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
-                elseif contains(sh[en],assign)
+                elseif contains(sexpr[h],assign)
                     sp = split(sexpr[h], ":=",limit=2)
                     push!(nsr,$(if mode == :expr
                         :(Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be)))
