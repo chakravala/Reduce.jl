@@ -287,7 +287,7 @@ const s = quote; #global rs = PSL()
         ReduceCheck(banner)
         println(split(String(banner),'\n')[rcsl ? 1 : end-3])
     end
-    load_package(:rlfi,:scope)
+    load_package(:rlfi)
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
     show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")

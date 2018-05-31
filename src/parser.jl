@@ -204,7 +204,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     $(if mode == :expr; quote
                     ts = sexpr[h]
                     (h,state,mp) = loopshift(ts,'(',')',Compat.String,sexpr,h,iter,state)
-                    smp = join(mp,";\n")
+                    smp = replace(join(mp,";\n"),"**",'^')
                     qr = IOBuffer()
                     while smp ≠ ""
                         args = Array{$arty,1}(0)
@@ -296,7 +296,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                             :(print(qr, smp); smp = "")
                         end))
                     end
-                    push!(nsr,$((mode == :expr) ? :(u = "("*String(take!(qr))*")" |> Meta.parse |> linefilter) : :qr))
+                    push!(nsr,$((mode == :expr) ? :("("*String(take!(qr))*")" |> Meta.parse |> linefilter) : :qr))
                     end; else; :(nothing); end)
                 elseif contains(sh[en],"end")
                     nothing
