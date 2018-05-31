@@ -1461,7 +1461,7 @@ var documenterSearchIndex = {"docs": [
     "page": "8 Display and Structuring of Expressions",
     "title": "8 Display and Structuring of Expressions",
     "category": "section",
-    "text": "In this section, we consider a variety of commands and operators that permit the user to obtain various parts of algebraic expressions and also display their structure in a variety of forms. Also presented are some additional concepts in the REDUCE design that help the user gain a better understanding of the structure of the system."
+    "text": "In this section, we consider a variety of commands and operators that permit the user to obtain various parts of algebraic expressions and also display their structure in a variety of forms. Also presented are some additional concepts in the REDUCE design that help the user gain a better understanding of the structure of the system.Pages = [\"08-display.md\"]"
 },
 
 {
@@ -2069,7 +2069,7 @@ var documenterSearchIndex = {"docs": [
     "page": "11 Substitution Commands",
     "title": "11 Substitution Commands",
     "category": "section",
-    "text": "An important class of commands in REDUCE define substitutions for variables and expressions to be made during the evaluation of expressions. Such substitutions use the prefix operator SUB, various forms of the command let, and rule sets."
+    "text": "An important class of commands in REDUCE define substitutions for variables and expressions to be made during the evaluation of expressions. Such substitutions use the prefix operator SUB, various forms of the command let, and rule sets.Pages = [\"11-substitution.md\"]"
 },
 
 {
