@@ -31,9 +31,9 @@ makedocs(
             "man/14-matrix.md",
             "man/15-procedures.md",
             "man/16-packages.md",
-            #="man/17-symbolic.md",
+            "man/17-symbolic.md",
             "man/18-physics.md",
-            "man/19-rlisp.md",=#
+            "man/19-rlisp.md",
             "man/20-maintaining.md",
             "man/A-reserved.md",
             "man/B-bibliography.md",

@@ -74,10 +74,22 @@ The operator `length` applied to a matrix returns a list of the number of rows a
 
 ```@docs
 Reduce.Algebra.det
-Reduce.Algebra.mateign
+```
+
+```@docs
+Reduce.Algebra.mateigen
+```
+
+```@docs
 Reduce.Algebra.tp
 Reduce.Algebra.trace
+```
+
+```@docs
 Reduce.Algebra.cofactor
+```
+
+```@docs
 Reduce.Algebra.nullspace
 Reduce.Algebra.rank
 ```
