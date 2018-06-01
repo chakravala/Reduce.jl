@@ -841,11 +841,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/06-commands-declarations.html#Reduce.Algebra.define",
+    "page": "6 Commands and Declarations",
+    "title": "Reduce.Algebra.define",
+    "category": "function",
+    "text": "define(r...)\n\nThe command define allows a user to supply a new name for any identifier or replace it by any well-formed expression. Its argument is a list of expressions of the form\n\n⟨identifier⟩ = 	⟨number⟩∣⟨identifier⟩∣⟨operator⟩∣\n			⟨reserved word⟩∣⟨expression⟩\n\nExample:\n\nAlgebra.define(:(x==y+z))\n\n\n\n"
+},
+
+{
     "location": "man/06-commands-declarations.html#.6-DEFINE-Command-1",
     "page": "6 Commands and Declarations",
     "title": "6.6 DEFINE Command",
     "category": "section",
-    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+    "text": "Reduce.Algebra.defineExample:        define be==,x=y+z;means that be will be interpreted as an equal sign, and x as the expression y+z from then on. This renaming is done at parse time, and therefore takes precedence over any other replacement declared for the same identifier. It stays in effect until the end of the REDUCE run.The identifiers ALGEBRAIC and SYMBOLIC have properties which prevent define from being used on them. To define ALG to be a synonym for ALGEBRAIC, use the more complicated construction        put(’alg,’newnam,’algebraic);"
 },
 
 {
@@ -1057,11 +1065,35 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.changevar",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.changevar",
+    "category": "function",
+    "text": "changevar(depvars,newvars,eqlist,diffeq)\n\nThe operator changevar does a variable transformation in a set of differential equations. Syntax:\n\nchangevar(⟨depvars⟩,⟨newvars⟩,⟨eqlist⟩,⟨diffeq⟩)\n\n⟨diffeq⟩ is either a single differential equation or a list of differential equations, ⟨depvars⟩ are the dependent variables to be substituted, ⟨newvars⟩ are the new depend variables, and ⟨eqlist⟩ is a list of equations of the form ⟨depvar⟩=⟨expression⟩ where ⟨expression⟩ is some function in the new dependent variables.\n\nThe three lists ⟨depvars⟩, ⟨newvars⟩, and ⟨eqlist⟩ must be of the same length. If there is only one variable to be substituted, then it can be given instead of the list. The same applies to the list of differential equations, i.e., the following two commands are equivalent\n\nAlgebra.operator(:u)\nAlgebra.changevar(:u,:y,:(x==e^y),:(df(u(x),x) - log(x)))\nAlgebra.changevar((:u,),(:y,),(:(x=e^y),),(:(df(u(x),x) - log(x)),))\n\nexcept for one difference: the first command returns the transformed differential equation, the second one a list with a single element.\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#.6-CHANGEVAR-Operator-1",
     "page": "7 Built-in Prefix Operators",
     "title": "7.6 CHANGEVAR Operator",
     "category": "section",
-    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+    "text": "Author: G. Üçoluk.Reduce.Algebra.changevarThe switch dispjacobian governs the display the entries of the inverse Jacobian, it is off per default.The mathematics behind the change of independent variable(s) in differential equations is quite straightforward. It is basically the application of the chain rule. If the dependent variable of the differential equation is F , the independent variables are x_i and the new independent variables are u_i (where i=1n) then the first derivatives are: frac-partial Fpartial x_i =  fracpartial Fpartial u_j fracpartial u_jpartial x_iWe assumed Einstein’s summation convention. Here the problem is to calculate the u_jx_i terms if the change of variables is given by x_i = f_i (u_1 u_n  )The first thought might be solving the above given equations for u_j and then differentiating them with respect to x_i, then again making use of the equations above, substituting new variables for the old ones in the calculated derivatives. This is not always a preferable way to proceed. Mainly because the functions f_i may not always be easily invertible. Another approach that makes use of the Jacobian is better. Consider the above given equations which relate the old variables to the new ones. Let us differentiate them:fracpartial x_jpartial x_i = fracpartial f_jpartial x_idelta_ij = fracpartial f_j partial u_kpartial u_k partial x_iThe first derivative is nothing but the (jk) th entry of the Jacobian matrix.So if we speak in matrix language 1 = J  D where we defined the Jacobian J_ij = fracpartial f_ipartial u_j and the matrix of the derivatives we wanted to obtain as D_ij = fracpartial u_ipartial x_j If the Jacobian has a non-vanishing determinant then it is invertible and we are able to write from the matrix equation above: D =  J^-1 so finally we have what we want fracpartial u_ipartial x_j =  J^-1 _ijThe higher derivatives are obtained by the successive application of the chain rule and using the definitions of the old variables in terms of the new ones. It can be easily verified that the only derivatives that are needed to be calculated are the first order ones which are obtained above."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.6.1-CHANGEVAR-example:-The-2-dim.-Laplace-Equation-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.6.1 CHANGEVAR example: The 2-dim. Laplace Equation",
+    "category": "section",
+    "text": "The 2-dimensional Laplace equation in cartesian coordinates is: fracpartial^2 upartial x^2 + fracpartial^2 upartial y^2 = 0 Now assume we want to obtain the polar coordinate form of Laplace equation. The change of variables is: x = rcos     y = rsin  The solution using changevar is as followsAlgebra.changevar((:u,),(:r,:θ),(:(x=r*cos(θ)),:(y=r*sin(θ))),\n            (:(df(u(x,y),x,2)+df(u(x,y),y,2)),) )Here we could omit the list parenthesis in the first and last arguments (because those lists have only one member) and the list parenthesis in the third argument (because they are optional), but you cannot leave off the list parenthesis in the second argument. So one could equivalently writeAlgebra.changevar(:u,(:r,:θ),:(x==r*cos(θ)),:(y==r*sin(θ)),  \n             :(df(u(x,y),x,2)+df(u(x,y),y,2)) )If you have tried out the above example, you will notice that the denominator contains a cos^2 + sin^2 which is actually equal to 1. This has of course nothing to do with changevar. One has to be overcome these pattern matching problems by the conventional methods REDUCE provides (a rule, for example, will fix it).Secondly you will notice that your u(x,y) operator has changed to u(r,θ) in the result. Nothing magical about this. That is just what we do with pencil and paper. u(r,θ) represents the the transformed dependent variable."
+},
+
+{
+    "location": "man/07-prefix-ops.html#.6.2-Another-CHANGEVAR-example:-An-Euler-Equation-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.6.2 Another CHANGEVAR example: An Euler Equation",
+    "category": "section",
+    "text": "Consider a differential equation which is of Euler type, for instance: x^3y  - 3x^2y + 6xy  - 6y = 0 where prime denotes differentiation with respect to x. As is well known, Euler type of equations are solved by a change of variable: x = e^u So our call to changevar reads as follows:Algebra.changevar(:y, :u, :(x==e^u), :(x^3*df(y(x),x,3)-  \n             3*x^2*df(y(x),x,2)+6*x*df(y(x),x)-6*y(x)))and returns the result:(((11 * df(y(u), u) - 6 * y(u)) - 6 * df(y(u), u, 2)) + df(y(u), u, 3))"
 },
 
 {
@@ -1161,11 +1193,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.map",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.map",
+    "category": "function",
+    "text": "map(fnc,obj)\n\nThe map operator applies a uniform evaluation pattern to all members of a composite structure: a matrix, a list, or the arguments of an operator expression. The evaluation pattern can be a unary procedure, an operator, or an algebraic expression with one free variable.\n\nIt is used with the syntax:\n\n   map(FNC:function,OBJ:object)\n\nHere OBJ is a list, a matrix or an operator expression. FNC can be one of the following:\n\nthe name of an operator with a single argument: the operator is evaluated once with each element of OBJ as its single argument;\nan algebraic expression with exactly one free variable, i.e. a variable preceded by the tilde symbol. The expression is evaluated for each element of OBJ, with the element substituted for the free variable;\na replacement rule of the form var => rep where var is a variable (a kernel without a subscript) and rep is an expression that contains var. The replacement expression rep is evaluated for each element of OBJ with the element substituted for var. The variable var may be optionally preceded by a tilde.\n\nThe rule form for FNC is needed when more than one free variable occurs.\n\nExamples:\n\n        map(abs,{1,-2,a,-a})  ->  {1,2,ABS(A),ABS(A)}  \n        map(int(~w,x), mat((x^2,x^5),(x^4,x^5))) ->  \n \n                [  3     6 ]  \n                [ x     x  ]  \n                [----  ----]  \n                [ 3     6  ]  \n                [          ]  \n                [  5     6 ]  \n                [ x     x  ]  \n                [----  ----]  \n                [ 5     6  ]  \n \n        map(~w*6, x^2/3 = y^3/2 -1) -> 2*X^2=3*(Y^3-2)\n\nYou can use map in nested expressions. However, you cannot apply map to a non-composite object, e.g. an identifier or a number.\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#.11-MAP-Operator-1",
     "page": "7 Built-in Prefix Operators",
     "title": "7.11 MAP Operator",
     "category": "section",
-    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+    "text": "Reduce.Algebra.map"
 },
 
 {
@@ -1217,11 +1257,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.select",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.select",
+    "category": "function",
+    "text": "select(fnc,lst)\n\nThe select operator extracts from a list, or from the arguments of an n–ary operator, elements corresponding to a boolean predicate. It is used with the syntax:\n\nselect(⟨FNC:function⟩,⟨LST:list⟩)\n\nFNC can be one of the following forms:\n\nthe name of an operator with a single argument: the operator is evaluated once on each element of LST;\nan algebraic expression with exactly one free variable, i.e. a variable preceded by the tilde symbol. The expression is evaluated for each element of ⟨LST⟩, with the element substituted for the free variable;\na replacement rule of the form ⟨var⟩ => ⟨rep⟩ where ⟨var⟩ is a variable (a kernel without subscript) and ⟨rep⟩ is an expression that contains ⟨var⟩. ⟨rep⟩ is evaluated for each element of LST with the element substituted for ⟨var⟩. ⟨var⟩ may be optionally preceded by a tilde.\n\nThe rule form for FNC is needed when more than one free variable occurs.\n\nThe result of evaluating FNC is interpreted as a boolean value corresponding to the conventions of REDUCE. These values are composed with the leading operator of the input expression.\n\nExamples:\n\njulia> Algebra.select(:(~w>0), (1,-1,2,-3,3))\n(1, 2, 3)\n\n    select(evenp deg(~w,y),part((x+y)^5,0):=list)  \n           -> {X^5 ,10*X^3*Y^2 ,5*X*Y^4}  \n    select(evenp deg(~w,x),2x^2+3x^3+4x^4) -> 4X^4 + 2X^2\n\n\n\n"
+},
+
+{
     "location": "man/07-prefix-ops.html#.15-SELECT-Operator-1",
     "page": "7 Built-in Prefix Operators",
     "title": "7.15 SELECT Operator",
     "category": "section",
-    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+    "text": "Reduce.Algebra.select"
 },
 
 {
@@ -2333,7 +2381,7 @@ var documenterSearchIndex = {"docs": [
     "page": "14 Matrix Calculations",
     "title": "14.3 Matrix Expressions",
     "category": "section",
-    "text": "These follow the normal rules of matrix algebra as defined by the following syntax:⟨matrix expression⟩  ::=  	MAT⟨matrix description⟩∣⟨matrix variable⟩∣\n							⟨scalar expression⟩*⟨matrix expression⟩∣\n							⟨matrix expression⟩*⟨matrix expression⟩∣\n							⟨matrix expression⟩+⟨matrix expression⟩∣\n							⟨matrix expression⟩^⟨integer⟩∣\n							⟨matrix expression⟩/⟨matrix expression⟩Sums and products of matrix expressions must be of compatible size; otherwise an error will result during their evaluation. Similarly, only square matrices may be raised to a power. A negative power is computed as the inverse of the matrix raised to the corresponding positive power. a/b is interpreted as a*b^(-1).Examples:Assuming x and y have been declared as matrices, the following are matrix expressions        y  \n        y^2*x-3*y^(-2)*x  \n        y + mat((1,a),(b,c))/2The computation of the quotient of two matrices normally uses a two-step elimination method due to Bareiss. An alternative method using Cramer’s method is also available. This is usually less efficient than the Bareiss method unless the matrices are large and dense, although we have no solid statistics on this as yet. To use Cramer’s method instead, the switch cramer should be turned on."
+    "text": "These follow the normal rules of matrix algebra as defined by the following syntax:⟨matrix expression⟩  ::=  MAT⟨matrix description⟩∣⟨matrix variable⟩∣\n			⟨scalar expression⟩*⟨matrix expression⟩∣\n			⟨matrix expression⟩*⟨matrix expression⟩∣\n			⟨matrix expression⟩+⟨matrix expression⟩∣\n			⟨matrix expression⟩^⟨integer⟩∣\n			⟨matrix expression⟩/⟨matrix expression⟩Sums and products of matrix expressions must be of compatible size; otherwise an error will result during their evaluation. Similarly, only square matrices may be raised to a power. A negative power is computed as the inverse of the matrix raised to the corresponding positive power. a/b is interpreted as a*b^(-1).Examples:Assuming x and y have been declared as matrices, the following are matrix expressions        y  \n        y^2*x-3*y^(-2)*x  \n        y + mat((1,a),(b,c))/2The computation of the quotient of two matrices normally uses a two-step elimination method due to Bareiss. An alternative method using Cramer’s method is also available. This is usually less efficient than the Bareiss method unless the matrices are large and dense, although we have no solid statistics on this as yet. To use Cramer’s method instead, the switch cramer should be turned on."
 },
 
 {
@@ -2365,7 +2413,7 @@ var documenterSearchIndex = {"docs": [
     "page": "14 Matrix Calculations",
     "title": "Reduce.Algebra.nullspace",
     "category": "function",
-    "text": "nullspace(exprn)\n\nSyntax:\n\n        NULLSPACE(EXPRN:matrix_expression):list\n\nnullspace calculates for a matrix a a list of linear independent vectors (a basis) whose linear combinations satisfy the equation Ax = 0. The basis is provided in a form such that as many upper components as possible are isolated.\n\nNote that with b := nullspace a the expression length b is the nullity of a, and that second length a - length b calculates the rank of a. The rank of a matrix expression can also be found more directly by the rank operator described below.\n\nExample: The command\n\n        nullspace mat((1,2,3,4),(5,6,7,8));\n\ngives the output\n\n        {  \n         [ 1  ]  \n         [    ]  \n         [ 0  ]  \n         [    ]  \n         [ - 3]  \n         [    ]  \n         [ 2  ]  \n         ,  \n         [ 0  ]  \n         [    ]  \n         [ 1  ]  \n         [    ]  \n         [ - 2]  \n         [    ]  \n         [ 1  ]  \n         }\n\nIn addition to the REDUCE matrix form, nullspace accepts as input a matrix given as a list of lists, that is interpreted as a row matrix. If that form of input is chosen, the vectors in the result will be represented by lists as well. This additional input syntax facilitates the use of nullspace in applications different from classical linear algebra.\n\n\n\n"
+    "text": "nullspace(exprn)\n\nSyntax:\n\n        NULLSPACE(EXPRN:matrix_expression):list\n\nnullspace calculates for a matrix a a list of linear independent vectors (a basis) whose linear combinations satisfy the equation Ax = 0. The basis is provided in a form such that as many upper components as possible are isolated.\n\nNote that with b := nullspace a the expression length b is the nullity of a, and that second length a - length b calculates the rank of a. The rank of a matrix expression can also be found more directly by the rank operator described below.\n\nExample: The command\n\n        nullspace mat((1,2,3,4),(5,6,7,8));\n\ngives the output\n\n        {  \n         [ 1  ]  \n         [ 0  ]  \n         [ - 3]  \n         [ 2  ]  \n         ,  \n         [ 0  ]  \n         [ 1  ]  \n         [ - 2]  \n         [ 1  ]  \n         }\n\nIn addition to the REDUCE matrix form, nullspace accepts as input a matrix given as a list of lists, that is interpreted as a row matrix. If that form of input is chosen, the vectors in the result will be represented by lists as well. This additional input syntax facilitates the use of nullspace in applications different from classical linear algebra.\n\n\n\n"
 },
 
 {
@@ -2489,11 +2537,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/16-packages.html#Reduce.Algebra.compact",
+    "page": "16 User Contributed Packages",
+    "title": "Reduce.Algebra.compact",
+    "category": "function",
+    "text": "compact(exprn,list)\n\nCOMPACT is a package of functions for the reduction of a polynomial in the presence of side relations. compact applies the side relations to the polynomial so that an equivalent expression results with as few terms as possible. For example, the evaluation of\n\nAlgebra.compact(:(s*(1-sin(x^2))+c*(1-cos(x^2))+sin(x^2)+cos(x^2)),\n    (:(cos(x^2)+sin(x^2)=1),))\n\nyields the result\n\n:(sin(x ^ 2) * c + 1 + cos(x ^ 2) * s)\n\nThe switch trcompact can be used to trace the operation.\n\n\n\n"
+},
+
+{
     "location": "man/16-packages.html#.15-COMPACT:-Package-for-compacting-expressions-1",
     "page": "16 User Contributed Packages",
     "title": "16.15 COMPACT: Package for compacting expressions",
     "category": "section",
-    "text": "COMPACT is a package of functions for the reduction of a polynomial in the presence of side relations. compact applies the side relations to the polynomial so that an equivalent expression results with as few terms as possible. For example, the evaluation of     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,  \n             {cos x^2+sin x^2=1});yields the result              2           2  \n        SIN(X) *C + COS(X) *S + 1 .The switch trcompact can be used to trace the operation.Author: Anthony C. Hearn."
+    "text": "Reduce.Algebra.compactAuthor: Anthony C. Hearn."
 },
 
 {
@@ -2601,11 +2657,27 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/16-packages.html#Reduce.Algebra.sum",
+    "page": "16 User Contributed Packages",
+    "title": "Reduce.Algebra.sum",
+    "category": "function",
+    "text": "sum(expr,k,lolim,uplim)\n\nThis implements the Gosper algorithm for the summation of series. The operator sum returns the indefinite or definite summation of a given expression, used with the syntax:\n\nSUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) \n\nIf there is no closed form solution, these operators return the input unchanged. UPLIM and LOLIM are optional parameters specifying the lower limit and upper limit of the summation. If UPLIM is not supplied, the upper limit is taken as K (the summation variable itself).\n\nFor example:\n\nAlgebra.sum(:(n^3),:n)\nAlgebra.sum(:(a+k*r),:k,0,:(n-1))\nAlgebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))\n\n\n\n"
+},
+
+{
+    "location": "man/16-packages.html#Reduce.Algebra.prod",
+    "page": "16 User Contributed Packages",
+    "title": "Reduce.Algebra.prod",
+    "category": "function",
+    "text": "prod(expr,k,lolim,uplim)\n\nThe operator prod returns the product of the given expression, used with the syntax:\n\nPROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])\n\nIf there is no closed form solution, these operators return the input unchanged. UPLIM and LOLIM are optional parameters specifying the lower limit and upper limit of the product. If UPLIM is not supplied, the upper limit is taken as K (the product variable itself).\n\nFor example:\n\nAlgebra.prod(:(k/(k-2)),:k)\n\n\n\n"
+},
+
+{
     "location": "man/16-packages.html#.67-SUM:-A-package-for-series-summation-1",
     "page": "16 User Contributed Packages",
     "title": "16.67 SUM: A package for series summation",
     "category": "section",
-    "text": "This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and PROD returns the product of the given expression.This package loads automatically.Author: Fujio Kako.This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and the operator prod returns the product of the given expression. These are used with the syntax:SUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) \nPROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])If there is no closed form solution, these operators return the input unchanged. UPLIM and LOLIM are optional parameters specifying the lower limit and upper limit of the summation (or product), respectively. If UPLIM is not supplied, the upper limit is taken as K (the summation variable itself).For example:Algebra.sum(:(n^3),:n)\nAlgebra.sum(:(a+k*r),:k,0,:(n-1))\nAlgebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))\nAlgebra.prod(:(k/(k-2)),:k)Gosper’s algorithm succeeds whenever the ratio fracsum_k=n_0^n f(k)sum_k=n_0^n-1 f(k) is a rational function of n. The function SUM!-SQ handles basic functions such as polynomials, rational functions and exponentials.The trigonometric functions sin, cos, etc. are converted to exponentials and then Gosper’s algorithm is applied. The result is converted back into sin, cos, sinh and cosh.Summations of logarithms or products of exponentials are treated by the formula:sum_k=n_0^n log f(k) = log prod_k=n_0^n f(k)prod_k=n_0^n exp f(k) = exp sum_k=n_0^n f(k)Other functions, as shown in the test file for the case of binomials and formal products, can be summed by providing let rules which must relate the functions evaluated at k and k - 1 (k being the summation variable).There is a switch trsum (default off). If this switch is on, trace messages are printed out during the course of Gosper’s algorithm."
+    "text": "This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and PROD returns the product of the given expression.This package loads automatically.Author: Fujio Kako.Reduce.Algebra.sum\nReduce.Algebra.prodGosper’s algorithm succeeds whenever the ratio fracsum_k=n_0^n f(k)sum_k=n_0^n-1 f(k) is a rational function of n. The function SUM!-SQ handles basic functions such as polynomials, rational functions and exponentials.The trigonometric functions sin, cos, etc. are converted to exponentials and then Gosper’s algorithm is applied. The result is converted back into sin, cos, sinh and cosh.Summations of logarithms or products of exponentials are treated by the formula:sum_k=n_0^n log f(k) = log prod_k=n_0^n f(k)prod_k=n_0^n exp f(k) = exp sum_k=n_0^n f(k)Other functions, as shown in the test file for the case of binomials and formal products, can be summed by providing let rules which must relate the functions evaluated at k and k - 1 (k being the summation variable).There is a switch trsum (default off). If this switch is on, trace messages are printed out during the course of Gosper’s algorithm."
 },
 
 {
@@ -2645,7 +2717,7 @@ var documenterSearchIndex = {"docs": [
     "page": "17 Symbolic Mode",
     "title": "17.3 Quoted Expressions",
     "category": "section",
-    "text": "Because symbolic evaluation requires that each variable or expression has a value, it is necessary to add to REDUCE the concept of a quoted expression by analogy with the Lisp quote function. This is provided by the single quote mark ’. For example,’a    	represents the Lisp S-expression	(quote a)\n’(a b c)   	represents the Lisp S-expression	(quote (a b c))Note, however, that strings are constants and therefore evaluate to themselves in symbolic mode. Thus, to print the string ~A String~, one would write        prin2 ~A String~;Within a quoted expression, identifier syntax rules are those of REDUCE. Thus (A !. B) is the list consisting of the three elements A, ., and B, whereas (A . B) is the dotted pair of A and B."
+    "text": "Because symbolic evaluation requires that each variable or expression has a value, it is necessary to add to REDUCE the concept of a quoted expression by analogy with the Lisp quote function. This is provided by the single quote mark ’. For example,’a    		represents the Lisp S-expression	(quote a)\n’(a b c)   	represents the Lisp S-expression	(quote (a b c))Note, however, that strings are constants and therefore evaluate to themselves in symbolic mode. Thus, to print the string ~A String~, one would write        prin2 ~A String~;Within a quoted expression, identifier syntax rules are those of REDUCE. Thus (A !. B) is the list consisting of the three elements A, ., and B, whereas (A . B) is the dotted pair of A and B."
 },
 
 {
@@ -2741,7 +2813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "18 Calculations in High Energy Physics",
     "title": "18.1.1 . (Cons) Operator",
     "category": "section",
-    "text": "Syntax:        (EXPRN1:vector_expression)  \n                 . (EXPRN2:vector_expression):algebraic.The binary . operator, which is normally used to denote the addition of an element to the front of a list, can also be used in algebraic mode to denote the scalar product of two Lorentz four-vectors. For this to happen, the second argument must be recognizable as a vector expression at the time of evaluation. With this meaning, this operator is often referred to as the dot operator. In the present system, the index handling routines all assume that Lorentz four-vectors are used, but these routines could be rewritten to handle other cases.Components of vectors can be represented by including representations of unit vectors in the system. Thus if eo represents the unit vector (1,0,0,0), (p.eo) represents the zeroth component of the four-vector p. Our metric and notation follows Bjorken and Drell “Relativistic Quantum Mechanics” (McGraw-Hill, New York, 1965). Similarly, an arbitrary component p may be represented by (p.u). If contraction over components of vectors is required, then the declaration index must be used. Thus        index u;declares u as an index, and the simplification of        p.u * q.uwould result in        P.QThe metric tensor g^ may be represented by (u.v). If contraction over u and v is required, then they should be declared as indices.Errors occur if indices are not properly matched in expressions.If a user later wishes to remove the index property from specific vectors, he can do it with the declaration remind. Thus remind v1,…,vn; removes the index flags from the variables v1 through vn. However, these variables remain vectors in the system."
+    "text": "Syntax:        (EXPRN1:vector_expression)  \n                 . (EXPRN2:vector_expression):algebraic.The binary . operator, which is normally used to denote the addition of an element to the front of a list, can also be used in algebraic mode to denote the scalar product of two Lorentz four-vectors. For this to happen, the second argument must be recognizable as a vector expression at the time of evaluation. With this meaning, this operator is often referred to as the dot operator. In the present system, the index handling routines all assume that Lorentz four-vectors are used, but these routines could be rewritten to handle other cases.Components of vectors can be represented by including representations of unit vectors in the system. Thus if eo represents the unit vector (1,0,0,0), (p.eo) represents the zeroth component of the four-vector p. Our metric and notation follows Bjorken and Drell “Relativistic Quantum Mechanics” (McGraw-Hill, New York, 1965). Similarly, an arbitrary component p may be represented by (p.u). If contraction over components of vectors is required, then the declaration index must be used. ThusAlgebra.index(:u)declares u as an index, and the simplification of        p.u * q.uwould result in        P.QThe metric tensor g^ may be represented by (u.v). If contraction over u and v is required, then they should be declared as indices.Errors occur if indices are not properly matched in expressions.If a user later wishes to remove the index property from specific vectors, he can do it with the declaration remind. Thus Algebra.remind(v1,…,vn) removes the index flags from the variables v1 through vn. However, these variables remain vectors in the system."
 },
 
 {
@@ -2749,7 +2821,15 @@ var documenterSearchIndex = {"docs": [
     "page": "18 Calculations in High Energy Physics",
     "title": "18.1.2 G Operator for Gamma Matrices",
     "category": "section",
-    "text": "Syntax:        G(ID:identifier[,EXPRN:vector_expression])  \n                :gamma_matrix_expression.g is an n-ary operator used to denote a product of γ matrices contracted with Lorentz four-vectors. Gamma matrices are associated with fermion lines in a Feynman diagram. If more than one such line occurs, then a different set of γ matrices (operating in independent spin spaces) is required to represent each line. To facilitate this, the first argument of g is a line identification identifier (not a number) used to distinguish different lines.Thus        g(l1,p) * g(l2,q)denotes the product of γ.p associated with a fermion line identified as l1, and γ.q associated with another line identified as l2 and where p and q are Lorentz four-vectors. A product of γ matrices associated with the same line may be written in a contracted form.Thus        g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .The vector a is reserved in arguments of g to denote the special  matrix ^5. Thusg(l,a)	= γ ^ 5	associated with the line L\n 	 	 \ng(l,p,a)	= γ ⋅ p × γ ^ 5	associated with the line L.^ (associated with the line L) may be written as g(l,u), with u flagged as an index if contraction over u is required.The notation of Bjorken and Drell is assumed in all operations involving γ matrices."
+    "text": "Reduce.Algebra.gThus        g(l1,p) * g(l2,q)denotes the product of γ.p associated with a fermion line identified as l1, and γ.q associated with another line identified as l2 and where p and q are Lorentz four-vectors. A product of γ matrices associated with the same line may be written in a contracted form.Thus        g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .The vector a is reserved in arguments of g to denote the special  matrix ^5. Thusg(l,a)	= γ ^ 5	associated with the line L\n 	 	 \ng(l,p,a)	= γ ⋅ p × γ ^ 5	associated with the line L.^ (associated with the line L) may be written as g(l,u), with u flagged as an index if contraction over u is required.The notation of Bjorken and Drell is assumed in all operations involving γ matrices."
+},
+
+{
+    "location": "man/18-physics.html#Reduce.Algebra.eps",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "Reduce.Algebra.eps",
+    "category": "function",
+    "text": "eps(exprn1,...,exprn4)\n\nSyntax:\n\n         EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp):vector_exp.\n\nThe operator eps has four arguments, and is used only to denote the completely antisymmetric tensor of order 4 and its contraction with Lorentz four-vectors. Thus\n\n_ijkl = begincases +1  textif ijkltext is an even permutation of 0123  - 1   textif ijkltext is an odd permutation of 0123  0  textotherwise endcases\n\nA contraction of the form _ijp_q_ may be written as eps(i,j,p,q), with i and j flagged as indices, and so on.\n\n\n\n"
 },
 
 {
@@ -2757,7 +2837,7 @@ var documenterSearchIndex = {"docs": [
     "page": "18 Calculations in High Energy Physics",
     "title": "18.1.3 EPS Operator",
     "category": "section",
-    "text": "Syntax:         EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp):vector_exp.The operator eps has four arguments, and is used only to denote the completely antisymmetric tensor of order 4 and its contraction with Lorentz four-vectors. Thus _ijkl = begincases +1  textif ijkltext is an even permutation of 0123  - 1   textif ijkltext is an odd permutation of 0123  0  textotherwise endcases A contraction of the form _ijp_q_ may be written as eps(i,j,p,q), with i and j flagged as indices, and so on."
+    "text": "Reduce.Algebra.eps"
 },
 
 {
@@ -2765,7 +2845,7 @@ var documenterSearchIndex = {"docs": [
     "page": "18 Calculations in High Energy Physics",
     "title": "18.2 Vector Variables",
     "category": "section",
-    "text": "Apart from the line identification identifier in the g operator, all other arguments of the operators in this section are vectors. Variables used as such must be declared so by the type declaration vector, for example:        vector  p1,p2;declares p1 and p2 to be vectors. Variables declared as indices or given a mass are automatically declared vector by these declarations."
+    "text": "Apart from the line identification identifier in the g operator, all other arguments of the operators in this section are vectors. Variables used as such must be declared so by the type declaration vector, for example:Algebra.vector(:p1,:p2)declares p1 and p2 to be vectors. Variables declared as indices or given a mass are automatically declared vector by these declarations."
 },
 
 {
@@ -2797,7 +2877,7 @@ var documenterSearchIndex = {"docs": [
     "page": "18 Calculations in High Energy Physics",
     "title": "18.4 Trace Calculations",
     "category": "section",
-    "text": "When a Dirac expression is evaluated, the system computes one quarter of the trace of each γ matrix product in the expansion of the expression. One quarter of each trace is taken in order to avoid confusion between the trace of the scalar m, say, and m representing m * ⟨unit 4 by 4 matrix⟩. Contraction over indices occurring in such expressions is also performed. If an unmatched index is found in such an expression, an error occurs.The algorithms used for trace calculations are the best available at the time this system was produced. For example, in addition to the algorithm developed by Chisholm for contracting indices in products of traces, REDUCE uses the elegant algorithm of Kahane for contracting indices in γ matrix products. These algorithms are described in Chisholm, J. S. R., Il Nuovo Cimento X, 30, 426 (1963) and Kahane, J., Journal Math. Phys. 9, 1732 (1968).It is possible to prevent the trace calculation over any line identifier by the declaration nospur. For example,        nospur l1,l2;will mean that no traces are taken of γ matrix terms involving the line numbers l1 and l2. However, in some calculations involving more than one line, a catastrophic error        This NOSPUR option not implementedcan occur (for the reason stated!) If you encounter this error, please let us know!A trace of a γ matrix expression involving a line identifier which has been declared nospur may be later taken by making the declaration spur.See also the CVIT package for an alternative mechanism (chapter 16.17)."
+    "text": "When a Dirac expression is evaluated, the system computes one quarter of the trace of each γ matrix product in the expansion of the expression. One quarter of each trace is taken in order to avoid confusion between the trace of the scalar m, say, and m representing m * ⟨unit 4 by 4 matrix⟩. Contraction over indices occurring in such expressions is also performed. If an unmatched index is found in such an expression, an error occurs.The algorithms used for trace calculations are the best available at the time this system was produced. For example, in addition to the algorithm developed by Chisholm for contracting indices in products of traces, REDUCE uses the elegant algorithm of Kahane for contracting indices in γ matrix products. These algorithms are described in Chisholm, J. S. R., Il Nuovo Cimento X, 30, 426 (1963) and Kahane, J., Journal Math. Phys. 9, 1732 (1968).It is possible to prevent the trace calculation over any line identifier by the declaration nospur. For example,Algebra.nospur(:l1,:l2)will mean that no traces are taken of γ matrix terms involving the line numbers l1 and l2. However, in some calculations involving more than one line, a catastrophic error        This NOSPUR option not implementedcan occur (for the reason stated!) If you encounter this error, please let us know!A trace of a γ matrix expression involving a line identifier which has been declared nospur may be later taken by making the declaration spur.See also the CVIT package for an alternative mechanism (chapter 16.17)."
 },
 
 {
@@ -2805,7 +2885,7 @@ var documenterSearchIndex = {"docs": [
     "page": "18 Calculations in High Energy Physics",
     "title": "18.5 Mass Declarations",
     "category": "section",
-    "text": "It is often necessary to put a particle “on the mass shell” in a calculation. This can, of course, be accomplished with a let command such as        let p.p= m^2;but an alternative method is provided by two commands mass and mshell. mass takes a list of equations of the form:⟨vector variable⟩=⟨scalar variable⟩for example,        mass p1=m, q1=mu;The only effect of this command is to associate the relevant scalar variable as a mass with the corresponding vector. If we now saymshell ⟨vector variable⟩,…,⟨vector variable⟩⟨terminator⟩and a mass has been associated with these arguments, a substitution of the form⟨vector variable⟩.⟨vector variable⟩ = ⟨mass⟩^2is set up. An error results if the variable has no preassigned mass."
+    "text": "It is often necessary to put a particle “on the mass shell” in a calculation. This can, of course, be accomplished with a let command such as        let p.p= m^2;but an alternative method is provided by two commands mass and mshell. mass takes a list of equations of the form:⟨vector variable⟩=⟨scalar variable⟩for example,Algebra.mass(:(p1==m), :(q1==mu))The only effect of this command is to associate the relevant scalar variable as a mass with the corresponding vector. If we now saymshell ⟨vector variable⟩,…,⟨vector variable⟩⟨terminator⟩and a mass has been associated with these arguments, a substitution of the form⟨vector variable⟩.⟨vector variable⟩ = ⟨mass⟩^2is set up. An error results if the variable has no preassigned mass."
 },
 
 {
