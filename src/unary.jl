@@ -171,6 +171,15 @@ for fun in [sbat;smat]
     end
 end
 
+"""
+    tp(exprn)
+
+Syntax:
+```
+        tp(EXPRN:matrix_expression):matrix.
+```
+This operator takes a single matrix argument and returns its transpose.
+"""
 tp(r::Array{T,1}) where T <: ExprSymbol = r |> RExpr |> tp |> parse |> mat
 tp(r::Union{Vector,RowVector}) = r |> RExpr |> tp |> parse |> mat
 
@@ -722,3 +731,96 @@ reduce> showrules log;
 ```
 Such rules can then be manipulated further as with any list. For example `R"rhs first ws"` has the value `1`. Note that an operator may have other properties that cannot be displayed in such a form, such as the fact it is an odd function, or has a definition defined as a procedure.
 """ Reduce.Algebra.showrules
+
+@doc """
+    det(exprn)
+
+Syntax:
+```
+        det(EXPRN:matrix_expression):algebraic.
+```
+The operator `det` is used to represent the determinant of a square matrix expression. E.g.,
+```
+Algebra.det(:(y^2))
+```
+is a scalar expression whose value is the determinant of the square of the matrix `y`, and
+```
+Algebra.det([:a :b :c; :d :e :f; :g :h :j])
+```
+is a scalar expression whose value is the determinant of the matrix
+```Julia
+3×3 Array{Symbol,2}:
+ :a  :b  :c
+ :d  :e  :f
+ :g  :h  :j
+```
+Determinant expressions have the instant evaluation property. In other words, the statement
+```
+        let det mat((a,b),(c,d)) = 2;
+```
+sets the value of the determinant to `2`, and does not set up a rule for the determinant itself.
+""" Reduce.Algebra.det
+
+@doc """
+    trace(exprn)
+
+Syntax:
+```
+        TRACE(EXPRN:matrix_expression):algebraic.
+```
+The operator TRACE is used to represent the trace of a square matrix.
+""" Reduce.Algebra.trace
+
+@doc """
+    nullspace(exprn)
+
+Syntax:
+```
+        NULLSPACE(EXPRN:matrix_expression):list
+```
+`nullspace` calculates for a matrix `a` a list of linear independent vectors (a basis) whose linear combinations satisfy the equation \$Ax = 0\$. The basis is provided in a form such that as many upper components as possible are isolated.
+
+Note that with `b := nullspace a` the expression `length b` is the *nullity* of `a`, and that `second length a - length b` calculates the *rank* of `a`. The rank of a matrix expression can also be found more directly by the `rank` operator described below.
+
+*Example:* The command
+```
+        nullspace mat((1,2,3,4),(5,6,7,8));
+```
+gives the output
+```
+        {  
+         [ 1  ]  
+         [    ]  
+         [ 0  ]  
+         [    ]  
+         [ - 3]  
+         [    ]  
+         [ 2  ]  
+         ,  
+         [ 0  ]  
+         [    ]  
+         [ 1  ]  
+         [    ]  
+         [ - 2]  
+         [    ]  
+         [ 1  ]  
+         }
+```
+In addition to the REDUCE matrix form, `nullspace` accepts as input a matrix given as a list of lists, that is interpreted as a row matrix. If that form of input is chosen, the vectors in the result will be represented by lists as well. This additional input syntax facilitates the use of `nullspace` in applications different from classical linear algebra.
+""" Reduce.Algebra.nullspace
+
+@doc """
+    rank(exprn)
+
+Syntax:
+```
+        RANK(EXPRN:matrix_expression):integer
+```
+`rank` calculates the rank of its argument, that, like `nullspace` can either be a standard matrix expression, or a list of lists, that can be interpreted either as a row matrix or a set of equations.
+
+*Example:*
+```Julia
+Algebra.rank([:a :b :c; :d :e :f])
+```
+returns the value `2`.
+""" Reduce.Algebra.rank

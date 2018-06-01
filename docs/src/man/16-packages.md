@@ -1,7 +1,274 @@
 # 16 User Contributed Packages
 
+The complete REDUCE system includes a number of packages contributed by users that are provided as a service to the user community. Questions regarding these packages should be directed to their individual authors.
+
+All such packages have been precompiled as part of the installation process. However, many must be specifically loaded before they can be used. (Those that are loaded automatically are so noted in their description.) You should also consult the user notes for your particular implementation for further information on whether this is necessary. If it is, the relevant command is `load_package`, which takes a list of one or more package names as argument, for example:
+```Julia
+julia> load_package(:algint)
+```
+although this syntax may vary from implementation to implementation.
+
+Nearly all these packages come with separate documentation and test files (except those noted here that have no additional documentation), which is included, along with the source of the package, in the REDUCE system distribution. These items should be studied for any additional details on the use of a particular package.
+
+The packages available in the current release of REDUCE are as follows:
+
+```@contents
+Pages = ["16-packages.md"]
+```
+
+External packages from [JuliaReducePkg](https://github.com/JuliaReducePkg):
+
+- [ReduceLinAlg.jl](https://github.com/JuliaReducePkg/ReduceLinAlg.jl): *Linear algebra package*, upstream docs ([LINALG](http://www.reduce-algebra.com/manual/manualse127.html) / [pdf](http://www.reduce-algebra.com/manual/contributed/linalg.pdf)), Julia docs (none yet)
+
+Additional upstream [user contributed packages](http://www.reduce-algebra.com/manual/manualch16.html) available.
+
+## 16.1 ALGINT: Integration of square roots
+
+This package, which is an extension of the basic integration package distributed with REDUCE, will analytically integrate a wide range of expressions involving square roots where the answer exists in that class of functions. It is an implementation of the work described in J.H. Davenport, “On the Integration of Algebraic Functions", LNCS 102, Springer Verlag, 1981. Both this and the source code should be consulted for a more detailed description of this work.
+
+The ALGINT package is loaded automatically when the switch `algint` is turned on. One enters an expression for integration, as with the regular integrator, for example:
+```Julia
+Algebra.int(:(sqrt(x+sqrt(x**2+1))/x),:x)
+```
+If one later wishes to integrate expressions without using the facilities of this package, the switch `algint` should be turned off.
+
+The switches supported by the standard integrator (e.g., `trint`) are also supported by this package. In addition, the switch `tra`, if on, will give further tracing information about the specific functioning of the algebraic integrator.
+
+There is no additional documentation for this package.
+
+Author: James H. Davenport.
+
+## 16.15 COMPACT: Package for compacting expressions
+
+COMPACT is a package of functions for the reduction of a polynomial in the presence of side relations. `compact` applies the side relations to the polynomial so that an equivalent expression results with as few terms as possible. For example, the evaluation of
+```
+     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,  
+             {cos x^2+sin x^2=1});
+```
+yields the result
+```
+              2           2  
+        SIN(X) *C + COS(X) *S + 1 .
+```
+The switch `trcompact` can be used to trace the operation.
+
+Author: Anthony C. Hearn.
+
+## 16.36 LIMITS: A package for finding limits
+
+This package loads automatically.
+
+Author: Stanley L. Kameny.
+
+LIMITS is a fast limit package for REDUCE for functions which are continuous except for computable poles and singularities, based on some earlier work by Ian Cohen and John P. Fitch. The Truncated Power Series package is used for non-critical points, at which the value of the function is the constant term in the expansion around that point. l’Hôpital’s rule is used in critical cases, with preprocessing of ∞-∞ forms and reformatting of product forms in order to apply l’Hôpital’s rule. A limited amount of bounded arithmetic is also employed where applicable.
+
+### 16.36.1 Normal entry points
+
+```@docs
+Reduce.Algebra.limit
+```
+
+### 16.36.2 Direction-dependent limits
+
+```
+LIMIT!+(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebraic
+LIMIT!-(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebraic
+```
+If the limit depends upon the direction of approach to the `LIMPOINT`, the functions `LIMIT!+` and `LIMIT!-` may be used. They are defined by:
+```
+LIMIT!+ (LIMIT!-) (EXP,VAR,LIMPOINT) →LIMIT(EXP*,ϵ,0),
+EXP*=sub(VAR=VAR+(-)ϵ2,EXP)
+```
+
 ## 16.60 SCOPE: REDUCE source code optimization package
 
 `scope` is a package for the production of an optimized form of a set of expressions. It applies an heuristic search for common (sub)expressions to almost any set of proper REDUCE assignment statements. The output is obtained as a sequence of assignment statements. GENTRAN is used to facilitate expression output.
 
 Author: J.A. van Hulzen.
+
+## 16.56 RLFI: REDUCE LATEX formula interface
+
+This package adds LaTeX syntax to REDUCE. Text generated by REDUCE in this mode can be directly used in LaTeX source documents. Various mathematical constructions are supported by the interface including subscripts, superscripts, font changing, Greek letters, divide-bars, integral and sum signs, derivatives, and so on.
+
+Author: Richard Liska.
+
+High quality typesetting of mathematical formulas is a quite tedious task. One of the most sophisticated typesetting programs for mathematical text TeX [?], together with its widely used macro package LaTeX [?], has a strange syntax of mathematical formulas, especially of the complicated type. This is the main reason which lead us to designing the formula interface between the computer algebra system REDUCE and the document preparation system LaTeX. The other reason is that all available syntaxes of the REDUCE formula output are line oriented and thus not suitable for typesetting in mathematical text. The idea of interfacing a computer algebra system to a typesetting program has already been used, eg. in [?] presenting the TeX output of the MACSYMA computer algebra system.
+
+The formula interface presented here adds to REDUCE the new syntax of formula output, namely LaTeX syntax, and can also be named REDUCE - LaTeX translator. Text generated by REDUCE in this syntax can be directly used in LaTeX source documents. Various mathematical constructions are supported by the interface including subscripts, superscripts, font changing, Greek letters, divide-bars, integral and sum signs, derivatives etc.
+
+The interface can be used in two ways:
+
+- for typesetting of results of REDUCE algebraic calculations.
+- for typesetting of users formulas.
+
+The latter can even be used by users unfamiliar with the REDUCE system, because the REDUCE input syntax of formulas is almost the same as the syntax of the majority of programming languages. We aimed at speeding up the process of formula typesetting, because we are convinced, that the writing of correct complicated formulas in the REDUCE syntax is a much more simpler task than writing them in the LaTeX syntax full of keywords and special characters  `\\`, `{`, `^` etc. It is clear, that not every formula produced by the interface is typeset in the best format from an aesthetic point of view. When a user is not satisfied with the result, he can add some LaTeX commands to the REDUCE output - LaTeX input.
+
+The interface is connected to REDUCE by three new switches and several statements. To activate the LaTeX output mode the switch `latex` must be set `on`. this switch, similar to the switch `fort` producing FORTRAN output, being `on` causes all outputs to be written in the LaTeX syntax of formulas. The switch `verbatim` is used for input printing control. If it is on input to REDUCE system is typeset in LaTeX verbatim environment after the line containing the string `REDUCE Input:`.
+
+The switch `lasimp` controls the algebraic evaluation of input formulas. If it is `on` every formula is evaluated, simplified and written in the form given by ordinary REDUCE statements and switches such as `factor`, `order`, `rat` etc. In the case when the `lasimp` switch is `off` evaluation, simplification or reordering of formulas is not performed and REDUCE acts only as a formula parser and the form of the formula output is exactly the same as that of the input, the only difference remains in the syntax. The mode `off lasimp` is designed especially for typesetting of formulas for which the user needs preservation of their structure. This switch has no meaning if the switch `latex` is `off` and thus is working only for LaTeX output.
+
+For every identifier used in the typeset REDUCE formula the following properties can be defined by the statement `defid`:
+
+- its printing symbol (Greek letters can be used).
+- the font in which the symbol will be typeset.
+- accent which will be typeset above the symbol.
+
+Symbols with indexes are treated in REDUCE as operators. Each index corresponds to an argument of the operator. The meaning of operator arguments (where one wants to typeset them) is declared by the statement `defindex`. This statement causes the arguments to be typeset as subscripts or superscripts (on left or right-hand side of the operator) or as arguments of the operator.
+
+The statement `mathstyle` defines the style of formula typesetting. The variable `laline!*` defines the length of output lines.
+
+The fractions with horizontal divide bars are typeset by using the new REDUCE infix operator `//`. This operator is not algebraically simplified. During typesetting of powers the checking on the form of the power base and exponent is performed to determine the form of the typeset expression (eg. `sqrt` symbol, using parentheses).
+
+Some special forms can be typeset by using REDUCE prefix operators. These are as follows:
+
+- `int` - integral of an expression.
+- `dint` - definite integral of an expression.
+- `df` - derivative of an expression.
+- `pdf` - partial derivative of an expression.
+- `sum` - sum of expressions.
+- `product` - product of expressions.
+- `sqrt` - square root of expression.
+
+There are still some problems unsolved in the present version of the interface as follows:
+
+- breaking the formulas which do not fit on one line.
+- automatic decision where to use divide bars in fractions.
+- distinction of two- or more-character identifiers from the product of one-character symbols.
+- typesetting of matrices.
+
+#### Remark
+
+After finishing presented interface, we have found another work [?], which solves the same problem. The RLFI package has been described in [?] too.
+
+### 16.56.1 APPENDIX: Summary and syntax
+
+#### Warning
+
+The RLFI package can be used only on systems supporting lower case letters with `off raise` statement. The package distinquishes the upper and lower case letters, so be carefull in typing them. In REDUCE 3.6 the REDUCE commands have to be typed in lower-case while the switch `latex` is `on`, in previous versions the commands had to be typed in upper-case.
+
+#### Switches
+
+`latex`
+- If `on` output is in LaTeX format. It turns `off` the raise switch if it is set `on` and `on` the raise switch if it is set `off`. By default is `off`.
+
+`lasimp`
+- If `on` formulas are evaluated (simplified), REDUCE works as usually. If `off` no evaluation is performed and the structure of formulas is preserved. By default is `on`.
+
+`verbatim`
+- If `on` the REDUCE input, while `latex` switch being `on`, is printed in LaTeX verbatim environment. The acutal REDUCE input is printed after the line containing the string `~REDUCE Input:~`. It turns `on` resp. `off` the `echo` switch when turned `on` resp. `off`. by default is `off`.
+
+#### Operators
+
+`infix`
+- `//`
+
+`prefix`
+- `int`,`dint`,`df`,`pdf`,`sum`,`product`,`sqrt` and all REDUCE prefix operators defined in the REDUCE kernel and the SOLVE module.
+```
+   <alg. expression> // <alg. expression>  
+   int(<function>,<variable>)  
+   dint(<from>,<to>,<function>,<variable>)  
+   df(<function>,<variables>)  
+   <variables> ::= <o-variable>|<o-variable>,<variables>  
+   <o-variable> ::= <variable>|<variable>,<order>  
+   <variable> ::= <kernel>  
+   <order> ::= <integer>  
+   <function> ::= <alg. expression>  
+   <from> ::= <alg. expression>  
+   <to> ::= <alg. expression>  
+   pdf(<function>,<variables>)  
+   sum(<from>,<to>,<function>)  
+   product(<from>,<to>,<function>)  
+   sqrt(<alg. expression>)
+```
+`<alg. expression>` is any algebraic expression. Where appropriate, it can include also relational operators (e.g. argument `<from>` of `sum` or `product` operators is usually equation). `<kernel>` is identifier or prefix operator with arguments as described in [?]. Interface supports typesetting lists of algebraic expressions.
+
+#### Statements
+```
+   mathstyle <m-style>;  
+   <m-style> ::= math | displaymath | equation  
+   defid <identifier>,<d-equations>;  
+   <d-equations> ::= <d-equation> | <d-equation>,<d-equations>  
+   <d-equation> ::= <d-print symbol> | <d-font>|<d-accent>  
+   <d-print symbol> ::= name = <print symbol>  
+   <d-font> ::= font = <font>  
+   <d-accent> ::= accent = <accent>  
+   <print symbol> ::= <character> | <special symbol>  
+   <special symbol> ::= alpha|beta|gamma|delta|epsilon|  
+      varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|  
+      mu|nu|xi|pi|varpi|rho|varrho|sigma|varsigma|tau|  
+      upsilon|phi|varphi|chi|psi|omega|Gamma|Delta|Theta|  
+      Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|infty|hbar  
+   <font> ::= bold|roman  
+   <accent> ::=hat|check|breve|acute|grave|tilde|bar|vec|  
+      dot|ddot
+```
+For special symbols and accents see [?], p. 43, 45, 51.
+```
+   defindex <d-operators>;  
+   <d-operators> ::= <d-operator> | <d-operator>,<d-operators>  
+   <d-operator> ::= <prefix operator>(<descriptions>)  
+   <prefix operator> ::= <identifier>  
+   <descriptions> ::= <description> | <description>,  
+      <descriptions>  
+   <description> ::= arg | up | down | leftup | leftdown
+```
+The meaning of the statements is briefly described in the preceding text.
+
+#### Bibliography
+
+[1]   Werner Antweiler, Andreas Strotmann, and Volker Winkelmann. A TEX-reduce-interface. *SIGSAM Bulletin*, 23:26–33, February 1989.
+
+[2]   Ladislav Drska, Richard Liska, and Milan Sinor. Two practical packages for computational physics - GCPM, RLFI. *Comp. Phys. Comm.*, 61:225–230, 1990.
+
+[3]   Richard J. Fateman. TEX  output from macsyma-like systems. *ACM SIGSAM Bulletin*, 21(4):1–5, 1987. Issue #82.
+
+[4]   Anthony C. Hearn. REDUCE user’s manual, version 3.6. Technical Report CP 78 (Rev. 7/95), The RAND Corporation, Santa Monica, 1995.
+
+[5]   Donald E. Knuth. *The TeX book*. Addison-Wesley, Reading, 1984.
+
+[6]   Leslie Lamport. *LaTeX - A Document Preparation System*. Addison-Wesley, Reading, 1986.
+
+## 16.67 SUM: A package for series summation
+
+This package implements the Gosper algorithm for the summation of series. It defines operators `sum` and `prod`. The operator `sum` returns the indefinite or definite summation of a given expression, and PROD returns the product of the given expression.
+
+This package loads automatically.
+
+Author: Fujio Kako.
+
+This package implements the Gosper algorithm for the summation of series. It defines operators `sum` and `prod`. The operator `sum` returns the indefinite or definite summation of a given expression, and the operator `prod` returns the product of the given expression. These are used with the syntax:
+```
+SUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) 
+PROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])
+```
+If there is no closed form solution, these operators return the input unchanged. `UPLIM` and `LOLIM` are optional parameters specifying the lower limit and upper limit of the summation (or product), respectively. If `UPLIM` is not supplied, the upper limit is taken as `K` (the summation variable itself).
+
+For example:
+```Julia
+Algebra.sum(:(n^3),:n)
+Algebra.sum(:(a+k*r),:k,0,:(n-1))
+Algebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))
+Algebra.prod(:(k/(k-2)),:k)
+```
+Gosper’s algorithm succeeds whenever the ratio
+``
+\frac{\sum_{k=n_0}^n f(k)}{\sum_{k=n_0}^{n-1} f(k)}
+``
+is a rational function of ``n``. The function `SUM!-SQ` handles basic functions such as polynomials, rational functions and exponentials.
+
+The trigonometric functions `sin`, `cos`, etc. are converted to exponentials and then Gosper’s algorithm is applied. The result is converted back into `sin`, `cos`, `sinh` and `cosh`.
+
+Summations of logarithms or products of exponentials are treated by the formula:
+  
+``
+\sum_{k=n_0}^n \log f(k) = \log \prod_{k=n_0}^n f(k)
+``
+
+``
+\prod_{k=n_0}^n \exp f(k) = \exp \sum_{k=n_0}^n f(k)
+``
+
+Other functions, as shown in the test file for the case of binomials and formal products, can be summed by providing `let` rules which must relate the functions evaluated at ``k`` and ``k - 1`` (``k`` being the summation variable).
+
+There is a switch `trsum` (default `off`). If this switch is `on`, trace messages are printed out during the course of Gosper’s algorithm.

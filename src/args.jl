@@ -974,3 +974,60 @@ On the other hand, a whole array (or matrix) `a` can be cleared by the command `
 
 If you need to clear a variable whose name must be computed, see the `unset` statement.
 """ Reduce.Algebra.clear
+
+"""
+    mateign(exprn,id)
+
+Syntax:
+```
+        MATEIGEN(EXPRN:matrix_expression,ID):list.
+```
+`mateigen` calculates the eigenvalue equation and the corresponding eigenvectors of a matrix, using the variable `id` to denote the eigenvalue. A square free decomposition of the characteristic polynomial is carried out. The result is a list of lists of 3 elements, where the first element is a square free factor of the characteristic polynomial, the second its multiplicity and the third the corresponding eigenvector (as an *n* by *1* matrix). If the square free decomposition was successful, the product of the first elements in the lists is the minimal polynomial. In the case of degeneracy, several eigenvectors can exist for the same eigenvalue, which manifests itself in the appearance of more than one arbitrary variable in the eigenvector. To extract the various parts of the result use the operations defined on lists.
+
+*Example:* The command
+```
+        mateigen(mat((2,-1,1),(0,1,1),(-1,1,1)),eta);
+```
+gives the output
+```
+        {{ETA - 1,2,  
+ 
+          [ARBCOMPLEX(1)]  
+          [             ]  
+          [ARBCOMPLEX(1)]  
+          [             ]  
+          [      0      ]  
+ 
+          },  
+ 
+         {ETA - 2,1,  
+ 
+          [      0      ]  
+          [             ]  
+          [ARBCOMPLEX(2)]  
+          [             ]  
+          [ARBCOMPLEX(2)]  
+ 
+          }}
+```
+""" Reduce.Algebra.mateign
+
+@doc """
+    cofactor(exprn,row,column)
+
+Syntax:
+```
+  cofactor(EXPRN:matrix_expression,ROW:integer,COLUMN:integer):algebraic
+```
+The operator `cofactor` returns the cofactor of the element in row `ROW` and column `COLUMN` of the matrix `EXPRN`. Errors occur if `ROW` or `COLUMN` do not simplify to integer expressions or if `EXPRN` is not square.
+""" Reduce.Algebra.cofactor
+
+@doc """
+    limit(exprn,var,limpint)
+
+Syntax
+```
+LIMIT(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebraic
+```
+This is the standard way of calling limit, applying all of the methods. The result is the limit of `EXPRN` as `VAR` approaches `LIMPOINT`.
+""" Reduce.Algebra.limit
