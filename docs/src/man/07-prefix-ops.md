@@ -468,39 +468,14 @@ julia> collect(rcall(:xx))
  :(x = (sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im + sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))
  :(x = (-2 * sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))
 
-julia> off(:trigform)
+julia> Algebra.off(:trigform)
  
-julia> rcall(R"xx")
-                             2/3  
-{x=( - (sqrt(31) - 3*sqrt(3))   *sqrt(3)*i  
- 
-                             2/3    2/3  
-     - (sqrt(31) - 3*sqrt(3))    - 2   *sqrt(3)*i  
- 
-        2/3                           1/3  1/3  
-     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6  
- 
-                1/6  
-              *3   ),  
- 
-                          2/3  
- x=((sqrt(31) - 3*sqrt(3))   *sqrt(3)*i  
- 
-                             2/3    2/3  
-     - (sqrt(31) - 3*sqrt(3))    + 2   *sqrt(3)*i  
- 
-        2/3                           1/3  1/3  
-     + 2   )/(2*(sqrt(31) - 3*sqrt(3))   *6  
- 
-                1/6  
-              *3   ),  
- 
-                           2/3    2/3  
-     (sqrt(31) - 3*sqrt(3))    - 2  
- x=-------------------------------------}  
-                          1/3  1/3  1/6  
-    (sqrt(31) - 3*sqrt(3))   *6   *3
-```
+julia> collect(rcall(:xx))
+3-element Array{Expr,1}:
+ :(x = -(((sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) * (sqrt(3) * im + 1) + 2 ^ (2 / 3) * (sqrt(3) * im - 1))) / (2 * (sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6)))
+ :(x = (2 ^ (2 / 3) * (sqrt(3) * im + 1) + (sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) * (sqrt(3) * im - 1)) / (2 * (sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6)))   
+ :(x = ((sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) - 2 ^ (2 / 3)) / ((sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6))) 
+ ```
 
 ### 7.16.3 Other Options
 
@@ -531,17 +506,12 @@ Reduce.Algebra.assumptions
 
 `solve` rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch `varopt`, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:
 ```Julia
-julia> rcall(R"s:= {y^3+3x=0,x^2+y^2=1}");
+julia> @rcall s=(y^3+3x=0,x^2+y^2=1);
  
-julia> Algebra.solve(R"s",(:y,:x))
- 
-              6       2
-{{y=root_of(y_  + 9*y_  - 9,y_,tag_2),
-
-         3
-      - y
-  x=-------}}
-       3
+julia> Algebra.solve(:s,(:y,:x)) |> collect
+2-element Array{Expr,1}:
+ :(y = root_of((y_ ^ 6 + 9 * y_ ^ 2) - 9, y_, tag_2))
+ :(x = -(y ^ 3) // 3)    
 
 julia> Algebra.off(:varopt); Algebra.solve(:s,(:y,:x)) |> collect
 2-element Array{Expr,1}:
@@ -553,7 +523,7 @@ In the first case, `solve` forms the solution as a set of pairs ``(y_i,x(y_i))``
 ```Julia
 julia> Algebra.on(:varopt)
 
-julia> rcall(R"s:={a^3+b,b^2+c}");
+julia> @rcall s=(a^3+b,b^2+c);
 
 julia> Algebra.solve(:s,(:a,:b,:c))
 (:(a = arbcomplex(1)), :(b = -(a ^ 3)), :(c = -(a ^ 6))) 

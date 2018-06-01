@@ -95,7 +95,8 @@ const sfun = [
     :reverse,
     :lhs,
     :rhs,
-    :saveas
+    :saveas,
+    :root_val,
 ]
 
 const snan = [
@@ -572,16 +573,17 @@ The `decompose` operator takes a multivariate polynomial as argument, and return
 R"decompose(EXPRN:polynomial)"
 ```
 For example:
-```
-     decompose(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-  
-                    218900*x^3+65690*x^2-7700*x+234)  
-                   2                  2            2  
-              -> {U  + 35*U + 234, U=V  + 10*V, V=X  - 22*X}  
-                                     2  
-     decompose(u^2+v^2+2u*v+1)  -> {W  + 1, W=U + V}
+```Julia
+julia> Algebra.decompose(:(x^8-88*x^7+2924*x^6-43912*x^5+263431*x^4-218900*x^3+65690*x^2-7700*x+234))
+(:(u ^ 2 + 35u + 234), :(u = v ^ 2 + 10v), :(v = x ^ 2 - 22x))
+
+julia> Algebra.decompose(:(u^2+v^2+2u*v+1))
+(:(w ^ 2 + 1), :(w = u + v))
 ```
 Users should note however that, unlike factorization, this decomposition is not unique.
 """ Reduce.Algebra.decompose
+
+den(r::T) where T <: Number = den(RExpr(r)) |> parse
 
 @doc """
     den(r)
@@ -593,14 +595,22 @@ R"den(EXPRN:rational)"
 It returns the denominator of the rational expression `EXPRN`. If `EXPRN` is a polynomial, 1 is returned.
 
 *Examples:*
-```
-        den(x/y^2)   ->  Y**2  
-        den(100/6)   ->  3  
-                [since 100/6 is first simplified to 50/3]  
-        den(a/4+b/6) ->  12  
-        den(a+b)     ->  1
+```Julia
+julia> Algebra.den(:(x/y^2))
+:(y ^ 2)
+
+julia> Algebra.den(100//6)
+3               [since 100/6 is first simplified to 50/3]  
+
+julia> Algebra.den(:(a/4+b/6))
+12
+
+julia> Algebra.den(:(a+b))
+1
 ```
 """ Reduce.Algebra.den
+
+mainvar(r::T) where T <: Number = mainvar(RExpr(r)) |> parse
 
 @doc """
     mainvar(exprn)
@@ -612,11 +622,18 @@ R"mainvar(EXPRN:polynomial)"
 Returns the main variable (based on the internal polynomial representation) of `EXPRN`. If `EXPRN` is a domain element, 0 is returned.
 
 *Examples:* Assuming `a` has higher kernel order than `b`, `c`, or `d`:
-```
-        mainvar((a+b)*(c+2*d)^2) ->  a
-        mainvar(2)               ->  0
+```Julia
+julia> Algebra.on(:exp)
+
+julia> Algebra.mainvar(:((a+b)*(c+2*d)^2))
+:a
+
+julia> Algebra.mainvar(2)
+0
 ```
 """ Reduce.Algebra.mainvar
+
+num(r::T) where T <: Number = num(RExpr(r)) |> parse
 
 @doc """
     num(exprn)
@@ -628,13 +645,22 @@ R"num(EXPRN:rational)"
 Returns the numerator of the rational expression `EXPRN`. If `EXPRN` is a polynomial, that polynomial is returned.
 
 *Examples:*
-```
-        num(x/y^2)  ->  x  
-        num(100/6)   ->  50  
-        num(a/4+b/6) ->  3*a+2*b  
-        num(a+b)     ->  a+b
+```Julia
+julia> Algebra.num(:(x/y^2))
+:x
+
+julia> Algebra.num(100//6)
+50
+
+julia> Algebra.num(:(a/4+b/6))
+:(3a + 2b)
+
+julia> Algebra.num(:(a+b))
+:(a + b)
 ```
 """ Reduce.Algebra.num
+
+setmod(r::Integer) = setmod(RExpr(r)) |> parse
 
 @doc """
     setmod(::Integer)

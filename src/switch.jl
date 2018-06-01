@@ -135,4 +135,5 @@ julia> Algebra.on(:multiplicities); Algebra.solve(:(x^2==2x-1),:x)
 yields the result
 ```Julia
 (:(x = 1), :(x = 1))
+```
 """ Reduce.multiplicities

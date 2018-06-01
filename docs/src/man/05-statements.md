@@ -32,7 +32,7 @@ The `⟨expression⟩` on the left side is normally the name of a variable, an o
 ```Julia
 R"a1 := b + c"
 R"h(l,m) := x-2*y"     	(where h is an operator)
-R"k(3,5) := x-2*y"		(where k is a 2-dim. array)
+R"k(3,5) := x-2*y"	(where k is a 2-dim. array)
 ```
 More general assignments such as `R"a+b := c"` are also allowed. The effect of these is explained in Section 11.2.5.
 

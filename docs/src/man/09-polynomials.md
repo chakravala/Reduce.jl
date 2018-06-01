@@ -59,10 +59,10 @@ The order in which the factors occur in the result (with the exception of a poss
 The factorizer works by first reducing multivariate problems to univariate ones and then solving the univariate ones modulo small primes. It normally selects both evaluation points and primes using a random number generator that should lead to different detailed behavior each time any particular problem is tackled. If, for some reason, it is known that a certain (probably univariate) factorization can be performed effectively with a known prime, `p` say, this value of `p` can be handed to `factorize` as a second argument. An error will occur if a non-prime is provided to `factorize` in this manner. It is also an error to specify a prime that divides the discriminant of the polynomial being factored, but users should note that this condition is not checked by the program, so this capability should be used with care.
 
 Factorization can be performed over a number of polynomial coefficient domains in addition to integers. The particular description of the relevant domain should be consulted to see if factorization is supported. For example, the following statements will factorize ``x^4 + 1`` modulo 7:
-```
-        setmod 7;  
-        on modular;  
-        factorize(x^4+1);
+```Julia
+Algebra.setmod(7)
+Algebra.on(:modular)
+Algebra.factorize(:(x^4+1))
 ```
 The factorization module is provided with a trace facility that may be useful as a way of monitoring progress on large problems, and of satisfying curiosity about the internal workings of the package. The most simple use of this is enabled by issuing the REDUCE command `on(:trfac)`. Following this, all calls to the factorizer will generate informative messages reporting on such things as the reduction of multivariate to univariate cases, the choice of a prime and the reconstruction of full factors from their images. Further levels of detail in the trace are intended mainly for system tuners and for the investigation of suspected bugs. For example, `trallfac` gives tracing information at all levels of detail. The switch that can be set by `on(:timings)` makes it possible for one who is familiar with the algorithms used to determine what part of the factorization code is consuming the most resources. `on(:overview)` reduces the amount of detail presented in other forms of trace. Other forms of trace output are enabled by directives of the form
 ```
@@ -102,10 +102,15 @@ R"gcd(EXPRN1:polynomial,EXPRN2:polynomial)"
 ```
 returns the greatest common divisor of the two polynomials `EXPRN1` and `EXPRN2`.
 *Examples:*
-```
-        gcd(x^2+2*x+1,x^2+3*x+2) ->  x+1  
-        gcd(2*x^2-2*y^2,4*x+4*y) ->  2*x+2*y  
-        gcd(x^2+y^2,x-y)         ->  1.
+```Julia
+julia> Algebra.gcd(:(x^2+2*x+1),:(x^2+3*x+2))
+:(x + 1)
+
+julia> Algebra.gcd(:(2*x^2-2*y^2),:(4*x+4*y))
+:(2 * (x + y))
+
+julia> Algebra.gcd(:(x^2+y^2),:(x-y))
+1
 ```
 
 ## 9.4 Working with Least Common Multiples
@@ -119,9 +124,12 @@ R"lcm(EXPRN1:polynomial,EXPRN2:polynomial)"
 returns the least common multiple of the two polynomials `EXPRN1` and `EXPRN2`.
 
 *Examples:*
-```
-        lcm(x^2+2*x+1,x^2+3*x+2) ->  X**3 + 4*X**2 + 5*X + 2  
-        lcm(2*x^2-2*y^2,4*x+4*y) ->  4*(X**2 - Y**2)9.4 
+```Julia
+julia> Algebra.lcm(:(x^2+2*x+1),:(x^2+3*x+2))
+:((x + 2) * (x + 1) ^ 2)
+
+julia> Algebra.lcm(:(2*x^2-2*y^2),:(4*x+4*y))
+:(4 * (x ^ 2 - y ^ 2))
 ```
 
 ## 9.5 Controlling Use of Common Denominators
@@ -165,9 +173,9 @@ The sign conventions used by the resultant function follow those in R. Loos, “
    resultant(a,b,x)      = 1
 ```
 *Examples:*
-```
-                                     2  
-   resultant(x/r*u+y,u*y,u)   ->  - y
+```Julia
+julia> Algebra.resultant(:(x/r*u+y),:(u*y),:u)
+:(-(y ^ 2))
 ```
 calculation in an algebraic extension:
 ```
@@ -178,10 +186,10 @@ calculation in an algebraic extension:
 ```
 or in a modular domain:
 ```
-   setmod 17;  
-   on modular;  
+julia> Algebra.setmod(17); Algebra.on(:modular);
  
-   resultant(2x+1,3x+4,x)    -> 5
+julia> Algebra.resultant(:(2x+1),:(3x+4),:x)
+5
 ```
 
 ## 9.8 DECOMPOSE Operator

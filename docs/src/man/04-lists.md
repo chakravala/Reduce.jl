@@ -47,7 +47,8 @@ This operator returns the third member of a list. An error occurs if the argumen
 
 This operator adds (“conses”) an expression to the front of a list. For example:
 ```Julia
-R"a . {b,c}"     ->   R"{a,b,c}"
+julia> R"a . {b,c}" == R"{a,b,c}"
+true
 ```
 
 ### 4.1.7 APPEND
@@ -62,8 +63,11 @@ R"append({{a,b}},{c,d})"   ->     R"{{a,b},c,d}"
 
 The operator `reverse` returns its argument with the elements in the reverse order. It only applies to the top level list, not any lower level lists that may occur. Examples are:
 ```Julia
-R"reverse({a,b,c})"        ->     R"{c,b,a}"
-R"reverse({{a,b,c},d})"    ->     R"{d,{a,b,c}}"
+julia> Algebra.reverse(list(:a,:b,:c)) ==  R"{c,b,a}"
+true
+
+julia> R"reverse({{a,b,c},d})" == R"{d,{a,b,c}}"
+true
 ```
 
 ### 4.1.9 List Arguments of Other Operators
@@ -80,7 +84,7 @@ Some of the natural list operations such as *member* or *delete* are available o
 
 Please note that a non-list as second argument to `cons` (a "dotted pair" in LISP terms) is not allowed and causes an "invalid as list" error.
 ```
-R"a := 17 . 4"
+julia> R"a := 17 . 4"
 
 ***** 17 4 invalid as list
 ```

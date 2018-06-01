@@ -487,6 +487,9 @@ Recursively simplifies out extra edges from Expr objects
                         end
                     end
                 end
+            elseif e.head == :(=) &&
+                    e.args[2] |> typeof == Expr && e.args[2].head == :block
+                    length(e.args[2].args) == 1 && (e.args[2] = e.args[2].args[1])
             end
             treecombine!(e.args[i],redo)
             d = detectinf(e)
@@ -499,6 +502,7 @@ Recursively simplifies out extra edges from Expr objects
     return redo[1] ? treecombine!(e) : d ≠ nothing ? d : e
 end
 treecombine!(e,redo=[false]) = e
+treecombine!(e::T) where T <: Tuple = treecombine!.(e)
 
 function detectinf(e)
     if typeof(e) == Expr && e.head == :call

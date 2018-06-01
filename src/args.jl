@@ -25,7 +25,9 @@ const calculus = [
     :pochhammer,
     :fibonaccip,
     :factor,
-    :remfac
+    :remfac,
+    :gcd,
+    :lcm,
 ]
 
 const cnan = [
@@ -235,14 +237,14 @@ or a kernel that evaluates to such a list.
 The `sub` operator gives the algebraic result of replacing every occurrence of the variable `var` in the expression `EXPRN1` by the expression `EXPRN`. Specifically, `EXPRN1` is first evaluated using all available rules. Next the substitutions are made, and finally the substituted expression is reevaluated. When more than one variable occurs in the substitution list, the substitution is performed by recursively walking down the tree representing `EXPRN1`, and replacing every `VAR` found by the appropriate `EXPRN`. The `EXPRN` are not themselves searched for any occurrences of the various `VAR`s. The trivial case `sub`(EXPRN1)` returns the algebraic value of `EXPRN1`.
 
 *Examples:*
+```Julia
+julia> Algebra.sub((:(x=a+y),:(y=y+1)),:(x^2+y^2))
+:((a + y) ^ 2 + (y + 1) ^ 2)
 ```
-                                    2              2
-     sub({x=a+y,y=y+1},x^2+y^2) -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+and with `@rcall s = (x=a+y,y=y+1)`,
 ```
-and with `R"s := {x=a+y,y=y+1}"`,
-```
-                                    2              2
-     sub(s,x^2+y^2)             -> A  + 2*A*Y + 2*Y  + 2*Y + 1
+julia> Algebra.sub(:s,:(x^2+y^2))
+:((a + y) ^ 2 + (y + 1) ^ 2)
 ```
 Note that the global assignments `R"x:=a+y"`, etc., do not take place.
 
@@ -254,6 +256,8 @@ sub(s::Dict{String,String},expr) = sub(Reduce._syme(s),expr)
 sub(s::Dict{<:Any,<:Any},expr) = sub(Dict([=>(string.(RExpr.([b[1],b[2]]))...) for b ∈ collect(s)]...),expr)
 sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
 sub(s::Array{<:Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
+sub(s::Symbol,expr) = sub(string(s),expr)
+sub(s::T,expr) where T <: Tuple = sub(string(list(s)),expr)
 
 """
     sub(T::DataType,expr::Expr)
@@ -764,9 +768,12 @@ R"REMAINDER(EXPRN1:polynomial,EXPRN2:polynomial)"
 It returns the remainder when `EXPRN1` is divided by `EXPRN2`. This is the true remainder based on the internal ordering of the variables, and not the pseudo-remainder. The pseudo-remainder and in general pseudo-division of polynomials can be calculated after loading the `polydiv` package. Please refer to the documentation of this package for details.
 
 *Examples:*
-```
-        remainder((x+y)*(x+2*y),x+3*y) ->  2*y**2  
-        remainder(2*x+y,2)             ->  Y
+```Julia
+julia> Algebra.on(:exp); Algebra.remainder(:((x+y)*(x+2*y)),:(x+3*y))
+:(2 * y ^ 2)
+
+julia> Algebra.remainder(:(2*x+y),2)
+:y
 ```
 """ Reduce.Algebra.remainder
 
@@ -806,10 +813,17 @@ R"deg(EXPRN:polynomial,VAR:kernel)"
 It returns the leading degree of the polynomial `EXPRN` in the variable `VAR`. If `VAR` does not occur as a variable in `EXPRN`, 0 is returned.
 
 *Examples:*
-```
-        deg((a+b)*(c+2*d)^2,a) ->  1  
-        deg((a+b)*(c+2*d)^2,d) ->  2  
-        deg((a+b)*(c+2*d)^2,e) ->  0
+```Julia
+julia> Algebra.on(:exp)
+
+julia> Algebra.deg(:((a+b)*(c+2*d)^2),:a)
+1
+
+julia> Algebra.deg(:((a+b)*(c+2*d)^2),:d)
+2
+
+julia> Algebra.deg(:((a+b)*(c+2*d)^2),:e)
+0
 ```
 Note also that if `ratarg` is on,
 ```
@@ -828,10 +842,17 @@ R"lcof(EXPRN:polynomial,VAR:kernel)"
 It returns the leading coefficient of the polynomial `EXPRN` in the variable `VAR`. If `VAR` does not occur as a variable in `EXPRN`, `EXPRN` is returned.
 
 *Examples:*
-```
-        lcof((a+b)*(c+2*d)^2,a) ->  c**2+4*c*d+4*d**2  
-        lcof((a+b)*(c+2*d)^2,d) ->  4*(a+b)  
-        lcof((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
+```Julia
+julia> Algebra.on(:exp)
+
+julia> Algebra.lcof(:((a+b)*(c+2*d)^2),:a)
+:(c ^ 2 + 4 * c * d + 4 * d ^ 2)
+
+julia> Algebra.lcof(:((a+b)*(c+2*d)^2),:d)
+:(4 * (a + b))
+
+julia> Algebra.lcof(:((a+b)*(c+2*d)),:e)
+:(a * c + 2 * a * d + b * c + 2 * b * d)
 ```
 """ Reduce.Algebra.lcof
 
@@ -844,10 +865,17 @@ R"lpower(EXPRN:polynomial,VAR:kernel)"
 ```
 `lpower` returns the leading power of `EXPRN` with respect to `VAR`. If `EXPRN` does not depend on `VAR`, 1 is returned.
 *Examples:*
-```
-        lpower((a+b)*(c+2*d)^2,a) ->  a  
-        lpower((a+b)*(c+2*d)^2,d) ->  d**2  
-        lpower((a+b)*(c+2*d),e)   ->  1
+```Julia
+julia> Algebra.on(:exp)
+
+julia> Algebra.lpower(:((a+b)*(c+2*d)^2),:a)
+:a
+
+julia> Algebra.lpower(:((a+b)*(c+2*d)^2),:d)
+:(d ^ 2)
+
+julia> Algebra.lpower(:((a+b)*(c+2*d)),:e)
+1
 ```
 """ Reduce.Algebra.lpower
 
@@ -861,10 +889,17 @@ R"lterm(EXPRN:polynomial,VAR:kernel)"
 `lterm` returns the leading term of `EXPRN` with respect to `VAR`. If `EXPRN` does not depend on `VAR`, `EXPRN` is returned.
 
 *Examples:*
-```
-        lterm((a+b)*(c+2*d)^2,a) ->  a*(c**2+4*c*d+4*d**2)  
-        lterm((a+b)*(c+2*d)^2,d) ->  4*d**2*(a+b)  
-        lterm((a+b)*(c+2*d),e)   ->  a*c+2*a*d+b*c+2*b*d
+```Julia
+julia> Algebra.on(:exp)
+
+julia> Algebra.lterm(:((a+b)*(c+2*d)^2),:a)
+:(a * (c ^ 2 + 4 * c * d + 4 * d ^ 2))
+
+julia> Algebra.lterm(:((a+b)*(c+2*d)^2),:d)
+:(4 * d ^ 2 * (a + b))
+
+julia> Algebra.lterm(:((a+b)*(c+2*d)),:e)
+:(a * c + 2 * a * d + b * c + 2 * b * d)
 ```
 """ Reduce.Algebra.lterm
 
@@ -878,10 +913,17 @@ R"reduct(EXPRN:polynomial,VAR:kernel)"
 Returns the reductum of `EXPRN` with respect to `VAR` (i.e., the part of `EXPRN` left after the leading term is removed). If `EXPRN` does not depend on the variable `VAR`, 0 is returned.
 
 *Examples:*
-```
-     reduct((a+b)*(c+2*d),a) ->  b*(c + 2*d)  
-     reduct((a+b)*(c+2*d),d) ->  c*(a + b)  
-     reduct((a+b)*(c+2*d),e) ->  0
+```Julia
+julia> Algebra.on(:exp)
+
+julia> Algebra.reduct(:((a+b)*(c+2*d)),:a)
+:(b * (c + 2d))
+
+julia> Algebra.reduct(:((a+b)*(c+2*d)),:d)
+:(c * (a + b))
+
+julia> Algebra.reduct(:((a+b)*(c+2*d)),:e)
+0
 ```
 """ Reduce.Algebra.reduct
 
@@ -889,12 +931,21 @@ Returns the reductum of `EXPRN` with respect to `VAR` (i.e., the part of `EXPRN`
     totaldeg(expr,var)
 
 Syntax:
-```
-     totaldeg(a*x^2+b*x+c, x)  => 2  
-     totaldeg(a*x^2+b*x+c, {a,b,c})  => 1  
-     totaldeg(a*x^2+b*x+c, {x, a})  => 3  
-     totaldeg(a*x^2+b*x+c, {x,b})  => 2  
-     totaldeg(a*x^2+b*x+c, {p,q,r})  => 0
+```Julia
+julia> Algebra.totaldeg(:(a*x^2+b*x+c), :x)
+2
+
+julia> Algebra.totaldeg(:(a*x^2+b*x+c), (:a,:b,:c))
+1
+
+julia> Algebra.totaldeg(:(a*x^2+b*x+c), (:x, :a))
+3
+
+julia> Algebra.totaldeg(:(a*x^2+b*x+c), (:x,:b))
+2
+
+julia> Algebra.totaldeg(:(a*x^2+b*x+c), (:p,:q,:r))
+0
 ```
 `totaldeg(u, kernlist)` finds the total degree of the polynomial `u` in the variables in `kernlist`. If `kernlist` is not a list it is treated as a simple single variable. The denominator of `u` is ignored, and "degree" here does not pay attention to fractional powers. Mentions of a kernel within the argument to any operator or function (eg `sin`, `cos`, `log`, `sqrt`) are ignored. Really `u` is expected to be just a polynomial.
 """ Reduce.Algebra.totaldeg
