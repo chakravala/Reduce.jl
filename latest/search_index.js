@@ -1269,7 +1269,183 @@ var documenterSearchIndex = {"docs": [
     "page": "7 Built-in Prefix Operators",
     "title": "7.16.2 Solutions of Equations Involving Cubics and Quartics",
     "category": "section",
-    "text": "Since roots of cubics and quartics can often be very messy, a switch fullroots is available, that, when off (the default), will prevent the production of a result in closed form. The root_of construct will be used in this case instead.In constructing the solutions of cubics and quartics, trigonometrical forms are used where appropriate. This option is under the control of a switch trigform, which is normally on.The following example illustrates the use of these facilities:julia> Algebra.rlet(:xx => :(solve(x^3+x+1,x)))\n \njulia> rcall(:xx)\n(:(x = root_of(x_ ^ 3 + x_ + 1, x_, tag_1)),)\n\njulia> Algebra.on(:fullroots)\n\njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -((sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im - sinh(asinh((3 * sqrt(3)) // 2) // 3))) // sqrt(3))\n :(x = (sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im + sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n :(x = (-2 * sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n\njulia> Algebra.off(:trigform)\n \njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -(((sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) * (sqrt(3) * im + 1) + 2 ^ (2 / 3) * (sqrt(3) * im - 1))) / (2 * (sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6)))\n :(x = (2 ^ (2 / 3) * (sqrt(3) * im + 1) + (sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) * (sqrt(3) * im - 1)) / (2 * (sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6)))   \n :(x = ((sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) - 2 ^ (2 / 3)) / ((sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6))) \n ```\n\n### 7.16.3 Other Options\n\nIf `solvesingular` is on (the default setting), degenerate systems such as `x+y=0`, `2x+2y=0` will be solved by introducing appropriate arbitrary constants. The consistent singular equation `0=0` or equations involving functions with multiple inverses may introduce unique new indeterminant kernels `arbcomplex(j)`, or `arbint(j)`, (``j=1,2,...``), representing arbitrary complex or integer numbers respectively. To automatically select the principal branches, do `off(:allbranch)`. To avoid the introduction of new indeterminant kernels do `off(:arbvars)` – then no equations are generated for the free variables and their original names are used to express the solution forms. To suppress solutions of consistent singular equations do `off(:solvesingular)`.\n\nTo incorporate additional inverse functions do, for example:Julia R\"put(’sinh,’inverse,’asinh)\" R\"put(’asinh,’inverse,’sinh)\"together with any desired simplification rules such asR\"for all x let sinh(asinh(x))=x, asinh(sinh(x))=x\"For completeness, functions with non-unique inverses should be treated as `^`, `sin`, and `cos` are in the `solve` module source.\n\nArguments of `asin` and `acos` are not checked to ensure that the absolute value of the real part does not exceed 1; and arguments of `log` are not checked to ensure that the absolute value of the imaginary part does not exceed `π`; but checks (perhaps involving user response for non-numerical arguments) could be introduced using `let` statements for these operators.\n\n### 7.16.4 Parameters and Variable Dependency\n@docs Reduce.Algebra.requirements@docs Reduce.Algebra.assumptions\n`solve` rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch `varopt`, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:Julia julia> @rcall s=(y^3+3x=0,x^2+y^2=1);julia> Algebra.solve(:s,(:y,:x)) |> collect 2-element Array{Expr,1}:  :(y = root_of((y_ ^ 6 + 9 * y_ ^ 2) - 9, y_, tag_2))  :(x = -(y ^ 3) // 3)    julia> Algebra.off(:varopt); Algebra.solve(:s,(:y,:x)) |> collect 2-element Array{Expr,1}:  :(y = (-(((x ^ 4 - 2 * x ^ 2) + 10)) * x) // 3)                       :(x = root_of(((x_ ^ 6 - 3 * x_ ^ 4) + 12 * x_ ^ 2) - 1, x_, tag_3))In the first case, `solve` forms the solution as a set of pairs ``(y_i,x(y_i))`` because the degree of x is higher – such a rearrangement makes the internal computation of the Gröbner basis generally faster. For the second case the explicitly given variable sequence is used such that the solution has now the form `(x_i,y(x_i))`. Controlling the variable sequence is especially important if the system has one or more free variables. As an alternative to turning off `varopt`, a partial dependency among the variables can be declared using the `depend` statement: `solve` then rearranges the variable sequence but keeps any variable ahead of those on which it depends.\nJulia julia> Algebra.on(:varopt)julia> @rcall s=(a^3+b,b^2+c);julia> Algebra.solve(:s,(:a,:b,:c)) (:(a = arbcomplex(1)), :(b = -(a ^ 3)), :(c = -(a ^ 6))) julia> Algebra.depend(:a,:c); Algebra.depend(:b,:c)julia> Algebra.solve(:s,(:a,:b,:c)) 3-element Array{Expr,1}:  :(c = arbcomplex(2))                    :(a = root_of(a_ ^ 6 + c, a_, tag_3))  :(b = -(a ^ 3)) Here `solve` is forced to put ``c`` after ``a`` and after ``b``, but there is no obstacle to interchanging ``a`` and ``b``.\n\n## 7.17 Even and Odd Operators\n@docs Reduce.Algebra.even@docs Reduce.Algebra.odd\n## 7.18 Linear Operators\n@docs Reduce.Algebra.linear\nTo summarize, `y` “depends” on the indeterminate `x` in the above if either of the following hold:\n\n1. `y` is an expression that contains `x` at any level as a variable, e.g.: `cos(sin(x))`\n2. Any variable in the expression `y` has been declared dependent on `x` by use of the declaration `depend`.\n\nThe use of such linear operators can be seen in the paper Fox, J.A. and A. C. Hearn, “Analytic Computation of Some Integrals in Fourth Order Quantum Electrodynamics” Journ. Comp. Phys. 14 (1974) 301-317, which contains a complete listing of a program for definite integration of some expressions that arise in fourth order quantum electrodynamics.\n\n## 7.19 Non-Commuting Operators\n@docs Reduce.Algebra.noncom\nThe `let` statement may be used to introduce rules of evaluation for such operators. In particular, the boolean operator `ordp` is useful for introducing an ordering on such expressions.\n\n*Example:* The ruleJulia R\"for all x,y such that x neq y and ordp(x,y) let u(x)u(y)= u(y)u(x)+comm(x,y)\"would introduce the commutator of `u(x)` and `u(y)` for all `x` and `y`. Note that since `ordp(x,x)` is true, the equality check is necessary in the degenerate case to avoid a circular loop in the rule.\n\n## 7.20 Symmetric and Antisymmetric Operators\n@docs Reduce.Algebra.symmetric@docs Reduce.Algebra.antisymmetric \n## 7.21 Declaring New Prefix Operators\n@docs Reduce.Algebra.operator\nIf the user forgets to declare an identifier as an operator, the system will prompt the user to do so in interactive mode, or do it automatically in non-interactive mode. A diagnostic message will also be printed if an identifier is declared `operator` more than once.\n\nOperators once declared are global in scope, and so can then be referenced anywhere in the program. In other words, a declaration within a block (or a procedure) does not limit the scope of the operator to that block, nor does the operator go away on exiting the block (use `clear` instead for this purpose).\n\n## 7.22 Declaring New Infix Operators\n@docs Reduce.Algebra.infix@docs Reduce.Algebra.precedence\nBoth infix and prefix operators have no transformation properties unless `let` statements or procedure declarations are used to assign a meaning.\n\nWe should note here that infix operators so defined are always binary: `R\"a mm b mm c\"` means `R\"(a mm b) mm c\"`.\n\n## 7.23 Creating/Removing Variable Dependency\n@docs Reduce.Algebra.depend@docs Reduce.Algebra.nodepend ```"
+    "text": "Since roots of cubics and quartics can often be very messy, a switch fullroots is available, that, when off (the default), will prevent the production of a result in closed form. The root_of construct will be used in this case instead.In constructing the solutions of cubics and quartics, trigonometrical forms are used where appropriate. This option is under the control of a switch trigform, which is normally on.The following example illustrates the use of these facilities:julia> Algebra.rlet(:xx => :(solve(x^3+x+1,x)))\n \njulia> rcall(:xx)\n(:(x = root_of(x_ ^ 3 + x_ + 1, x_, tag_1)),)\n\njulia> Algebra.on(:fullroots)\n\njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -((sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im - sinh(asinh((3 * sqrt(3)) // 2) // 3))) // sqrt(3))\n :(x = (sqrt(3) * cosh(asinh((3 * sqrt(3)) // 2) // 3) * im + sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n :(x = (-2 * sinh(asinh((3 * sqrt(3)) // 2) // 3)) // sqrt(3))\n\njulia> Algebra.off(:trigform)\n \njulia> collect(rcall(:xx))\n3-element Array{Expr,1}:\n :(x = -(((sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) * (sqrt(3) * im + 1) + 2 ^ (2 / 3) * (sqrt(3) * im - 1))) / (2 * (sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6)))\n :(x = (2 ^ (2 / 3) * (sqrt(3) * im + 1) + (sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) * (sqrt(3) * im - 1)) / (2 * (sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6)))   \n :(x = ((sqrt(31) - 3 * sqrt(3)) ^ (2 / 3) - 2 ^ (2 / 3)) / ((sqrt(31) - 3 * sqrt(3)) ^ (1 / 3) * 6 ^ (1 / 3) * 3 ^ (1 / 6))) "
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16.3-Other-Options-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16.3 Other Options",
+    "category": "section",
+    "text": "If solvesingular is on (the default setting), degenerate systems such as x+y=0, 2x+2y=0 will be solved by introducing appropriate arbitrary constants. The consistent singular equation 0=0 or equations involving functions with multiple inverses may introduce unique new indeterminant kernels arbcomplex(j), or arbint(j), (j=12), representing arbitrary complex or integer numbers respectively. To automatically select the principal branches, do off(:allbranch). To avoid the introduction of new indeterminant kernels do off(:arbvars) – then no equations are generated for the free variables and their original names are used to express the solution forms. To suppress solutions of consistent singular equations do off(:solvesingular).To incorporate additional inverse functions do, for example:R\"put(’sinh,’inverse,’asinh)\"\nR\"put(’asinh,’inverse,’sinh)\"together with any desired simplification rules such asR\"for all x let sinh(asinh(x))=x, asinh(sinh(x))=x\"For completeness, functions with non-unique inverses should be treated as ^, sin, and cos are in the solve module source.Arguments of asin and acos are not checked to ensure that the absolute value of the real part does not exceed 1; and arguments of log are not checked to ensure that the absolute value of the imaginary part does not exceed π; but checks (perhaps involving user response for non-numerical arguments) could be introduced using let statements for these operators."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.requirements",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.requirements",
+    "category": "function",
+    "text": "requirements()\n\nThe proper design of a variable sequence supplied as a second argument to solve is important for the structure of the solution of an equation system. Any unknown in the system not in this list is considered totally free. E.g. the call\n\nAlgebra.solve((:(x==2z),:(z==2y)),(:z,))\n\nproduces an empty list as a result because there is no function z = z(x,y) which fulfills both equations for arbitrary x and y values. In such a case the share variable requirements displays a set of restrictions for the parameters of the system:\n\njulia> Algebra.requirements()\n(:(x - 4y),)\n\nThe non-existence of a formal solution is caused by a contradiction which disappears only if the parameters of the initial system are set such that all members of the requirements list take the value zero. For a linear system the set is complete: a solution of the requirements list makes the initial system solvable. E.g. in the above case a substitution x = 4y makes the equation set consistent. For a non-linear system only one inconsistency is detected. If such a system has more than one inconsistency, you must reduce them one after the other. 1 The set shows you also the dependency among the parameters: here one of x and y is free and a formal solution of the system can be computed by adding it to the variable list of solve. The requirement set is not unique – there may be other such sets.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.assumptions",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.assumptions",
+    "category": "function",
+    "text": "assumptions()\n\nA system with parameters may have a formal solution, e.g. \n\njulia> Algebra.solve((:(x==a*z+1),:(0==b*z-y)),(:z,:x))\n(:(z = y // b), :(x = (a * y + b) // b))\n\nwhich is not valid for all possible values of the parameters. The variable assumptions contains then a list of restrictions: the solutions are valid only as long as none of these expressions vanishes. Any zero of one of them represents a special case that is not covered by the formal solution. In the above case the value is\n\njulia> Algebra.assumptions()\n(:b,)\n\nwhich excludes formally the case b = 0; obviously this special parameter value makes the system singular. The set of assumptions is complete for both, linear and non–linear systems.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.16.4-Parameters-and-Variable-Dependency-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.16.4 Parameters and Variable Dependency",
+    "category": "section",
+    "text": "Reduce.Algebra.requirementsReduce.Algebra.assumptionssolve rearranges the variable sequence to reduce the (expected) computing time. This behavior is controlled by the switch varopt, which is on by default. If it is turned off, the supplied variable sequence is used or the system kernel ordering is taken if the variable list is omitted. The effect is demonstrated by an example:julia> @rcall s=(y^3+3x=0,x^2+y^2=1);\n \njulia> Algebra.solve(:s,(:y,:x)) |> collect\n2-element Array{Expr,1}:\n :(y = root_of((y_ ^ 6 + 9 * y_ ^ 2) - 9, y_, tag_2))\n :(x = -(y ^ 3) // 3)    \n\njulia> Algebra.off(:varopt); Algebra.solve(:s,(:y,:x)) |> collect\n2-element Array{Expr,1}:\n :(y = (-(((x ^ 4 - 2 * x ^ 2) + 10)) * x) // 3)                     \n :(x = root_of(((x_ ^ 6 - 3 * x_ ^ 4) + 12 * x_ ^ 2) - 1, x_, tag_3))In the first case, solve forms the solution as a set of pairs (y_ix(y_i)) because the degree of x is higher – such a rearrangement makes the internal computation of the Gröbner basis generally faster. For the second case the explicitly given variable sequence is used such that the solution has now the form (x_i,y(x_i)). Controlling the variable sequence is especially important if the system has one or more free variables. As an alternative to turning off varopt, a partial dependency among the variables can be declared using the depend statement: solve then rearranges the variable sequence but keeps any variable ahead of those on which it depends.julia> Algebra.on(:varopt)\n\njulia> @rcall s=(a^3+b,b^2+c);\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n(:(a = arbcomplex(1)), :(b = -(a ^ 3)), :(c = -(a ^ 6))) \n\njulia> Algebra.depend(:a,:c); Algebra.depend(:b,:c)\n\njulia> Algebra.solve(:s,(:a,:b,:c))\n3-element Array{Expr,1}:\n :(c = arbcomplex(2))                  \n :(a = root_of(a_ ^ 6 + c, a_, tag_3))\n :(b = -(a ^ 3)) Here solve is forced to put c after a and after b, but there is no obstacle to interchanging a and b."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.even",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.even",
+    "category": "function",
+    "text": "even(r...)\n\nAn operator can be declared to be even in its first argument by the declarations even. Expressions involving an operator declared in this manner are transformed if the first argument contains a minus sign. Any other arguments are not affected. For example, the declaration\n\njulia> Algebra.even(:f1)\n\nmeans that\n\n        f1(-a)    ->    f1(a)  \n        f1(-a,-b) ->    f1(a,-b)  \n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.odd",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.odd",
+    "category": "function",
+    "text": "odd(r...)\n\nAn operator can be declared to be odd in its first argument by the declarations odd. Expressions involving an operator declared in this manner are transformed if the first argument contains a minus sign. Any other arguments are not affected. In addition, if say f is declared odd, then f(0) is replaced by zero unless f is also declared non zero by the declaration nonzero. For example, the declarations\n\njulia> Algebra.odd(:f2)\n\nmeans that\n\n        f2(-a)    ->   -f2(a)  \n        f2(0)     ->    0\n\nTo inhibit the last transformation, say nonzero(:f2).\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.17-Even-and-Odd-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.17 Even and Odd Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.evenReduce.Algebra.odd"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.linear",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.linear",
+    "category": "function",
+    "text": "linear(r...)\n\nAn operator can be declared to be linear in its first argument over powers of its second argument. If an operator f is so declared, f of any sum is broken up into sums of fs, and any factors that are not powers of the variable are taken outside. This means that f must have (at least) two arguments. In addition, the second argument must be an identifier (or more generally a kernel), not an expression.\n\nExample: If f were declared linear, then\n\nf(a*x^5+b*x+c,x) ->  f(x^5,x)*a + f(x,x)*b + f(1,x)*c\n\nMore precisely, not only will the variable and its powers remain within the scope of the f operator, but so will any variable and its powers that had been declared to depend on the prescribed variable; and so would any expression that contains that variable or a dependent variable on any level, e.g. cos(sin(x)).\n\nTo declare operators f and g to be linear operators, use:\n\njulia> Algebra.linear(:f,:g)\n\nThe analysis is done of the first argument with respect to the second; any other arguments are ignored. It uses the following rules of evaluation:\n\nf(0) 		-> 0\nf(-y,x) 	-> -f(y,x)\nf(y+z,x) 	-> f(y,x)+f(z,x)\nf(y*z,x) 	-> z*f(y,x)   	if z does not depend on x\nf(y/z,x) 	-> f(y,x)/z	if z does not depend on x\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.18-Linear-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.18 Linear Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.linearTo summarize, y “depends” on the indeterminate x in the above if either of the following hold:y is an expression that contains x at any level as a variable, e.g.: cos(sin(x))\nAny variable in the expression y has been declared dependent on x by use of the declaration depend.The use of such linear operators can be seen in the paper Fox, J.A. and A. C. Hearn, “Analytic Computation of Some Integrals in Fourth Order Quantum Electrodynamics” Journ. Comp. Phys. 14 (1974) 301-317, which contains a complete listing of a program for definite integration of some expressions that arise in fourth order quantum electrodynamics."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.noncom",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.noncom",
+    "category": "function",
+    "text": "noncom(r...)\n\nAn operator can be declared to be non-commutative under multiplication by the declaration noncom.\n\nExample: After the declaration\n\njulia> Algebra.noncom(:u,:v);\n\nthe expressions u(x)*u(y)-u(y)*u(x) and u(x)*v(y)-v(y)*u(x) will remain unchanged on simplification, and in particular will not simplify to zero.\n\nNote that it is the operator (u and v in the above example) and not the variable that has the non-commutative property.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.19-Non-Commuting-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.19 Non-Commuting Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.noncomThe let statement may be used to introduce rules of evaluation for such operators. In particular, the boolean operator ordp is useful for introducing an ordering on such expressions.Example: The ruleR\"for all x,y such that x neq y and ordp(x,y) let u(x)*u(y)= u(y)*u(x)+comm(x,y)\"would introduce the commutator of u(x) and u(y) for all x and y. Note that since ordp(x,x) is true, the equality check is necessary in the degenerate case to avoid a circular loop in the rule."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.symmetric",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.symmetric",
+    "category": "function",
+    "text": "symmetric(r...)\n\nAn operator can be declared to be symmetric with respect to its arguments by the declaration symmetric. For example\n\njulia> Algebra.symmetric(:u,:v);\n\nmeans that any expression involving the top level operators u or v will have its arguments reordered to conform to the internal order used by REDUCE. The user can change this order for kernels by the command korder. For example, u(x,v(1,2)) would become u(v(2,1),x), since numbers are ordered in decreasing order, and expressions are ordered in decreasing order of complexity.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.antisymmetric",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.antisymmetric",
+    "category": "function",
+    "text": "antisymmetric(r...)\n\nthe declaration antisymmetric declares an operator antisymmetric. For example,\n\njulia> Algebra.antisymmetric(:l,:m);\n\nmeans that any expression involving the top level operators l or m will have its arguments reordered to conform to the internal order of the system, and the sign of the expression changed if there are an odd number of argument interchanges necessary to bring about the new order.\n\nFor example, l(x,m(1,2)) would become -l(-m(2,1),x) since one interchange occurs with each operator. An expression like l(x,x) would also be replaced by 0.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.20-Symmetric-and-Antisymmetric-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.20 Symmetric and Antisymmetric Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.symmetricReduce.Algebra.antisymmetric"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.operator",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.operator",
+    "category": "function",
+    "text": "operator(r...)\n\nThe user may add new prefix operators to the system by using the declaration operator. For example:\n\njulia> Algebra.operator(:h,:g1,:arctan)\n\nadds the prefix operators h, g1 and arctan to the system.\n\nThis allows symbols like h(w), h(x,y,z), g1(p+q), arctan(u/v) to be used in expressions, but no meaning or properties of the operator are implied. The same operator symbol can be used equally well as a 0-, 1-, 2-, 3-, etc.-place operator.\n\nTo give a meaning to an operator symbol, or express some of its properties, let statements can be used, or the operator can be given a definition as a procedure.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.21-Declaring-New-Prefix-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.21 Declaring New Prefix Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.operatorIf the user forgets to declare an identifier as an operator, the system will prompt the user to do so in interactive mode, or do it automatically in non-interactive mode. A diagnostic message will also be printed if an identifier is declared operator more than once.Operators once declared are global in scope, and so can then be referenced anywhere in the program. In other words, a declaration within a block (or a procedure) does not limit the scope of the operator to that block, nor does the operator go away on exiting the block (use clear instead for this purpose)."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.infix",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.infix",
+    "category": "function",
+    "text": "infix(r...)\n\nUsers can add new infix operators by using the declarations infix and precedence. For example,\n\njulia> Algebra.infix(:mm)\n\nThe declaration infix(:mm) would allow one to use the symbol mm as an infix operator: R\"a mm b\" instead of R\"mm(a,b)\".\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.precedence",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.precedence",
+    "category": "function",
+    "text": "precedence(a,b)\n\nUsers can add new infix operators by using the declarations infix and precedence. For example,\n\njulia> Algebra.precedence(:mm,:-)\n\nThe declaration precedence(:mm,:-) says that mm should be inserted into the infix operator precedence list just after the - operator. This gives it higher precedence than - and lower precedence than * . Thus R\"a - b mm c - d\" means R\"a - (b mm c) - d\", while R\"a * b mm c * d\" means R\"(a * b) mm (c * d)\".\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.22-Declaring-New-Infix-Operators-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.22 Declaring New Infix Operators",
+    "category": "section",
+    "text": "Reduce.Algebra.infixReduce.Algebra.precedenceBoth infix and prefix operators have no transformation properties unless let statements or procedure declarations are used to assign a meaning.We should note here that infix operators so defined are always binary: R\"a mm b mm c\" means R\"(a mm b) mm c\"."
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.depend",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.depend",
+    "category": "function",
+    "text": "depend(r...)\n\nThere are several facilities in REDUCE, such as the differentiation operator and the linear operator facility, that can utilize knowledge of the dependency between various variables, or kernels. Such dependency may be expressed by the command depend. This takes an arbitrary number of arguments and sets up a dependency of the first argument on the remaining arguments. For example,\n\njulia> Algebra.depend(:x,:y,:z)\n\nsays that x is dependent on both y and z.\n\njulia> Algebra.depend(:z,:(cos(x)),:y)\n\nsays that z is dependent on cos(x) and y.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#Reduce.Algebra.nodepend",
+    "page": "7 Built-in Prefix Operators",
+    "title": "Reduce.Algebra.nodepend",
+    "category": "function",
+    "text": "nodepend(r...)\n\nDependencies introduced by depend can be removed by nodepend. The arguments of this are the same as for depend. For example, given the above dependencies,\n\njulia> Algebra.nodepend(:z,:(cos(x)))\n\nsays that z is no longer dependent on cos(x), although it remains dependent on y.\n\n\n\n"
+},
+
+{
+    "location": "man/07-prefix-ops.html#.23-Creating/Removing-Variable-Dependency-1",
+    "page": "7 Built-in Prefix Operators",
+    "title": "7.23 Creating/Removing Variable Dependency",
+    "category": "section",
+    "text": "Reduce.Algebra.dependReduce.Algebra.nodepend"
 },
 
 {
@@ -2161,11 +2337,51 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/14-matrix.html#Reduce.Algebra.det",
+    "page": "14 Matrix Calculations",
+    "title": "Reduce.Algebra.det",
+    "category": "function",
+    "text": "det(exprn)\n\nSyntax:\n\n        det(EXPRN:matrix_expression):algebraic.\n\nThe operator det is used to represent the determinant of a square matrix expression. E.g.,\n\nAlgebra.det(:(y^2))\n\nis a scalar expression whose value is the determinant of the square of the matrix y, and\n\nAlgebra.det([:a :b :c; :d :e :f; :g :h :j])\n\nis a scalar expression whose value is the determinant of the matrix\n\n3×3 Array{Symbol,2}:\n :a  :b  :c\n :d  :e  :f\n :g  :h  :j\n\nDeterminant expressions have the instant evaluation property. In other words, the statement\n\n        let det mat((a,b),(c,d)) = 2;\n\nsets the value of the determinant to 2, and does not set up a rule for the determinant itself.\n\n\n\n"
+},
+
+{
+    "location": "man/14-matrix.html#Reduce.Algebra.tp",
+    "page": "14 Matrix Calculations",
+    "title": "Reduce.Algebra.tp",
+    "category": "function",
+    "text": "tp(exprn)\n\nSyntax:\n\n        tp(EXPRN:matrix_expression):matrix.\n\nThis operator takes a single matrix argument and returns its transpose.\n\n\n\n"
+},
+
+{
+    "location": "man/14-matrix.html#Reduce.Algebra.trace",
+    "page": "14 Matrix Calculations",
+    "title": "Reduce.Algebra.trace",
+    "category": "function",
+    "text": "trace(exprn)\n\nSyntax:\n\n        TRACE(EXPRN:matrix_expression):algebraic.\n\nThe operator TRACE is used to represent the trace of a square matrix.\n\n\n\n"
+},
+
+{
+    "location": "man/14-matrix.html#Reduce.Algebra.nullspace",
+    "page": "14 Matrix Calculations",
+    "title": "Reduce.Algebra.nullspace",
+    "category": "function",
+    "text": "nullspace(exprn)\n\nSyntax:\n\n        NULLSPACE(EXPRN:matrix_expression):list\n\nnullspace calculates for a matrix a a list of linear independent vectors (a basis) whose linear combinations satisfy the equation Ax = 0. The basis is provided in a form such that as many upper components as possible are isolated.\n\nNote that with b := nullspace a the expression length b is the nullity of a, and that second length a - length b calculates the rank of a. The rank of a matrix expression can also be found more directly by the rank operator described below.\n\nExample: The command\n\n        nullspace mat((1,2,3,4),(5,6,7,8));\n\ngives the output\n\n        {  \n         [ 1  ]  \n         [    ]  \n         [ 0  ]  \n         [    ]  \n         [ - 3]  \n         [    ]  \n         [ 2  ]  \n         ,  \n         [ 0  ]  \n         [    ]  \n         [ 1  ]  \n         [    ]  \n         [ - 2]  \n         [    ]  \n         [ 1  ]  \n         }\n\nIn addition to the REDUCE matrix form, nullspace accepts as input a matrix given as a list of lists, that is interpreted as a row matrix. If that form of input is chosen, the vectors in the result will be represented by lists as well. This additional input syntax facilitates the use of nullspace in applications different from classical linear algebra.\n\n\n\n"
+},
+
+{
+    "location": "man/14-matrix.html#Reduce.Algebra.rank",
+    "page": "14 Matrix Calculations",
+    "title": "Reduce.Algebra.rank",
+    "category": "function",
+    "text": "rank(exprn)\n\nSyntax:\n\n        RANK(EXPRN:matrix_expression):integer\n\nrank calculates the rank of its argument, that, like nullspace can either be a standard matrix expression, or a list of lists, that can be interpreted either as a row matrix or a set of equations.\n\nExample:\n\nAlgebra.rank([:a :b :c; :d :e :f])\n\nreturns the value 2.\n\n\n\n"
+},
+
+{
     "location": "man/14-matrix.html#.4-Operators-with-Matrix-Arguments-1",
     "page": "14 Matrix Calculations",
     "title": "14.4 Operators with Matrix Arguments",
     "category": "section",
-    "text": "The operator length applied to a matrix returns a list of the number of rows and columns in the matrix. Other operators useful in matrix calculations are defined in the following subsections. Attention is also drawn to the LINALG (section 16.37) and NORMFORM (section 16.42) packages.Reduce.Algebra.det\nReduce.Algebra.mateign\nReduce.Algebra.tp\nReduce.Algebra.trace\nReduce.Algebra.cofactor\nReduce.Algebra.nullspace\nReduce.Algebra.rank"
+    "text": "The operator length applied to a matrix returns a list of the number of rows and columns in the matrix. Other operators useful in matrix calculations are defined in the following subsections. Attention is also drawn to the LINALG (section 16.37) and NORMFORM (section 16.42) packages.Reduce.Algebra.detReduce.Algebra.mateigenReduce.Algebra.tp\nReduce.Algebra.traceReduce.Algebra.cofactorReduce.Algebra.nullspace\nReduce.Algebra.rank"
 },
 
 {
@@ -2390,6 +2606,302 @@ var documenterSearchIndex = {"docs": [
     "title": "16.67 SUM: A package for series summation",
     "category": "section",
     "text": "This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and PROD returns the product of the given expression.This package loads automatically.Author: Fujio Kako.This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and the operator prod returns the product of the given expression. These are used with the syntax:SUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) \nPROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])If there is no closed form solution, these operators return the input unchanged. UPLIM and LOLIM are optional parameters specifying the lower limit and upper limit of the summation (or product), respectively. If UPLIM is not supplied, the upper limit is taken as K (the summation variable itself).For example:Algebra.sum(:(n^3),:n)\nAlgebra.sum(:(a+k*r),:k,0,:(n-1))\nAlgebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))\nAlgebra.prod(:(k/(k-2)),:k)Gosper’s algorithm succeeds whenever the ratio fracsum_k=n_0^n f(k)sum_k=n_0^n-1 f(k) is a rational function of n. The function SUM!-SQ handles basic functions such as polynomials, rational functions and exponentials.The trigonometric functions sin, cos, etc. are converted to exponentials and then Gosper’s algorithm is applied. The result is converted back into sin, cos, sinh and cosh.Summations of logarithms or products of exponentials are treated by the formula:sum_k=n_0^n log f(k) = log prod_k=n_0^n f(k)prod_k=n_0^n exp f(k) = exp sum_k=n_0^n f(k)Other functions, as shown in the test file for the case of binomials and formal products, can be summed by providing let rules which must relate the functions evaluated at k and k - 1 (k being the summation variable).There is a switch trsum (default off). If this switch is on, trace messages are printed out during the course of Gosper’s algorithm."
+},
+
+{
+    "location": "man/17-symbolic.html#",
+    "page": "17 Symbolic Mode",
+    "title": "17 Symbolic Mode",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/17-symbolic.html#Symbolic-Mode-1",
+    "page": "17 Symbolic Mode",
+    "title": "17 Symbolic Mode",
+    "category": "section",
+    "text": "At the system level, REDUCE is based on a version of the programming language Lisp known as Standard Lisp which is described in J. Marti, Hearn, A. C., Griss, M. L. and Griss, C., “Standard LISP Report\" SIGPLAN Notices, ACM, New York, 14, No 10 (1979) 48-68. We shall assume in this section that the reader is familiar with the material in that paper. This also assumes implicitly that the reader has a reasonable knowledge about Lisp in general, say at the level of the LISP 1.5 Programmer’s Manual (McCarthy, J., Abrahams, P. W., Edwards, D. J., Hart, T. P. and Levin, M. I., “LISP 1.5 Programmer’s Manual”, M.I.T. Press, 1965) or any of the books mentioned at the end of this section. Persons unfamiliar with this material will have some difficulty understanding this section.Although REDUCE is designed primarily for algebraic calculations, its source language is general enough to allow for a full range of Lisp-like symbolic calculations. To achieve this generality, however, it is necessary to provide the user with two modes of evaluation, namely an algebraic mode and a symbolic mode. To enter symbolic mode, the user types symbolic; (or lisp;) and to return to algebraic mode one types algebraic;. Evaluations proceed differently in each mode so the user is advised to check what mode he is in if a puzzling error arises. He can find his mode by typing        eval_mode;The current mode will then be printed as ALGEBRAIC or SYMBOLIC.Expression evaluation may proceed in either mode at any level of a calculation, provided the results are passed from mode to mode in a compatible manner. One simply prefixes the relevant expression by the appropriate mode. If the mode name prefixes an expression at the top level, it will then be handled as if the global system mode had been changed for the scope of that particular calculation.For example, if the current mode is algebraic, then the commands        symbolic car ’(a);  \n        x+y;will cause the first expression to be evaluated and printed in symbolic mode and the second in algebraic mode. Only the second evaluation will thus affect the expression workspace. On the other hand, the statement        x + symbolic car ’(12);will result in the algebraic value x+12.The use of symbolic (and equivalently algebraic) in this manner is the same as any operator. That means that parentheses could be omitted in the above examples since the meaning is obvious. In other cases, parentheses must be used, as in        symbolic(x := ’a);Omitting the parentheses, as in        symbolic x := a;would be wrong, since it would parse as        symbolic(x) := a;For convenience, it is assumed that any operator whose first argument is quoted is being evaluated in symbolic mode, regardless of the mode in effect at that time. Thus, the first example above could be equally well written:        car ’(a);Except where explicit limitations have been made, most REDUCE algebraic constructions carry over into symbolic mode. However, there are some differences. First, expression evaluation now becomes Lisp evaluation. Secondly, assignment statements are handled differently, as we shall discuss shortly. Thirdly, local variables and array elements are initialized to nil rather than 0. (In fact, any variables not explicitly declared INTEGER are also initialized to nil in algebraic mode, but the algebraic evaluator recognizes nil as 0.) Finally, function definitions follow the conventions of Standard Lisp.To begin with, we mention a few extensions to our basic syntax which are designed primarily if not exclusively for symbolic mode.Pages = [\"17-symbolic.md\"]"
+},
+
+{
+    "location": "man/17-symbolic.html#.1-Symbolic-Infix-Operators-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.1 Symbolic Infix Operators",
+    "category": "section",
+    "text": "There are three binary infix operators in REDUCE intended for use in symbolic mode, namely . (cons), eq and memq. The precedence of these operators was given in another section."
+},
+
+{
+    "location": "man/17-symbolic.html#.2-Symbolic-Expressions-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.2 Symbolic Expressions",
+    "category": "section",
+    "text": "These consist of scalar variables and operators and follow the normal rules of the Lisp meta language.Examples:        x  \n        car u . reverse v  \n        simp (u+v^2)"
+},
+
+{
+    "location": "man/17-symbolic.html#.3-Quoted-Expressions-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.3 Quoted Expressions",
+    "category": "section",
+    "text": "Because symbolic evaluation requires that each variable or expression has a value, it is necessary to add to REDUCE the concept of a quoted expression by analogy with the Lisp quote function. This is provided by the single quote mark ’. For example,’a    	represents the Lisp S-expression	(quote a)\n’(a b c)   	represents the Lisp S-expression	(quote (a b c))Note, however, that strings are constants and therefore evaluate to themselves in symbolic mode. Thus, to print the string ~A String~, one would write        prin2 ~A String~;Within a quoted expression, identifier syntax rules are those of REDUCE. Thus (A !. B) is the list consisting of the three elements A, ., and B, whereas (A . B) is the dotted pair of A and B."
+},
+
+{
+    "location": "man/17-symbolic.html#.4-Lambda-Expressions-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.4 Lambda Expressions",
+    "category": "section",
+    "text": "lambda expressions provide the means for constructing Lisp lambda expressions in symbolic mode. They may not be used in algebraic mode.Syntax:⟨LAMBDAexpression⟩ ::=  LAMBDA ⟨varlist⟩⟨terminator⟩⟨statement⟩where⟨varlist⟩ ::= (⟨variable⟩,…,⟨variable⟩)e.g.,        lambda (x,y); car x . cdr y;is equivalent to the Lisp lambda expression        (lambda (x y) (cons (car x) (cdr y)))The parentheses may be omitted in specifying the variable list if desired.lambda expressions may be used in symbolic mode in place of prefix operators, or as an argument of the reserved word function.In those cases where a lambda expression is used to introduce local variables to avoid recomputation, a where statement can also be used. For example, the expression        (lambda (x,y); list(car x,cdr x,car y,cdr y))  \n            (reverse u,reverse v)can also be written      {car x,cdr x,car y,cdr y} where x=reverse u,y=reverse vWhere possible, where syntax is preferred to lambda syntax, since it is more natural."
+},
+
+{
+    "location": "man/17-symbolic.html#.5-Symbolic-Assignment-Statements-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.5 Symbolic Assignment Statements",
+    "category": "section",
+    "text": "In symbolic mode, if the left side of an assignment statement is a variable, a setq of the right-hand side to that variable occurs. If the left-hand side is an expression, it must be of the form of an array element, otherwise an error will result. For example, x:=y translates into (SETQ X Y) whereas a(3) := 3 will be valid if a has been previously declared a single dimensioned array of at least four elements."
+},
+
+{
+    "location": "man/17-symbolic.html#.6-FOR-EACH-Statement-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.6 FOR EACH Statement",
+    "category": "section",
+    "text": "The for each form of the for statement, designed for iteration down a list, is more general in symbolic mode. Its syntax is:        FOR EACH ID:identifier {IN|ON} LST:list  \n            {DO|COLLECT|JOIN|PRODUCT|SUM} EXPRN:S-exprAs in algebraic mode, if the keyword in is used, iteration is on each element of the list. With on, iteration is on the whole list remaining at each point in the iteration. As a result, we have the following equivalence between each form of for each and the various mapping functions in Lisp:	DO	COLLECT	JOIN\nIN	MAPC	MAPCAR	MAPCAN\nON	MAP	MAPLIST	MAPCONExample: To list each element of the list (a b c):        for each x in ’(a b c) collect list x;"
+},
+
+{
+    "location": "man/17-symbolic.html#.7-Symbolic-Procedures-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.7 Symbolic Procedures",
+    "category": "section",
+    "text": "All the functions described in the Standard Lisp Report are available to users in symbolic mode. Additional functions may also be defined as symbolic procedures. For example, to define the Lisp function ASSOC, the following could be used:        symbolic procedure assoc(u,v);  \n           if null v then nil  \n            else if u = caar v then car v  \n            else assoc(u, cdr v);If the default mode were symbolic, then symbolic could be omitted in the above definition. macros may be defined by prefixing the keyword procedure by the word 	macro. (In fact, ordinary functions may be defined with the keyword expr prefixing procedure as was used in the Standard Lisp Report.) For example, we could define a macro conscons by        symbolic macro procedure conscons l;  \n           expand(cdr l,’cons);Another form of macro, the smacro is also available. These are described in the Standard Lisp Report. The Report also defines a function type fexpr. However, its use is discouraged since it is hard to implement efficiently, and most uses can be replaced by macros. At the present time, there are no fexprs in the core REDUCE system."
+},
+
+{
+    "location": "man/17-symbolic.html#.8-Standard-Lisp-Equivalent-of-Reduce-Input-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.8 Standard Lisp Equivalent of Reduce Input",
+    "category": "section",
+    "text": "A user can obtain the Standard Lisp equivalent of his REDUCE input by turning on the switch defn (for definition). The system then prints the Lisp translation of his input but does not evaluate it. Normal operation is resumed when defn is turned off."
+},
+
+{
+    "location": "man/17-symbolic.html#.9-Communicating-with-Algebraic-Mode-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.9 Communicating with Algebraic Mode",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/17-symbolic.html#.10-Rlisp-’88-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.10 Rlisp ’88",
+    "category": "section",
+    "text": "Rlisp ’88 is a superset of the Rlisp that has been traditionally used for the support of REDUCE. It is fully documented in the book Marti, J.B., “RLISP ’88: An Evolutionary Approach to Program Design and Reuse”, World Scientific, Singapore (1993). Rlisp ’88 adds to the traditional Rlisp the following facilities:more general versions of the looping constructs for, repeat and while;\nsupport for a backquote construct;\nsupport for active comments;\nsupport for vectors of the form name[index];\nsupport for simple structures;\nsupport for records.In addition, “-” is a letter in Rlisp ’88. In other words, A-B is an identifier, not the difference of the identifiers A and B. If the latter construct is required, it is necessary to put spaces around the - character. For compatibility between the two versions of Rlisp, we recommend this convention be used in all symbolic mode programs.To use Rlisp ’88, type on rlisp88;. This switches to symbolic mode with the Rlisp ’88 syntax and extensions. While in this environment, it is impossible to switch to algebraic mode, or prefix expressions by “algebraic”. However, symbolic mode programs written in Rlisp ’88 may be run in algebraic mode provided the rlisp88 package has been loaded. We also expect that many of the extensions defined in Rlisp ’88 will migrate to the basic Rlisp over time. To return to traditional Rlisp or to switch to algebraic mode, say “off rlisp88;”."
+},
+
+{
+    "location": "man/17-symbolic.html#.11-References-1",
+    "page": "17 Symbolic Mode",
+    "title": "17.11 References",
+    "category": "section",
+    "text": "There are a number of useful books which can give you further information about LISP. Here is a selection:Allen, J.R., “The Anatomy of LISP”, McGraw Hill, New York, 1978.McCarthy J., P.W. Abrahams, J. Edwards, T.P. Hart and M.I. Levin, “LISP 1.5 Programmer’s Manual”, M.I.T. Press, 1965.Touretzky, D.S, “LISP: A Gentle Introduction to Symbolic Computation”, Harper & Row, New York, 1984.Winston, P.H. and Horn, B.K.P., “LISP”, Addison-Wesley, 1981."
+},
+
+{
+    "location": "man/18-physics.html#",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18 Calculations in High Energy Physics",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/18-physics.html#Calculations-in-High-Energy-Physics-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18 Calculations in High Energy Physics",
+    "category": "section",
+    "text": "A set of REDUCE commands is provided for users interested in symbolic calculations in high energy physics. Several extensions to our basic syntax are necessary, however, to allow for the different data structures encountered.Pages = [\"18-physics.md\"]"
+},
+
+{
+    "location": "man/18-physics.html#.1-High-Energy-Physics-Operators-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.1 High Energy Physics Operators",
+    "category": "section",
+    "text": "We begin by introducing three new operators required in these calculations."
+},
+
+{
+    "location": "man/18-physics.html#.1.1-.-(Cons)-Operator-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.1.1 . (Cons) Operator",
+    "category": "section",
+    "text": "Syntax:        (EXPRN1:vector_expression)  \n                 . (EXPRN2:vector_expression):algebraic.The binary . operator, which is normally used to denote the addition of an element to the front of a list, can also be used in algebraic mode to denote the scalar product of two Lorentz four-vectors. For this to happen, the second argument must be recognizable as a vector expression at the time of evaluation. With this meaning, this operator is often referred to as the dot operator. In the present system, the index handling routines all assume that Lorentz four-vectors are used, but these routines could be rewritten to handle other cases.Components of vectors can be represented by including representations of unit vectors in the system. Thus if eo represents the unit vector (1,0,0,0), (p.eo) represents the zeroth component of the four-vector p. Our metric and notation follows Bjorken and Drell “Relativistic Quantum Mechanics” (McGraw-Hill, New York, 1965). Similarly, an arbitrary component p may be represented by (p.u). If contraction over components of vectors is required, then the declaration index must be used. Thus        index u;declares u as an index, and the simplification of        p.u * q.uwould result in        P.QThe metric tensor g^ may be represented by (u.v). If contraction over u and v is required, then they should be declared as indices.Errors occur if indices are not properly matched in expressions.If a user later wishes to remove the index property from specific vectors, he can do it with the declaration remind. Thus remind v1,…,vn; removes the index flags from the variables v1 through vn. However, these variables remain vectors in the system."
+},
+
+{
+    "location": "man/18-physics.html#.1.2-G-Operator-for-Gamma-Matrices-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.1.2 G Operator for Gamma Matrices",
+    "category": "section",
+    "text": "Syntax:        G(ID:identifier[,EXPRN:vector_expression])  \n                :gamma_matrix_expression.g is an n-ary operator used to denote a product of γ matrices contracted with Lorentz four-vectors. Gamma matrices are associated with fermion lines in a Feynman diagram. If more than one such line occurs, then a different set of γ matrices (operating in independent spin spaces) is required to represent each line. To facilitate this, the first argument of g is a line identification identifier (not a number) used to distinguish different lines.Thus        g(l1,p) * g(l2,q)denotes the product of γ.p associated with a fermion line identified as l1, and γ.q associated with another line identified as l2 and where p and q are Lorentz four-vectors. A product of γ matrices associated with the same line may be written in a contracted form.Thus        g(l1,p1,p2,...,p3) = g(l1,p1)*g(l1,p2)*...*g(l1,p3) .The vector a is reserved in arguments of g to denote the special  matrix ^5. Thusg(l,a)	= γ ^ 5	associated with the line L\n 	 	 \ng(l,p,a)	= γ ⋅ p × γ ^ 5	associated with the line L.^ (associated with the line L) may be written as g(l,u), with u flagged as an index if contraction over u is required.The notation of Bjorken and Drell is assumed in all operations involving γ matrices."
+},
+
+{
+    "location": "man/18-physics.html#.1.3-EPS-Operator-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.1.3 EPS Operator",
+    "category": "section",
+    "text": "Syntax:         EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp):vector_exp.The operator eps has four arguments, and is used only to denote the completely antisymmetric tensor of order 4 and its contraction with Lorentz four-vectors. Thus _ijkl = begincases +1  textif ijkltext is an even permutation of 0123  - 1   textif ijkltext is an odd permutation of 0123  0  textotherwise endcases A contraction of the form _ijp_q_ may be written as eps(i,j,p,q), with i and j flagged as indices, and so on."
+},
+
+{
+    "location": "man/18-physics.html#.2-Vector-Variables-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.2 Vector Variables",
+    "category": "section",
+    "text": "Apart from the line identification identifier in the g operator, all other arguments of the operators in this section are vectors. Variables used as such must be declared so by the type declaration vector, for example:        vector  p1,p2;declares p1 and p2 to be vectors. Variables declared as indices or given a mass are automatically declared vector by these declarations."
+},
+
+{
+    "location": "man/18-physics.html#.3-Additional-Expression-Types-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.3 Additional Expression Types",
+    "category": "section",
+    "text": "Two additional expression types are necessary for high energy calculations, namely"
+},
+
+{
+    "location": "man/18-physics.html#.3.1-Vector-Expressions-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.3.1 Vector Expressions",
+    "category": "section",
+    "text": "These follow the normal rules of vector combination. Thus the product of a scalar or numerical expression and a vector expression is a vector, as are the sum and difference of vector expressions. If these rules are not followed, error messages are printed. Furthermore, if the system finds an undeclared variable where it expects a vector variable, it will ask the user in interactive mode whether to make that variable a vector or not. In batch mode, the declaration will be made automatically and the user informed of this by a message.Examples: Assuming p and q have been declared vectors, the following are vector expressions        p  \n        2*q/3  \n        2*x*y*p - p.q*q/(3*q.q)whereas p*q and p/q are not."
+},
+
+{
+    "location": "man/18-physics.html#.3.2-Dirac-Expressions-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.3.2 Dirac Expressions",
+    "category": "section",
+    "text": "These denote those expressions which involve γ matrices. A γ matrix is implicitly a 4 × 4 matrix, and so the product, sum and difference of such expressions, or the product of a scalar and Dirac expression is again a Dirac expression. There are no Dirac variables in the system, so whenever a scalar variable appears in a Dirac expression without an associated γ matrix expression, an implicit unit 4 by 4 matrix is assumed. For example, g(l,p) + m denotes g(l,p) + m*⟨unit 4 by 4 matrix⟩. Multiplication of Dirac expressions, as for matrix expressions, is of course non-commutative."
+},
+
+{
+    "location": "man/18-physics.html#.4-Trace-Calculations-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.4 Trace Calculations",
+    "category": "section",
+    "text": "When a Dirac expression is evaluated, the system computes one quarter of the trace of each γ matrix product in the expansion of the expression. One quarter of each trace is taken in order to avoid confusion between the trace of the scalar m, say, and m representing m * ⟨unit 4 by 4 matrix⟩. Contraction over indices occurring in such expressions is also performed. If an unmatched index is found in such an expression, an error occurs.The algorithms used for trace calculations are the best available at the time this system was produced. For example, in addition to the algorithm developed by Chisholm for contracting indices in products of traces, REDUCE uses the elegant algorithm of Kahane for contracting indices in γ matrix products. These algorithms are described in Chisholm, J. S. R., Il Nuovo Cimento X, 30, 426 (1963) and Kahane, J., Journal Math. Phys. 9, 1732 (1968).It is possible to prevent the trace calculation over any line identifier by the declaration nospur. For example,        nospur l1,l2;will mean that no traces are taken of γ matrix terms involving the line numbers l1 and l2. However, in some calculations involving more than one line, a catastrophic error        This NOSPUR option not implementedcan occur (for the reason stated!) If you encounter this error, please let us know!A trace of a γ matrix expression involving a line identifier which has been declared nospur may be later taken by making the declaration spur.See also the CVIT package for an alternative mechanism (chapter 16.17)."
+},
+
+{
+    "location": "man/18-physics.html#.5-Mass-Declarations-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.5 Mass Declarations",
+    "category": "section",
+    "text": "It is often necessary to put a particle “on the mass shell” in a calculation. This can, of course, be accomplished with a let command such as        let p.p= m^2;but an alternative method is provided by two commands mass and mshell. mass takes a list of equations of the form:⟨vector variable⟩=⟨scalar variable⟩for example,        mass p1=m, q1=mu;The only effect of this command is to associate the relevant scalar variable as a mass with the corresponding vector. If we now saymshell ⟨vector variable⟩,…,⟨vector variable⟩⟨terminator⟩and a mass has been associated with these arguments, a substitution of the form⟨vector variable⟩.⟨vector variable⟩ = ⟨mass⟩^2is set up. An error results if the variable has no preassigned mass."
+},
+
+{
+    "location": "man/18-physics.html#.6-Example-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.6 Example",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/18-physics.html#.7-Extensions-to-More-Than-Four-Dimensions-1",
+    "page": "18 Calculations in High Energy Physics",
+    "title": "18.7 Extensions to More Than Four Dimensions",
+    "category": "section",
+    "text": "In our discussion so far, we have assumed that we are working in the normal four dimensions of QED calculations. However, in most cases, the programs will also work in an arbitrary number of dimensions. The commandvecdim ⟨expression⟩⟨terminator⟩sets the appropriate dimension. The dimension can be symbolic as well as numerical. Users should note however, that the eps operator and the _5 symbol (a) are not properly defined in other than four dimensions and will lead to an error if used."
+},
+
+{
+    "location": "man/19-rlisp.html#",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19 REDUCE and Rlisp Utilities",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/19-rlisp.html#REDUCE-and-Rlisp-Utilities-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19 REDUCE and Rlisp Utilities",
+    "category": "section",
+    "text": "REDUCE and its associated support language system Rlisp include a number of utilities which have proved useful for program development over the years. The following are supported in most of the implementations of REDUCE currently available.Pages = [\"19-rlisp.md\"]"
+},
+
+{
+    "location": "man/19-rlisp.html#.1-The-Standard-Lisp-Compiler-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.1 The Standard Lisp Compiler",
+    "category": "section",
+    "text": "Many versions of REDUCE include a Standard Lisp compiler that is automatically loaded on demand. You should check your system specific user guide to make sure you have such a compiler. To make the compiler active, the switch comp should be turned on. Any further definitions input after this will be compiled automatically. If the compiler used is a derivative version of the original Griss-Hearn compiler, (M. L. Griss and A. C. Hearn, “A Portable LISP Compiler\", SOFTWARE — Practice and Experience 11 (1981) 541-605), there are other switches that might also be used in this regard. However, these additional switches are not supported in all compilers. They are as follows:plapIf on, causes the printing of the portable macros produced by the compiler;pgwdIf on, causes the printing of the actual assembly language instructions generated from the macros;pwrdsIf on, causes a statistic message of the form ⟨function⟩ COMPILED, ⟨words⟩ WORDS, ⟨words⟩ LEFT to be printed. The first number is the number of words of binary program space the compiled function took, and the second number the number of words left unused in binary program space."
+},
+
+{
+    "location": "man/19-rlisp.html#.2-Fast-Loading-Code-Generation-Program-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.2 Fast Loading Code Generation Program",
+    "category": "section",
+    "text": "In most versions of REDUCE, it is possible to take any set of Lisp, Rlisp or REDUCE commands and build a fast loading version of them. In Rlisp or REDUCE, one does the following:         faslout <filename>;  \n         <commands or IN statements>  \n         faslend;To load such a file, one uses the command load, e.g. load foo; or load foo,bah;This process produces a fast-loading version of the original file. In some implementations, this means another file is created with the same name but a different extension. For example, in PSL-based systems, the extension is b (for binary). In CSL-based systems, however, this process adds the fast-loading code to a single file in which all such code is stored. Particular functions are provided by CSL for managing this file, and described in the CSL user documentation.In doing this build, as with the production of a Standard Lisp form of such statements, it is important to remember that some of the commands must be instantiated during the building process. For example, macros must be expanded, and some property list operations must happen. The REDUCE sources should be consulted for further details on this.To avoid excessive printout, input statements should be followed by a $ instead of the semicolon. With load however, the input doesn’t print out regardless of which terminator is used with the command.If you subsequently change the source files used in producing a fast loading file, don’t forget to repeat the above process in order to update the fast loading file correspondingly. Remember also that the text which is read in during the creation of the fast load file, in the compiling process described above, is not stored in your REDUCE environment, but only translated and output. If you want to use the file just created, you must then use load to load the output of the fast-loading file generation program.When the file to be loaded contains a complete package for a given application, load_package rather than load should be used. The syntax is the same. However, load_package does some additional bookkeeping such as recording that this package has now been loaded, that is required for the correct operation of the system."
+},
+
+{
+    "location": "man/19-rlisp.html#.3-The-Standard-Lisp-Cross-Reference-Program-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.3 The Standard Lisp Cross Reference Program",
+    "category": "section",
+    "text": "cref is a Standard Lisp program for processing a set of Standard LISP function definitions to produce:A “summary” showing:A list of files processed;\nA list of “entry points” (functions which are not called or are only called by themselves);\nA list of undefined functions (functions called but not defined in this set of functions);\nA list of variables that were used non-locally but not declared global or fluid before their use;\nA list of variables that were declared global but not used as fluids, i.e., bound in a function;\nA list of fluid variables that were not bound in a function so that one might consider declaring them globals;\nA list of all global variables present;\nA list of all fluid variables present;\nA list of all functions present.A “global variable usage” table, showing for each non-local variable:Functions in which it is used as a declared fluid or global;\nFunctions in which it is used but not declared;\nFunctions in which it is bound;\nFunctions in which it is changed by setq.A “function usage” table showing for each function:Where it is defined;\nFunctions which call this function;\nFunctions called by it;\nNon-local variables used.The program will also check that functions are called with the correct number of arguments, and print a diagnostic message otherwise.The output is alphabetized on the first seven characters of each function name."
+},
+
+{
+    "location": "man/19-rlisp.html#.3.1-Restrictions-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.3.1 Restrictions",
+    "category": "section",
+    "text": "Algebraic procedures in REDUCE are treated as if they were symbolic, so that algebraic constructs will actually appear as calls to symbolic functions, such as AEVAL."
+},
+
+{
+    "location": "man/19-rlisp.html#.3.2-Usage-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.3.2 Usage",
+    "category": "section",
+    "text": "To invoke the cross reference program, the switch cref is used. on cref causes the cref program to load and the cross-referencing process to begin. After all the required definitions are loaded, off cref will cause the cross-reference listing to be produced. For example, if you wish to cross-reference all functions in the file tst.red, and produce the cross-reference listing in the file tst.crf, the following sequence can be used:        out ~tst.crf~;  \n        on cref;  \n        in ~tst.red~$  \n        off cref;  \n        shut ~tst.crf~;To process more than one file, more in statements may be added before the call of off cref, or the in statement changed to include a list of files."
+},
+
+{
+    "location": "man/19-rlisp.html#.3.3-Options-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.3.3 Options",
+    "category": "section",
+    "text": "Functions with the flag nolist will not be examined or output. Initially, all Standard Lisp functions are so flagged. (In fact, they are kept on a list NOLIST!*, so if you wish to see references to all functions, then cref should be first loaded with the command load cref, and this variable then set to nil).It should also be remembered that any macros with the property list flag expand, or, if the switch force is on, without the property list flag noexpand, will be expanded before the definition is seen by the cross-reference program, so this flag can also be used to select those macros you require expanded and those you do not."
+},
+
+{
+    "location": "man/19-rlisp.html#.4-Prettyprinting-Reduce-Expressions-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.4 Prettyprinting Reduce Expressions",
+    "category": "section",
+    "text": "REDUCE includes a module for printing REDUCE syntax in a standard format. This module is activated by the switch pret, which is normally off.Since the system converts algebraic input into an equivalent symbolic form, the printing program tries to interpret this as an algebraic expression before printing it. In most cases, this can be done successfully. However, there will be occasional instances where results are printed in symbolic mode form that bears little resemblance to the original input, even though it is formally equivalent.If you want to prettyprint a whole file, say off output,msg;MSG and (hopefully) only clean output will result. Unlike defn, input is also evaluated with pret on."
+},
+
+{
+    "location": "man/19-rlisp.html#.5-Prettyprinting-Standard-Lisp-S-Expressions-1",
+    "page": "19 REDUCE and Rlisp Utilities",
+    "title": "19.5 Prettyprinting Standard Lisp S-Expressions",
+    "category": "section",
+    "text": "REDUCE includes a module for printing S-expressions in a standard format. The Standard Lisp function for this purpose is prettyprint which takes a Lisp expression and prints the formatted equivalent.Users can also have their REDUCE input printed in this form by use of the switch defn. This is in fact a convenient way to convert REDUCE (or Rlisp) syntax into Lisp. off msg; will prevent warning messages from being printed.NOTE: When defn is on, input is not evaluated."
 },
 
 {
