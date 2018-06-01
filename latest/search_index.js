@@ -2041,6 +2041,358 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "man/12-file-io.html#",
+    "page": "12 File Handling Commands",
+    "title": "12 File Handling Commands",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/12-file-io.html#File-Handling-Commands-1",
+    "page": "12 File Handling Commands",
+    "title": "12 File Handling Commands",
+    "category": "section",
+    "text": "In many applications, it is desirable to load previously prepared REDUCE files into the system, or to write output on other files. REDUCE offers four commands for this purpose, namely, in, out, shut, load, and load_package. The first three operators are described here; load and load_package are discussed in Section 19.2.Pages = [\"12-file-io.md\"]"
+},
+
+{
+    "location": "man/12-file-io.html#.1-IN-Command-1",
+    "page": "12 File Handling Commands",
+    "title": "12.1 IN Command",
+    "category": "section",
+    "text": "This command takes a list of file names as argument and directs the system to input each file (that should contain REDUCE statements and commands) into the system. File names can either be an identifier or a string. The explicit format of these will be system dependent and, in many cases, site dependent. The explicit instructions for the implementation being used should therefore be consulted for further details. For example:R\"in f1,~ggg.rr.s~\"will first load file f1, then ggg.rr.s. When a semicolon is used as the terminator of the in statement, the statements in the file are echoed on the terminal or written on the current output file. If $ is used as the terminator, the input is not shown. Echoing of all or part of the input file can be prevented, even if a semicolon was used, by placing an off echo; command in the input file.Files to be read using in should end with ;end;. Note the two semicolons! First of all, this is protection against obscure difficulties the user will have if there are, by mistake, more begins than ends on the file. Secondly, it triggers some file control book-keeping which may improve system efficiency. If end is omitted, an error message ~End-of-file read~ will occur.While a file is being loaded, the special identifier _LINE_ is replaced by the number of the current line in the file currently being read."
+},
+
+{
+    "location": "man/12-file-io.html#.2-OUT-Command-1",
+    "page": "12 File Handling Commands",
+    "title": "12.2 OUT Command",
+    "category": "section",
+    "text": "This command takes a single file name as argument, and directs output to that file from then on, until another out changes the output file, or shut closes it. Output can go to only one file at a time, although many can be open. If the file has previously been used for output during the current job, and not shut, the new output is appended to the end of the file. Any existing file is erased before its first use for output in a job, or if it had been shut before the new out.To output on the terminal without closing the output file, the reserved file name T (for terminal) may be used. For example, out ofile; will direct output to the file ofile and out t; will direct output to the user’s terminal.The output sent to the file will be in the same form that it would have on the terminal. In particular x^2 would appear on two lines, an x on the lower line and a 2 on the line above. If the purpose of the output file is to save results to be read in later, this is not an appropriate form. We first must turn off the nat switch that specifies that output should be in standard mathematical notation.Example: To create a file abcd from which it will be possible to read – using in – the value of the expression xyz: off echo$      % needed if your input is from a file.  \n off nat$       % output in IN-readable form. Each expression  \n                % printed will end with a $ .  \n out abcd$      % output to new file  \n linelength 72$ % for systems with fixed input line length.  \n xyz:=xyz;      % will output ~XYZ := ~ followed by the value  \n                % of XYZ  \n write ~;end~$  % standard for ending files for IN  \n shut abcd$     % save ABCD, return to terminal output  \n on nat$                % restore usual output form"
+},
+
+{
+    "location": "man/12-file-io.html#.3-SHUT-Command-1",
+    "page": "12 File Handling Commands",
+    "title": "12.3 SHUT Command",
+    "category": "section",
+    "text": "This command takes a list of names of files that have been previously opened via an out statement and closes them. Most systems require this action by the user before he ends the REDUCE job (if not sooner), otherwise the output may be lost. If a file is shut and a further out command issued for the same file, the file is erased before the new output is written.If it is the current output file that is shut, output will switch to the terminal. Attempts to shut files that have not been opened by out, or an input file, will lead to errors."
+},
+
+{
+    "location": "man/13-interactive.html#",
+    "page": "13 Commands for Interactive Use",
+    "title": "13 Commands for Interactive Use",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/13-interactive.html#Commands-for-Interactive-Use-1",
+    "page": "13 Commands for Interactive Use",
+    "title": "13 Commands for Interactive Use",
+    "category": "section",
+    "text": "REDUCE is designed as an interactive system, but naturally it can also operate in a batch processing or background mode by taking its input command by command from the relevant input stream. There is a basic difference, however, between interactive and batch use of the system. In the former case, whenever the system discovers an ambiguity at some point in a calculation, such as a forgotten type assignment for instance, it asks the user for the correct interpretation. In batch operation, it is not practical to terminate the calculation at such points and require resubmission of the job, so the system makes the most obvious guess of the user’s intentions and continues the calculation.There is also a difference in the handling of errors. In the former case, the computation can continue since the user has the opportunity to correct the mistake. In batch mode, the error may lead to consequent erroneous (and possibly time consuming) computations. So in the default case, no further evaluation occurs, although the remainder of the input is checked for syntax errors. A message ~Continuing with parsing only~ informs the user that this is happening. On the other hand, the switch errcont, if on, will cause the system to continue evaluating expressions after such errors occur.When a syntactical error occurs, the place where the system detected the error is marked with three dollar signs ($$$). In interactive mode, the user can then use ed to correct the error, or retype the command. When a non-syntactical error occurs in interactive mode, the command being evaluated at the time the last error occurred is saved, and may later be reevaluated by the command retry.Pages = [\"13-interactive.md\"]"
+},
+
+{
+    "location": "man/13-interactive.html#.1-Referencing-Previous-Results-1",
+    "page": "13 Commands for Interactive Use",
+    "title": "13.1 Referencing Previous Results",
+    "category": "section",
+    "text": "It is often useful to be able to reference results of previous computations during a REDUCE session. For this purpose, REDUCE maintains a history of all interactive inputs and the results of all interactive computations during a given session. These results are referenced by the command number that REDUCE prints automatically in interactive mode. To use an input expression in a new computation, one writes input(n), where n is the command number. To use an output expression, one writes ws(n). ws references the previous command. E.g., if command number 1 was int(x-1,x) and the result of command number 7 was x-1, then        2*input(1)-ws(7)^2;would give the result -1, whereas        2*ws(1)-ws(7)^2;would yield the same result, but without a recomputation of the integral.The operator display is available to display previous inputs. If its argument is a positive integer, n say, then the previous n inputs are displayed. If its argument is all (or in fact any non-numerical expression), then all previous inputs are displayed."
+},
+
+{
+    "location": "man/13-interactive.html#Interactive-Editing-1",
+    "page": "13 Commands for Interactive Use",
+    "title": "Interactive Editing",
+    "category": "section",
+    "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
+},
+
+{
+    "location": "man/13-interactive.html#.3-Interactive-File-Control-1",
+    "page": "13 Commands for Interactive Use",
+    "title": "13.3 Interactive File Control",
+    "category": "section",
+    "text": "If input is coming from an external file, the system treats it as a batch processed calculation. If the user desires interactive response in this case, he can include the command on int; in the file. Likewise, he can issue the command off int; in the main program if he does not desire continual questioning from the system. Regardless of the setting of int, input commands from a file are not kept in the system, and so cannot be edited using ed. However, many implementations of REDUCE provide a link to an external system editor that can be used for such editing. The specific instructions for the particular implementation should be consulted for information on this.Two commands are available in REDUCE for interactive use of files. pause; may be inserted at any point in an input file. When this command is encountered on input, the system prints the message CONT? on the user’s terminal and halts. If the user responds Y (for yes), the calculation continues from that point in the file. If the user responds N (for no), control is returned to the terminal, and the user can input further statements and commands. Later on he can use the command cont; to transfer control back to the point in the file following the last pause encountered. A top-level pause; from the user’s terminal has no effect."
+},
+
+{
+    "location": "man/14-matrix.html#",
+    "page": "14 Matrix Calculations",
+    "title": "14 Matrix Calculations",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/14-matrix.html#Matrix-Calculations-1",
+    "page": "14 Matrix Calculations",
+    "title": "14 Matrix Calculations",
+    "category": "section",
+    "text": "A very powerful feature of REDUCE is the ease with which matrix calculations can be performed. To extend our syntax to this class of calculations we need to add another prefix operator, mat, and a further variable and expression type as follows:Pages = [\"14-matrix.md\"]"
+},
+
+{
+    "location": "man/14-matrix.html#.1-MAT-Operator-1",
+    "page": "14 Matrix Calculations",
+    "title": "14.1 MAT Operator",
+    "category": "section",
+    "text": "This prefix operator is used to represent n × m matrices. mat has n arguments interpreted as rows of the matrix, each of which is a list of m expressions representing elements in that row. For example, the matrixjulia> [:a :b :c; :d :e :f]\n2×3 Array{Symbol,2}:\n :a  :b  :c\n :d  :e  :fwould be written as R\"mat((a,b,c),(d,e,f))\".Note that the single column matrixjulia> [:x; :y]\n2-element Array{Symbol,1}:\n :x\n :ybecomes R\"mat((x),(y))\". The inside parentheses are required to distinguish it from the single row matrixjulia> [:x :y]\n1×2 Array{Symbol,2}:\n :x  :ythat would be written as R\"mat((x,y))\"."
+},
+
+{
+    "location": "man/14-matrix.html#.2-Matrix-Variables-1",
+    "page": "14 Matrix Calculations",
+    "title": "14.2 Matrix Variables",
+    "category": "section",
+    "text": "An identifier may be declared a matrix variable by the declaration matrix. The size of the matrix may be declared explicitly in the matrix declaration, or by default in assigning such a variable to a matrix expression. For example,julia> Algebra.matrix(:(x(2,1)),:(y(3,4)),:z)declares x to be a 2 x 1 (column) matrix, y to be a 3 x 4 matrix and z a matrix whose size is to be declared later.Matrix declarations can appear anywhere in a program. Once a symbol is declared to name a matrix, it can not also be used to name an array, operator or a procedure, or used as an ordinary variable. It can however be redeclared to be a matrix, and its size may be changed at that time. Note however that matrices once declared are global in scope, and so can then be referenced anywhere in the program. In other words, a declaration within a block (or a procedure) does not limit the scope of the matrix to that block, nor does the matrix go away on exiting the block (use clear instead for this purpose). An element of a matrix is referred to in the expected manner; thus x(1,1) gives the first element of the matrix x defined above. References to elements of a matrix whose size has not yet been declared leads to an error. All elements of a matrix whose size is declared are initialized to 0. As a result, a matrix element has an instant evaluation property and cannot stand for itself. If this is required, then an operator should be used to name the matrix elements as in:julia> Algebra.matrix(:m); Algebra.operator(:x);  rcall(\"m := mat((x(1,1),x(1,2)))\");"
+},
+
+{
+    "location": "man/14-matrix.html#.3-Matrix-Expressions-1",
+    "page": "14 Matrix Calculations",
+    "title": "14.3 Matrix Expressions",
+    "category": "section",
+    "text": "These follow the normal rules of matrix algebra as defined by the following syntax:⟨matrix expression⟩  ::=  	MAT⟨matrix description⟩∣⟨matrix variable⟩∣\n							⟨scalar expression⟩*⟨matrix expression⟩∣\n							⟨matrix expression⟩*⟨matrix expression⟩∣\n							⟨matrix expression⟩+⟨matrix expression⟩∣\n							⟨matrix expression⟩^⟨integer⟩∣\n							⟨matrix expression⟩/⟨matrix expression⟩Sums and products of matrix expressions must be of compatible size; otherwise an error will result during their evaluation. Similarly, only square matrices may be raised to a power. A negative power is computed as the inverse of the matrix raised to the corresponding positive power. a/b is interpreted as a*b^(-1).Examples:Assuming x and y have been declared as matrices, the following are matrix expressions        y  \n        y^2*x-3*y^(-2)*x  \n        y + mat((1,a),(b,c))/2The computation of the quotient of two matrices normally uses a two-step elimination method due to Bareiss. An alternative method using Cramer’s method is also available. This is usually less efficient than the Bareiss method unless the matrices are large and dense, although we have no solid statistics on this as yet. To use Cramer’s method instead, the switch cramer should be turned on."
+},
+
+{
+    "location": "man/14-matrix.html#.4-Operators-with-Matrix-Arguments-1",
+    "page": "14 Matrix Calculations",
+    "title": "14.4 Operators with Matrix Arguments",
+    "category": "section",
+    "text": "The operator length applied to a matrix returns a list of the number of rows and columns in the matrix. Other operators useful in matrix calculations are defined in the following subsections. Attention is also drawn to the LINALG (section 16.37) and NORMFORM (section 16.42) packages.Reduce.Algebra.det\nReduce.Algebra.mateign\nReduce.Algebra.tp\nReduce.Algebra.trace\nReduce.Algebra.cofactor\nReduce.Algebra.nullspace\nReduce.Algebra.rank"
+},
+
+{
+    "location": "man/14-matrix.html#.5-Matrix-Assignments-1",
+    "page": "14 Matrix Calculations",
+    "title": "14.5 Matrix Assignments",
+    "category": "section",
+    "text": "Matrix expressions may appear in the right-hand side of assignment statements. If the left-hand side of the assignment, which must be a variable, has not already been declared a matrix, it is declared by default to the size of the right-hand side. The variable is then set to the value of the right-hand side.Such an assignment may be used very conveniently to find the solution of a set of linear equations. For example, to find the solution of the following set of equations        a11*x(1) + a12*x(2) = y1  \n        a21*x(1) + a22*x(2) = y2we simply writeAlgebra.:*(Algebra.inv([:a11 :a12; :a21 :a22]),[:y1,:y2])"
+},
+
+{
+    "location": "man/14-matrix.html#.6-Evaluating-Matrix-Elements-1",
+    "page": "14 Matrix Calculations",
+    "title": "14.6 Evaluating Matrix Elements",
+    "category": "section",
+    "text": "Once an element of a matrix has been assigned, it may be referred to in standard array element notation. Thus y(2,1) refers to the element in the second row and first column of the matrix y."
+},
+
+{
+    "location": "man/15-procedures.html#",
+    "page": "15 Procedures",
+    "title": "15 Procedures",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/15-procedures.html#Procedures-1",
+    "page": "15 Procedures",
+    "title": "15 Procedures",
+    "category": "section",
+    "text": "It is often useful to name a statement for repeated use in calculations with varying parameters, or to define a complete evaluation procedure for an operator. REDUCE offers a procedural declaration for this purpose. Its general syntax is:[⟨procedural type⟩] PROCEDURE ⟨name⟩[⟨varlist⟩];⟨statement⟩;where⟨varlist⟩ ::= (⟨variable⟩,…,⟨variable⟩)This will be explained more fully in the following sections.In the algebraic mode of REDUCE the ⟨procedural type⟩ can be omitted, since the default is ALGEBRAIC. Procedures of type INTEGER or REAL may also be used. In the former case, the system checks that the value of the procedure is an integer. At present, such checking is not done for a real procedure, although this will change in the future when a more complete type checking mechanism is installed. Users should therefore only use these types when appropriate. An empty variable list may also be omitted.All user-defined procedures are automatically declared to be operators.In order to allow users relatively easy access to the whole REDUCE source program, system procedures are not protected against user redefinition. If a procedure is redefined, a message        *** <procedure name> REDEFINEDis printed. If this occurs, and the user is not redefining his own procedure, he is well advised to rename it, and possibly start over (because he has already redefined some internal procedure whose correct functioning may be required for his job!)All required procedures should be defined at the top level, since they have global scope throughout a program. In particular, an attempt to define a procedure within a procedure will cause an error to occur.Pages = [\"15-procedures.md\"]"
+},
+
+{
+    "location": "man/15-procedures.html#.1-Procedure-Heading-1",
+    "page": "15 Procedures",
+    "title": "15.1 Procedure Heading",
+    "category": "section",
+    "text": "Each procedure has a heading consisting of the word procedure (optionally preceded by the word ALGEBRAIC), followed by the name of the procedure to be defined, and followed by its formal parameters – the symbols that will be used in the body of the definition to illustrate what is to be done. There are three cases:No parameters. Simply follow the procedure name with a terminator (semicolon or dollar sign).        procedure abc;When such a procedure is used in an expression or command, abc(), with empty parentheses, must be written.One parameter. Enclose it in parentheses or just leave at least one space, then follow with a terminator.        procedure abc(x);or        procedure abc x;More than one parameter. Enclose them in parentheses, separated by commas, then follow with a terminator.        procedure abc(x,y,z);Referring to the last example, if later in some expression being evaluated the symbols abc(u,p*q,123) appear, the operations of the procedure body will be carried out as if x had the same value as u does, y the same value as p*q does, and z the value 123. The values of x, y, z, after the procedure body operations are completed are unchanged. So, normally, are the values of u, p, q, and (of course) 123. (This is technically referred to as call by value.)The reader will have noted the word normally a few lines earlier. The call by value protections can be bypassed if necessary, as described elsewhere."
+},
+
+{
+    "location": "man/15-procedures.html#.2-Procedure-Body-1",
+    "page": "15 Procedures",
+    "title": "15.2 Procedure Body",
+    "category": "section",
+    "text": "Following the delimiter that ends the procedure heading must be a single statement defining the action to be performed or the value to be delivered. A terminator must follow the statement. If it is a semicolon, the name of the procedure just defined is printed. It is not printed if a dollar sign is used.If the result wanted is given by a formula of some kind, the body is just that formula, using the variables in the procedure heading.Simple Example: If f(x) is to mean (x+5)*(x+6)/(x+7), the entire procedure definition could read        procedure f x; (x+5)*(x+6)/(x+7);Then f(10) would evaluate to 240/17, f(a-6) to a*(a-1)/(a+1), and so on.More Complicated Example: Suppose we need a function p(n,x) that, for any positive integer n, is the Legendre polynomial of order n. We can define this operator using the textbook formula defining these functions: p_n(x) = frac1n fracd^ndy^n frac1(y^2-2xy+1)^frac12 bigg_y=0 Put into words, the Legendre polynomial p_n(x) is the result of substituting y = 0 in the n^th partial derivative with respect to y of a certain fraction involving x and y, then dividing that by n. This verbal formula can easily be written in REDUCE:        procedure p(n,x);  \n           sub(y=0,df(1/(y^2-2*x*y+1)^(1/2),y,n))  \n               /(for i:=1:n product i);Having input this definition, the expression evaluation        2p(2,w);would result in the output           2  \n        3*W  - 1 .If the desired process is best described as a series of steps, then a group or compound statement can be used.Example: The above Legendre polynomial example can be rewritten as a series of steps instead of a single formula as follows:        procedure p(n,x);  \n          begin scalar seed,deriv,top,fact;  \n               seed:=1/(y^2 - 2*x*y +1)^(1/2);  \n               deriv:=df(seed,y,n);  \n               top:=sub(y=0,deriv);  \n               fact:=for i:=1:n product i;  \n               return top/fact  \n          end;Procedures may also be defined recursively. In other words, the procedure body can include references to the procedure name itself, or to other procedures that themselves reference the given procedure. As an example, we can define the Legendre polynomial through its standard recurrence relation:        procedure p(n,x);  \n           if n<0 then rederr ~Invalid argument to P(N,X)~  \n            else if n=0 then 1  \n            else if n=1 then x  \n            else ((2*n-1)*x*p(n-1,x)-(n-1)*p(n-2,x))/n;The operator rederr in the above example provides for a simple error exit from an algebraic procedure (and also a block). It can take a string as argument.It should be noted however that all the above definitions of p(n,x) are quite inefficient if extensive use is to be made of such polynomials, since each call effectively recomputes all lower order polynomials. It would be better to store these expressions in an array, and then use say the recurrence relation to compute only those polynomials that have not already been derived. We leave it as an exercise for the reader to write such a definition."
+},
+
+{
+    "location": "man/15-procedures.html#.3-Matrix-valued-Procedures-1",
+    "page": "15 Procedures",
+    "title": "15.3 Matrix-valued Procedures",
+    "category": "section",
+    "text": "Normally, procedures can only return scalar values. In order for a procedure to return a matrix, it has to be declared of type matrixproc:        matrixproc SkewSym1 (w);  \n           mat((0,-w(3,1),w(2,1)),  \n               (w(3,1),0,-w(1,1)),  \n               (-w(2,1), w(1,1), 0));Following this declaration, the call to SkewSym1 can be used as a matrix, e.g.        X := SkewSym1(mat((qx),(qy),(qz)));  \n \n \n             [  0     - qz   qy  ]  \n             [                   ]  \n        x := [ qz      0     - qx]  \n             [                   ]  \n             [ - qy   qx      0  ]  \n \n        X * mat((rx),(ry),(rz));  \n \n \n        [ qy*rz - qz*ry  ]  \n        [                ]  \n        [ - qx*rz + qz*rx]  \n        [                ]  \n        [ qx*ry - qy*rx  ]"
+},
+
+{
+    "location": "man/15-procedures.html#.4-Using-LET-Inside-Procedures-1",
+    "page": "15 Procedures",
+    "title": "15.4 Using LET Inside Procedures",
+    "category": "section",
+    "text": "By using let instead of an assignment in the procedure body it is possible to bypass the call-by-value protection. If x is a formal parameter or local variable of the procedure (i.e. is in the heading or in a local declaration), and let is used instead of := to make an assignment to x, e.g.        let x = 123;then it is the variable that is the value of x that is changed. This effect also occurs with local variables defined in a block. If the value of x is not a variable, but a more general expression, then it is that expression that is used on the left-hand side of the let statement. For example, if x had the value p*q, it is as if let p*q = 123 had been executed."
+},
+
+{
+    "location": "man/15-procedures.html#.5-LET-Rules-as-Procedures-1",
+    "page": "15 Procedures",
+    "title": "15.5 LET Rules as Procedures",
+    "category": "section",
+    "text": "The let statement offers an alternative syntax and semantics for procedure definition.In place of        procedure abc(x,y,z); <procedure body>;one can write        for all x,y,z let abc(x,y,z) = <procedure body>;There are several differences to note.If the procedure body contains an assignment to one of the formal parameters, e.g.        x := 123;in the procedure case it is a variable holding a copy of the first actual argument that is changed. The actual argument is not changed.In the let case, the actual argument is changed. Thus, if abc is defined using let, and abc(u,v,w) is evaluated, the value of u changes to 123. That is, the let form of definition allows the user to bypass the protections that are enforced by the call by value conventions of standard procedure definitions.Example: We take our earlier factorial procedure and write it as a let statement.        for all n let factorial n =  \n                    begin scalar m,s;  \n                    m:=1; s:=n;  \n                l1: if s=0 then return m;  \n                    m:=m*s;  \n                    s:=s-1;  \n                    go to l1  \n                end;The reader will notice that we introduced a new local variable, s, and set it equal to n. The original form of the procedure contained the statement n:=n-1;. If the user asked for the value of factorial(5) then n would correspond to, not just have the value of, 5, and REDUCE would object to trying to execute the statement 5 := 5 - 1.If pqr is a procedure with no parameters,        procedure pqr;  \n           <procedure body>;it can be written as a let statement quite simply:        let pqr = <procedure body>;To call procedure pqr, if defined in the latter form, the empty parentheses would not be used: use pqr not pqr() where a call on the procedure is needed.The two notations for a procedure with no arguments can be combined. pqr can be defined in the standard procedure form. Then a let statement        let pqr = pqr();would allow a user to use pqr instead of pqr() in calling the procedure.A feature available with let-defined procedures and not with procedures defined in the standard way is the possibility of defining partial functions.    for all x such that numberp x let uvw(x)=<procedure body>;Now uvw of an integer would be calculated as prescribed by the procedure body, while uvw of a general argument, such as z or p+q (assuming these evaluate to themselves) would simply stay uvw(z) or uvw(p+q) as the case may be."
+},
+
+{
+    "location": "man/15-procedures.html#.6-REMEMBER-Statement-1",
+    "page": "15 Procedures",
+    "title": "15.6 REMEMBER Statement",
+    "category": "section",
+    "text": "Setting the remember option for an algebraic procedure by     REMEMBER (PROCNAME:procedure);saves all intermediate results of such procedure evaluations, including recursive calls. Subsequent calls to the procedure can then be determined from the saved results, and thus the number of evaluations (or the complexity) can be reduced. This mode of evalation costs extra memory, of course. In addition, the procedure must be free of side–effects.The following examples show the effect of the remember statement on two well–known examples.procedure H(n);      % Hofstadter’s function  \n if numberp n then  \n << cnn := cnn +1;   % counts the calls  \n if n < 3 then 1 else H(n-H(n-1))+H(n-H(n-2))>>;  \n \nremember h;  \n \n<< cnn := 0; H(100); cnn>>;  \n \n100  \n \n% H has been called 100 times only.  \n \nprocedure A(m,n);    % Ackermann function  \n \n if m=0 then n+1 else  \n  if n=0 then A(m-1,1) else  \n  A(m-1,A(m,n-1));  \n \nremember a;  \n \nA(3,3);  "
+},
+
+{
+    "location": "man/16-packages.html#",
+    "page": "16 User Contributed Packages",
+    "title": "16 User Contributed Packages",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "man/16-packages.html#User-Contributed-Packages-1",
+    "page": "16 User Contributed Packages",
+    "title": "16 User Contributed Packages",
+    "category": "section",
+    "text": "The complete REDUCE system includes a number of packages contributed by users that are provided as a service to the user community. Questions regarding these packages should be directed to their individual authors.All such packages have been precompiled as part of the installation process. However, many must be specifically loaded before they can be used. (Those that are loaded automatically are so noted in their description.) You should also consult the user notes for your particular implementation for further information on whether this is necessary. If it is, the relevant command is load_package, which takes a list of one or more package names as argument, for example:julia> load_package(:algint)although this syntax may vary from implementation to implementation.Nearly all these packages come with separate documentation and test files (except those noted here that have no additional documentation), which is included, along with the source of the package, in the REDUCE system distribution. These items should be studied for any additional details on the use of a particular package.The packages available in the current release of REDUCE are as follows:Pages = [\"16-packages.md\"]External packages from JuliaReducePkg:ReduceLinAlg.jl: Linear algebra package, upstream docs (LINALG / pdf), Julia docs (none yet)Additional upstream user contributed packages available."
+},
+
+{
+    "location": "man/16-packages.html#.1-ALGINT:-Integration-of-square-roots-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.1 ALGINT: Integration of square roots",
+    "category": "section",
+    "text": "This package, which is an extension of the basic integration package distributed with REDUCE, will analytically integrate a wide range of expressions involving square roots where the answer exists in that class of functions. It is an implementation of the work described in J.H. Davenport, “On the Integration of Algebraic Functions\", LNCS 102, Springer Verlag, 1981. Both this and the source code should be consulted for a more detailed description of this work.The ALGINT package is loaded automatically when the switch algint is turned on. One enters an expression for integration, as with the regular integrator, for example:Algebra.int(:(sqrt(x+sqrt(x**2+1))/x),:x)If one later wishes to integrate expressions without using the facilities of this package, the switch algint should be turned off.The switches supported by the standard integrator (e.g., trint) are also supported by this package. In addition, the switch tra, if on, will give further tracing information about the specific functioning of the algebraic integrator.There is no additional documentation for this package.Author: James H. Davenport."
+},
+
+{
+    "location": "man/16-packages.html#.15-COMPACT:-Package-for-compacting-expressions-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.15 COMPACT: Package for compacting expressions",
+    "category": "section",
+    "text": "COMPACT is a package of functions for the reduction of a polynomial in the presence of side relations. compact applies the side relations to the polynomial so that an equivalent expression results with as few terms as possible. For example, the evaluation of     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,  \n             {cos x^2+sin x^2=1});yields the result              2           2  \n        SIN(X) *C + COS(X) *S + 1 .The switch trcompact can be used to trace the operation.Author: Anthony C. Hearn."
+},
+
+{
+    "location": "man/16-packages.html#.36-LIMITS:-A-package-for-finding-limits-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.36 LIMITS: A package for finding limits",
+    "category": "section",
+    "text": "This package loads automatically.Author: Stanley L. Kameny.LIMITS is a fast limit package for REDUCE for functions which are continuous except for computable poles and singularities, based on some earlier work by Ian Cohen and John P. Fitch. The Truncated Power Series package is used for non-critical points, at which the value of the function is the constant term in the expansion around that point. l’Hôpital’s rule is used in critical cases, with preprocessing of ∞-∞ forms and reformatting of product forms in order to apply l’Hôpital’s rule. A limited amount of bounded arithmetic is also employed where applicable."
+},
+
+{
+    "location": "man/16-packages.html#Reduce.Algebra.limit",
+    "page": "16 User Contributed Packages",
+    "title": "Reduce.Algebra.limit",
+    "category": "function",
+    "text": "limit(exprn,var,limpint)\n\nSyntax\n\nLIMIT(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebraic\n\nThis is the standard way of calling limit, applying all of the methods. The result is the limit of EXPRN as VAR approaches LIMPOINT.\n\n\n\n"
+},
+
+{
+    "location": "man/16-packages.html#.36.1-Normal-entry-points-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.36.1 Normal entry points",
+    "category": "section",
+    "text": "Reduce.Algebra.limit"
+},
+
+{
+    "location": "man/16-packages.html#.36.2-Direction-dependent-limits-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.36.2 Direction-dependent limits",
+    "category": "section",
+    "text": "LIMIT!+(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebraic\nLIMIT!-(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebraicIf the limit depends upon the direction of approach to the LIMPOINT, the functions LIMIT!+ and LIMIT!- may be used. They are defined by:LIMIT!+ (LIMIT!-) (EXP,VAR,LIMPOINT) →LIMIT(EXP*,ϵ,0),\nEXP*=sub(VAR=VAR+(-)ϵ2,EXP)"
+},
+
+{
+    "location": "man/16-packages.html#.60-SCOPE:-REDUCE-source-code-optimization-package-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.60 SCOPE: REDUCE source code optimization package",
+    "category": "section",
+    "text": "scope is a package for the production of an optimized form of a set of expressions. It applies an heuristic search for common (sub)expressions to almost any set of proper REDUCE assignment statements. The output is obtained as a sequence of assignment statements. GENTRAN is used to facilitate expression output.Author: J.A. van Hulzen."
+},
+
+{
+    "location": "man/16-packages.html#.56-RLFI:-REDUCE-LATEX-formula-interface-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.56 RLFI: REDUCE LATEX formula interface",
+    "category": "section",
+    "text": "This package adds LaTeX syntax to REDUCE. Text generated by REDUCE in this mode can be directly used in LaTeX source documents. Various mathematical constructions are supported by the interface including subscripts, superscripts, font changing, Greek letters, divide-bars, integral and sum signs, derivatives, and so on.Author: Richard Liska.High quality typesetting of mathematical formulas is a quite tedious task. One of the most sophisticated typesetting programs for mathematical text TeX [?], together with its widely used macro package LaTeX [?], has a strange syntax of mathematical formulas, especially of the complicated type. This is the main reason which lead us to designing the formula interface between the computer algebra system REDUCE and the document preparation system LaTeX. The other reason is that all available syntaxes of the REDUCE formula output are line oriented and thus not suitable for typesetting in mathematical text. The idea of interfacing a computer algebra system to a typesetting program has already been used, eg. in [?] presenting the TeX output of the MACSYMA computer algebra system.The formula interface presented here adds to REDUCE the new syntax of formula output, namely LaTeX syntax, and can also be named REDUCE - LaTeX translator. Text generated by REDUCE in this syntax can be directly used in LaTeX source documents. Various mathematical constructions are supported by the interface including subscripts, superscripts, font changing, Greek letters, divide-bars, integral and sum signs, derivatives etc.The interface can be used in two ways:for typesetting of results of REDUCE algebraic calculations.\nfor typesetting of users formulas.The latter can even be used by users unfamiliar with the REDUCE system, because the REDUCE input syntax of formulas is almost the same as the syntax of the majority of programming languages. We aimed at speeding up the process of formula typesetting, because we are convinced, that the writing of correct complicated formulas in the REDUCE syntax is a much more simpler task than writing them in the LaTeX syntax full of keywords and special characters  \\\\, {, ^ etc. It is clear, that not every formula produced by the interface is typeset in the best format from an aesthetic point of view. When a user is not satisfied with the result, he can add some LaTeX commands to the REDUCE output - LaTeX input.The interface is connected to REDUCE by three new switches and several statements. To activate the LaTeX output mode the switch latex must be set on. this switch, similar to the switch fort producing FORTRAN output, being on causes all outputs to be written in the LaTeX syntax of formulas. The switch verbatim is used for input printing control. If it is on input to REDUCE system is typeset in LaTeX verbatim environment after the line containing the string REDUCE Input:.The switch lasimp controls the algebraic evaluation of input formulas. If it is on every formula is evaluated, simplified and written in the form given by ordinary REDUCE statements and switches such as factor, order, rat etc. In the case when the lasimp switch is off evaluation, simplification or reordering of formulas is not performed and REDUCE acts only as a formula parser and the form of the formula output is exactly the same as that of the input, the only difference remains in the syntax. The mode off lasimp is designed especially for typesetting of formulas for which the user needs preservation of their structure. This switch has no meaning if the switch latex is off and thus is working only for LaTeX output.For every identifier used in the typeset REDUCE formula the following properties can be defined by the statement defid:its printing symbol (Greek letters can be used).\nthe font in which the symbol will be typeset.\naccent which will be typeset above the symbol.Symbols with indexes are treated in REDUCE as operators. Each index corresponds to an argument of the operator. The meaning of operator arguments (where one wants to typeset them) is declared by the statement defindex. This statement causes the arguments to be typeset as subscripts or superscripts (on left or right-hand side of the operator) or as arguments of the operator.The statement mathstyle defines the style of formula typesetting. The variable laline!* defines the length of output lines.The fractions with horizontal divide bars are typeset by using the new REDUCE infix operator //. This operator is not algebraically simplified. During typesetting of powers the checking on the form of the power base and exponent is performed to determine the form of the typeset expression (eg. sqrt symbol, using parentheses).Some special forms can be typeset by using REDUCE prefix operators. These are as follows:int - integral of an expression.\ndint - definite integral of an expression.\ndf - derivative of an expression.\npdf - partial derivative of an expression.\nsum - sum of expressions.\nproduct - product of expressions.\nsqrt - square root of expression.There are still some problems unsolved in the present version of the interface as follows:breaking the formulas which do not fit on one line.\nautomatic decision where to use divide bars in fractions.\ndistinction of two- or more-character identifiers from the product of one-character symbols.\ntypesetting of matrices."
+},
+
+{
+    "location": "man/16-packages.html#Remark-1",
+    "page": "16 User Contributed Packages",
+    "title": "Remark",
+    "category": "section",
+    "text": "After finishing presented interface, we have found another work [?], which solves the same problem. The RLFI package has been described in [?] too."
+},
+
+{
+    "location": "man/16-packages.html#.56.1-APPENDIX:-Summary-and-syntax-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.56.1 APPENDIX: Summary and syntax",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "man/16-packages.html#Warning-1",
+    "page": "16 User Contributed Packages",
+    "title": "Warning",
+    "category": "section",
+    "text": "The RLFI package can be used only on systems supporting lower case letters with off raise statement. The package distinquishes the upper and lower case letters, so be carefull in typing them. In REDUCE 3.6 the REDUCE commands have to be typed in lower-case while the switch latex is on, in previous versions the commands had to be typed in upper-case."
+},
+
+{
+    "location": "man/16-packages.html#Switches-1",
+    "page": "16 User Contributed Packages",
+    "title": "Switches",
+    "category": "section",
+    "text": "latexIf on output is in LaTeX format. It turns off the raise switch if it is set on and on the raise switch if it is set off. By default is off.lasimpIf on formulas are evaluated (simplified), REDUCE works as usually. If off no evaluation is performed and the structure of formulas is preserved. By default is on.verbatimIf on the REDUCE input, while latex switch being on, is printed in LaTeX verbatim environment. The acutal REDUCE input is printed after the line containing the string ~REDUCE Input:~. It turns on resp. off the echo switch when turned on resp. off. by default is off."
+},
+
+{
+    "location": "man/16-packages.html#Operators-1",
+    "page": "16 User Contributed Packages",
+    "title": "Operators",
+    "category": "section",
+    "text": "infix//prefixint,dint,df,pdf,sum,product,sqrt and all REDUCE prefix operators defined in the REDUCE kernel and the SOLVE module.   <alg. expression> // <alg. expression>  \n   int(<function>,<variable>)  \n   dint(<from>,<to>,<function>,<variable>)  \n   df(<function>,<variables>)  \n   <variables> ::= <o-variable>|<o-variable>,<variables>  \n   <o-variable> ::= <variable>|<variable>,<order>  \n   <variable> ::= <kernel>  \n   <order> ::= <integer>  \n   <function> ::= <alg. expression>  \n   <from> ::= <alg. expression>  \n   <to> ::= <alg. expression>  \n   pdf(<function>,<variables>)  \n   sum(<from>,<to>,<function>)  \n   product(<from>,<to>,<function>)  \n   sqrt(<alg. expression>)<alg. expression> is any algebraic expression. Where appropriate, it can include also relational operators (e.g. argument <from> of sum or product operators is usually equation). <kernel> is identifier or prefix operator with arguments as described in [?]. Interface supports typesetting lists of algebraic expressions."
+},
+
+{
+    "location": "man/16-packages.html#Statements-1",
+    "page": "16 User Contributed Packages",
+    "title": "Statements",
+    "category": "section",
+    "text": "   mathstyle <m-style>;  \n   <m-style> ::= math | displaymath | equation  \n   defid <identifier>,<d-equations>;  \n   <d-equations> ::= <d-equation> | <d-equation>,<d-equations>  \n   <d-equation> ::= <d-print symbol> | <d-font>|<d-accent>  \n   <d-print symbol> ::= name = <print symbol>  \n   <d-font> ::= font = <font>  \n   <d-accent> ::= accent = <accent>  \n   <print symbol> ::= <character> | <special symbol>  \n   <special symbol> ::= alpha|beta|gamma|delta|epsilon|  \n      varepsilon|zeta|eta|theta|vartheta|iota|kappa|lambda|  \n      mu|nu|xi|pi|varpi|rho|varrho|sigma|varsigma|tau|  \n      upsilon|phi|varphi|chi|psi|omega|Gamma|Delta|Theta|  \n      Lambda|Xi|Pi|Sigma|Upsilon|Phi|Psi|Omega|infty|hbar  \n   <font> ::= bold|roman  \n   <accent> ::=hat|check|breve|acute|grave|tilde|bar|vec|  \n      dot|ddotFor special symbols and accents see [?], p. 43, 45, 51.   defindex <d-operators>;  \n   <d-operators> ::= <d-operator> | <d-operator>,<d-operators>  \n   <d-operator> ::= <prefix operator>(<descriptions>)  \n   <prefix operator> ::= <identifier>  \n   <descriptions> ::= <description> | <description>,  \n      <descriptions>  \n   <description> ::= arg | up | down | leftup | leftdownThe meaning of the statements is briefly described in the preceding text."
+},
+
+{
+    "location": "man/16-packages.html#Bibliography-1",
+    "page": "16 User Contributed Packages",
+    "title": "Bibliography",
+    "category": "section",
+    "text": "[1]   Werner Antweiler, Andreas Strotmann, and Volker Winkelmann. A TEX-reduce-interface. SIGSAM Bulletin, 23:26–33, February 1989.[2]   Ladislav Drska, Richard Liska, and Milan Sinor. Two practical packages for computational physics - GCPM, RLFI. Comp. Phys. Comm., 61:225–230, 1990.[3]   Richard J. Fateman. TEX  output from macsyma-like systems. ACM SIGSAM Bulletin, 21(4):1–5, 1987. Issue #82.[4]   Anthony C. Hearn. REDUCE user’s manual, version 3.6. Technical Report CP 78 (Rev. 7/95), The RAND Corporation, Santa Monica, 1995.[5]   Donald E. Knuth. The TeX book. Addison-Wesley, Reading, 1984.[6]   Leslie Lamport. LaTeX - A Document Preparation System. Addison-Wesley, Reading, 1986."
+},
+
+{
+    "location": "man/16-packages.html#.67-SUM:-A-package-for-series-summation-1",
+    "page": "16 User Contributed Packages",
+    "title": "16.67 SUM: A package for series summation",
+    "category": "section",
+    "text": "This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and PROD returns the product of the given expression.This package loads automatically.Author: Fujio Kako.This package implements the Gosper algorithm for the summation of series. It defines operators sum and prod. The operator sum returns the indefinite or definite summation of a given expression, and the operator prod returns the product of the given expression. These are used with the syntax:SUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) \nPROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])If there is no closed form solution, these operators return the input unchanged. UPLIM and LOLIM are optional parameters specifying the lower limit and upper limit of the summation (or product), respectively. If UPLIM is not supplied, the upper limit is taken as K (the summation variable itself).For example:Algebra.sum(:(n^3),:n)\nAlgebra.sum(:(a+k*r),:k,0,:(n-1))\nAlgebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))\nAlgebra.prod(:(k/(k-2)),:k)Gosper’s algorithm succeeds whenever the ratio fracsum_k=n_0^n f(k)sum_k=n_0^n-1 f(k) is a rational function of n. The function SUM!-SQ handles basic functions such as polynomials, rational functions and exponentials.The trigonometric functions sin, cos, etc. are converted to exponentials and then Gosper’s algorithm is applied. The result is converted back into sin, cos, sinh and cosh.Summations of logarithms or products of exponentials are treated by the formula:sum_k=n_0^n log f(k) = log prod_k=n_0^n f(k)prod_k=n_0^n exp f(k) = exp sum_k=n_0^n f(k)Other functions, as shown in the test file for the case of binomials and formal products, can be summed by providing let rules which must relate the functions evaluated at k and k - 1 (k being the summation variable).There is a switch trsum (default off). If this switch is on, trace messages are printed out during the course of Gosper’s algorithm."
+},
+
+{
     "location": "man/20-maintaining.html#",
     "page": "20 Maintaining REDUCE",
     "title": "20 Maintaining REDUCE",
