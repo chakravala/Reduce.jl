@@ -28,6 +28,8 @@ const calculus = [
     :remfac,
     :gcd,
     :lcm,
+    :compact,
+    :changevar,
 ]
 
 const cnan = [
@@ -54,6 +56,16 @@ const cnan = [
     :korder,
     :on,
     :off,
+    :define,
+    :select,
+    :nospur,
+    :spur,
+    :vector,
+    :index,
+    :reminx,
+    :g,
+    :mass,
+    :mshell,
 ]
 
 const alg = [
@@ -61,6 +73,8 @@ const alg = [
     :prod,
     :max,
     :min,
+    :map,
+    :eps,
 ]
 
 const iops = [
@@ -214,12 +228,49 @@ solve(a::Expr,s::Symbol) = solve(a,[s])
 solve(a::T,s::S) where T <: Tuple where S <: Tuple = solve(RExpr(a),RExpr(s)) |> parse
 solve(a::T,s::Symbol) where T <: Tuple = solve(a,(s,))
 
+changevar(r...) = changevar(RExpr.(r)...) |> parse
+map(a,b) = map(RExpr(a),RExpr(b)) |> parse
+map(a::S,b::T) where S <: ExprSymbol where T <: MatOnly = map(RExpr(a),RExpr(b)) |> parse |> mat
+select(a,b)  = select(RExpr(a),RExpr(b)) |> parse
+
 order(::Void) = order(R"nil") |> parse
 korder(::Void) = korder(R"nil") |> parse
 
 export ∑, ∏, sub
 
 (∑, ∏) = (sum, prod)
+
+@doc """
+    sum(expr,k,lolim,uplim)
+
+This implements the Gosper algorithm for the summation of series. The operator `sum` returns the indefinite or definite summation of a given expression, used with the syntax:
+```
+SUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) 
+```
+If there is no closed form solution, these operators return the input unchanged. `UPLIM` and `LOLIM` are optional parameters specifying the lower limit and upper limit of the summation. If `UPLIM` is not supplied, the upper limit is taken as `K` (the summation variable itself).
+
+For example:
+```Julia
+Algebra.sum(:(n^3),:n)
+Algebra.sum(:(a+k*r),:k,0,:(n-1))
+Algebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))
+```
+""" Reduce.Algebra.sum
+
+@doc """
+    prod(expr,k,lolim,uplim)
+
+The operator `prod` returns the product of the given expression, used with the syntax:
+```
+PROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])
+```
+If there is no closed form solution, these operators return the input unchanged. `UPLIM` and `LOLIM` are optional parameters specifying the lower limit and upper limit of the product. If `UPLIM` is not supplied, the upper limit is taken as `K` (the product variable itself).
+
+For example:
+```Julia
+Algebra.prod(:(k/(k-2)),:k)
+```
+""" Reduce.Algebra.prod
 
 """
     sub(::Union{Dict,Pair},expr)
@@ -1031,3 +1082,137 @@ LIMIT(⟨EXPRN:algebraic⟩,⟨VAR:kernel⟩,⟨LIMPOINT:algebraic⟩) : algebra
 ```
 This is the standard way of calling limit, applying all of the methods. The result is the limit of `EXPRN` as `VAR` approaches `LIMPOINT`.
 """ Reduce.Algebra.limit
+
+@doc """
+    compact(exprn,list)
+
+COMPACT is a package of functions for the reduction of a polynomial in the presence of side relations. `compact` applies the side relations to the polynomial so that an equivalent expression results with as few terms as possible. For example, the evaluation of
+```Julia
+Algebra.compact(:(s*(1-sin(x^2))+c*(1-cos(x^2))+sin(x^2)+cos(x^2)),
+    (:(cos(x^2)+sin(x^2)=1),))
+```
+yields the result
+```Julia
+:(sin(x ^ 2) * c + 1 + cos(x ^ 2) * s)
+```
+The switch `trcompact` can be used to trace the operation.
+""" Reduce.Algebra.compact
+
+@doc """
+    define(r...)
+
+The command `define` allows a user to supply a new name for any identifier or replace it by any well-formed expression. Its argument is a list of expressions of the form
+```
+⟨identifier⟩ = 	⟨number⟩∣⟨identifier⟩∣⟨operator⟩∣
+		⟨reserved word⟩∣⟨expression⟩
+```
+*Example:*
+```Julia
+Algebra.define(:(x==y+z))
+```
+""" Reduce.Algebra.define
+
+@doc """
+    changevar(depvars,newvars,eqlist,diffeq)
+
+The operator `changevar` does a variable transformation in a set of differential equations. Syntax:
+```
+changevar(⟨depvars⟩,⟨newvars⟩,⟨eqlist⟩,⟨diffeq⟩)
+```
+`⟨diffeq⟩` is either a single differential equation or a list of differential equations, `⟨depvars⟩` are the dependent variables to be substituted, `⟨newvars⟩` are the new depend variables, and `⟨eqlist⟩` is a list of equations of the form `⟨depvar⟩=⟨expression⟩` where `⟨expression⟩` is some function in the new dependent variables.
+
+The three lists `⟨depvars⟩`, `⟨newvars⟩`, and `⟨eqlist⟩` must be of the same length. If there is only one variable to be substituted, then it can be given instead of the list. The same applies to the list of differential equations, i.e., the following two commands are equivalent
+```Julia
+Algebra.operator(:u)
+Algebra.changevar(:u,:y,:(x==e^y),:(df(u(x),x) - log(x)))
+Algebra.changevar((:u,),(:y,),(:(x=e^y),),(:(df(u(x),x) - log(x)),))
+```
+except for one difference: the first command returns the transformed differential equation, the second one a list with a single element.
+""" Reduce.Algebra.changevar
+
+@doc """
+    map(fnc,obj)
+
+The `map` operator applies a uniform evaluation pattern to all members of a composite structure: a matrix, a list, or the arguments of an operator expression. The evaluation pattern can be a unary procedure, an operator, or an algebraic expression with one free variable.
+
+It is used with the syntax:
+```
+   map(FNC:function,OBJ:object)
+```
+Here `OBJ` is a list, a matrix or an operator expression. `FNC` can be one of the following:
+
+1. the name of an operator with a single argument: the operator is evaluated once with each element of `OBJ` as its single argument;
+2. an algebraic expression with exactly one free variable, i.e. a variable preceded by the tilde symbol. The expression is evaluated for each element of `OBJ`, with the element substituted for the free variable;
+3. a replacement rule of the form `var => rep` where `var` is a variable (a kernel without a subscript) and `rep` is an expression that contains `var`. The replacement expression `rep` is evaluated for each element of `OBJ` with the element substituted for `var`. The variable `var` may be optionally preceded by a tilde.
+
+The rule form for `FNC` is needed when more than one free variable occurs.
+
+*Examples:*
+```Julia
+julia> Algebra.map(:abs, (1,-2,:a,:(-a)))
+(1, 2, :(abs(a)), :(abs(a)))
+
+julia> Algebra.map(:(int(~w,x)), [:(x^2) :(x^5); :(x^4) :(x^5)])
+2×2 Array{Any,2}:
+ :(x ^ 3 // 3)  :(x ^ 6 // 6)
+ :(x ^ 5 // 5)  :(x ^ 6 // 6)
+
+ julia> Algebra.map(:(~w*6), :(x^2/3 == y^3/2 -1))
+:(2 * x ^ 2 = 3 * (y ^ 3 - 2))
+```
+You can use `map` in nested expressions. However, you cannot apply `map` to a non-composite object, e.g. an identifier or a number.
+""" Reduce.Algebra.map
+
+@doc """
+    select(fnc,lst)
+
+The `select` operator extracts from a list, or from the arguments of an n–ary operator, elements corresponding to a boolean predicate. It is used with the syntax:
+```
+select(⟨FNC:function⟩,⟨LST:list⟩)
+```
+`FNC` can be one of the following forms:
+
+1. the name of an operator with a single argument: the operator is evaluated once on each element of `LST`;
+2. an algebraic expression with exactly one free variable, i.e. a variable preceded by the tilde symbol. The expression is evaluated for each element of `⟨LST⟩`, with the element substituted for the free variable;
+3. a replacement rule of the form `⟨var⟩ => ⟨rep⟩` where `⟨var⟩` is a variable (a kernel without subscript) and `⟨rep⟩` is an expression that contains `⟨var⟩`. `⟨rep⟩` is evaluated for each element of `LST` with the element substituted for `⟨var⟩`. `⟨var⟩` may be optionally preceded by a tilde.
+
+The rule form for `FNC` is needed when more than one free variable occurs.
+
+The result of evaluating `FNC` is interpreted as a boolean value corresponding to the conventions of REDUCE. These values are composed with the leading operator of the input expression.
+
+*Examples:*
+```Julia
+julia> Algebra.select(:(~w>0), (1,-1,2,-3,3))
+(1, 2, 3)
+```
+```
+    select(evenp deg(~w,y),part((x+y)^5,0):=list)  
+           -> {X^5 ,10*X^3*Y^2 ,5*X*Y^4}  
+    select(evenp deg(~w,x),2x^2+3x^3+4x^4) -> 4X^4 + 2X^2
+```
+""" Reduce.Algebra.select
+
+@doc """
+    g(id,exprn...)
+
+Syntax:
+```
+        G(ID:identifier[,EXPRN:vector_expression])  
+                :gamma_matrix_expression.
+```
+`g` is an n-ary operator used to denote a product of γ matrices contracted with Lorentz four-vectors. Gamma matrices are associated with fermion lines in a Feynman diagram. If more than one such line occurs, then a different set of γ matrices (operating in independent spin spaces) is required to represent each line. To facilitate this, the first argument of `g` is a line identification identifier (not a number) used to distinguish different lines.
+""" Reduce.Algebra.g
+
+@doc """
+    eps(exprn1,...,exprn4)
+
+Syntax:
+```
+         EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp):vector_exp.
+```
+The operator `eps` has four arguments, and is used only to denote the completely antisymmetric tensor of order 4 and its contraction with Lorentz four-vectors. Thus
+
+\$ϵ_{ijkl} = \\begin{cases} +1 & \\text{if }i,j,k,l\\text{ is an even permutation of 0,1,2,3} \\\\ - 1  & \\text{if }i,j,k,l\\text{ is an odd permutation of 0,1,2,3} \\\\ 0 & \\text{otherwise} \\end{cases}.\$
+
+A contraction of the form \$ϵ_{ijμν}p_μq_ν\$ may be written as `eps(i,j,p,q)`, with `i` and `j` flagged as indices, and so on.
+""" Reduce.Algebra.eps

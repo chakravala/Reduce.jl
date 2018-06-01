@@ -40,17 +40,9 @@ Author: James H. Davenport.
 
 ## 16.15 COMPACT: Package for compacting expressions
 
-COMPACT is a package of functions for the reduction of a polynomial in the presence of side relations. `compact` applies the side relations to the polynomial so that an equivalent expression results with as few terms as possible. For example, the evaluation of
+```@docs
+Reduce.Algebra.compact
 ```
-     compact(s*(1-sin x^2)+c*(1-cos x^2)+sin x^2+cos x^2,  
-             {cos x^2+sin x^2=1});
-```
-yields the result
-```
-              2           2  
-        SIN(X) *C + COS(X) *S + 1 .
-```
-The switch `trcompact` can be used to trace the operation.
 
 Author: Anthony C. Hearn.
 
@@ -237,20 +229,11 @@ This package loads automatically.
 
 Author: Fujio Kako.
 
-This package implements the Gosper algorithm for the summation of series. It defines operators `sum` and `prod`. The operator `sum` returns the indefinite or definite summation of a given expression, and the operator `prod` returns the product of the given expression. These are used with the syntax:
+```@docs
+Reduce.Algebra.sum
+Reduce.Algebra.prod
 ```
-SUM(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]]) 
-PROD(EXPR:expression, K:kernel, [LOLIM:expression [, UPLIM:expression]])
-```
-If there is no closed form solution, these operators return the input unchanged. `UPLIM` and `LOLIM` are optional parameters specifying the lower limit and upper limit of the summation (or product), respectively. If `UPLIM` is not supplied, the upper limit is taken as `K` (the summation variable itself).
 
-For example:
-```Julia
-Algebra.sum(:(n^3),:n)
-Algebra.sum(:(a+k*r),:k,0,:(n-1))
-Algebra.sum(:(1/((p+(k-1)*q)*(p+k*q))),:k,1,:(n+1))
-Algebra.prod(:(k/(k-2)),:k)
-```
 Gosper’s algorithm succeeds whenever the ratio
 ``
 \frac{\sum_{k=n_0}^n f(k)}{\sum_{k=n_0}^{n-1} f(k)}

@@ -238,7 +238,102 @@ Reduce.Algebra.motzkin
 
 ## 7.6 CHANGEVAR Operator
 
-Not initially supported by Reduce.jl parser, see [upstream docs](http://www.reduce-algebra.com/manual/manualse32.html) for more information.
+Author: G. Üçoluk.
+
+```@docs
+Reduce.Algebra.changevar
+```
+
+The switch `dispjacobian` governs the display the entries of the inverse Jacobian, it is `off` per default.
+
+The mathematics behind the change of independent variable(s) in differential equations is quite straightforward. It is basically the application of the chain rule. If the dependent variable of the differential equation is ``F`` , the independent variables are ``x_i`` and the new independent variables are ``u_i`` (where ``i=1…n``) then the first derivatives are:
+``
+\frac{-\partial F}{\partial x_i} =  \frac{\partial F}{\partial u_j} \frac{\partial u_j}{\partial x_i}
+``
+
+We assumed Einstein’s summation convention. Here the problem is to calculate the ``∂u_j∕∂x_i`` terms if the change of variables is given by
+``
+x_i = f_i (u_1 ,...,u_n  ).
+``
+
+The first thought might be solving the above given equations for ``u_j`` and then differentiating them with respect to ``x_i``, then again making use of the equations above, substituting new variables for the old ones in the calculated derivatives. This is not always a preferable way to proceed. Mainly because the functions ``f_i`` may not always be easily invertible. Another approach that makes use of the Jacobian is better. Consider the above given equations which relate the old variables to the new ones. Let us differentiate them:
+
+```math
+\frac{\partial x_j}{\partial x_i} = \frac{\partial f_j}{\partial x_i}
+```
+
+```math
+\delta_{ij} = \frac{\partial f_j \partial u_k}{\partial u_k \partial x_i}
+```
+
+The first derivative is nothing but the ``(j,k)`` th entry of the Jacobian matrix.
+
+So if we speak in matrix language
+``
+1 = J ⋅ D
+``
+where we defined the Jacobian
+``
+J_{ij} = \frac{\partial f_i}{\partial u_j}
+``
+and the matrix of the derivatives we wanted to obtain as
+``
+D_{ij} = \frac{\partial u_i}{\partial x_j}.
+``
+If the Jacobian has a non-vanishing determinant then it is invertible and we are able to write from the matrix equation above:
+``
+D =  J^{-1}
+``
+so finally we have what we want
+``
+\frac{\partial u_i}{\partial x_j} = [ J^{-1} ]_{ij}
+``
+
+The higher derivatives are obtained by the successive application of the chain rule and using the definitions of the old variables in terms of the new ones. It can be easily verified that the only derivatives that are needed to be calculated are the first order ones which are obtained above.
+
+### 7.6.1 CHANGEVAR example: The 2-dim. Laplace Equation
+
+The 2-dimensional Laplace equation in cartesian coordinates is:
+``
+\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} = 0
+``
+Now assume we want to obtain the polar coordinate form of Laplace equation. The change of variables is:
+``
+x = r\cos θ,    y = r\sin θ
+``
+The solution using `changevar` is as follows
+```Julia
+Algebra.changevar((:u,),(:r,:θ),(:(x=r*cos(θ)),:(y=r*sin(θ))),
+            (:(df(u(x,y),x,2)+df(u(x,y),y,2)),) )
+```
+Here we could omit the list parenthesis in the first and last arguments (because those lists have only one member) and the list parenthesis in the third argument (because they are optional), but you cannot leave off the list parenthesis in the second argument. So one could equivalently write
+```Julia
+Algebra.changevar(:u,(:r,:θ),:(x==r*cos(θ)),:(y==r*sin(θ)),  
+             :(df(u(x,y),x,2)+df(u(x,y),y,2)) )
+```
+If you have tried out the above example, you will notice that the denominator contains a ``\cos^2θ + \sin^2θ`` which is actually equal to 1. This has of course nothing to do with `changevar`. One has to be overcome these pattern matching problems by the conventional methods REDUCE provides (a rule, for example, will fix it).
+
+Secondly you will notice that your `u(x,y)` operator has changed to `u(r,θ)` in the result. Nothing magical about this. That is just what we do with pencil and paper. `u(r,θ)` represents the the transformed dependent variable.
+
+### 7.6.2 Another CHANGEVAR example: An Euler Equation
+
+Consider a differential equation which is of Euler type, for instance:
+``
+x^3y ′′′ - 3x^2y′′ + 6xy ′ - 6y = 0
+``
+where prime denotes differentiation with respect to ``x``. As is well known, Euler type of equations are solved by a change of variable:
+``
+x = e^u.
+``
+So our call to `changevar` reads as follows:
+```Julia
+Algebra.changevar(:y, :u, :(x==e^u), :(x^3*df(y(x),x,3)-  
+             3*x^2*df(y(x),x,2)+6*x*df(y(x),x)-6*y(x)))
+```
+and returns the result
+```Julia
+:(((11 * df(y(u), u) - 6 * y(u)) - 6 * df(y(u), u, 2)) + df(y(u), u, 3))
+```
 
 ## 7.7 CONTINUED_FRACTION Operator
 
@@ -352,7 +447,9 @@ Reduce.Algebra.length
 
 ## 7.11 MAP Operator
 
-Not initially supported by Reduce.jl parser, see [upstream docs](http://www.reduce-algebra.com/manual/manualse37.html) for more information.
+```@docs
+Reduce.Algebra.map
+```
 
 ## 7.12 MKID Operator
 
@@ -406,7 +503,9 @@ Alternatively, one can use the operations on lists to extract any desired term.
 
 ## 7.15 SELECT Operator
 
-Not initially supported by Reduce.jl parser, see [upstream docs](http://www.reduce-algebra.com/manual/manualse41.html) for more information.
+```@docs
+Reduce.Algebra.select
+```
 
 ## 7.16 SOLVE Operator
 

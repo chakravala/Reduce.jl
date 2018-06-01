@@ -68,4 +68,17 @@ The command `R"bye"` (or alternatively `R"quit"`) stops the execution of REDUCE,
 
 ## 6.6 DEFINE Command
 
-Not initially supported by Reduce.jl parser, see [upstream docs](http://www.reduce-algebra.com/manual/manualse26.html) for more information.
+```@docs
+Reduce.Algebra.define
+```
+
+*Example:*
+```
+        define be==,x=y+z;
+```
+means that `be` will be interpreted as an equal sign, and `x` as the expression `y+z` from then on. This renaming is done at parse time, and therefore takes precedence over any other replacement declared for the same identifier. It stays in effect until the end of the REDUCE run.
+
+The identifiers `ALGEBRAIC` and `SYMBOLIC` have properties which prevent `define` from being used on them. To define `ALG` to be a synonym for `ALGEBRAIC`, use the more complicated construction
+```
+        put(’alg,’newnam,’algebraic);
+```

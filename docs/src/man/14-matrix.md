@@ -49,12 +49,12 @@ julia> Algebra.matrix(:m); Algebra.operator(:x);  rcall("m := mat((x(1,1),x(1,2)
 
 These follow the normal rules of matrix algebra as defined by the following syntax:
 ```
-⟨matrix expression⟩  ::=  	MAT⟨matrix description⟩∣⟨matrix variable⟩∣
-							⟨scalar expression⟩*⟨matrix expression⟩∣
-							⟨matrix expression⟩*⟨matrix expression⟩∣
-							⟨matrix expression⟩+⟨matrix expression⟩∣
-							⟨matrix expression⟩^⟨integer⟩∣
-							⟨matrix expression⟩/⟨matrix expression⟩
+⟨matrix expression⟩  ::=  MAT⟨matrix description⟩∣⟨matrix variable⟩∣
+			⟨scalar expression⟩*⟨matrix expression⟩∣
+			⟨matrix expression⟩*⟨matrix expression⟩∣
+			⟨matrix expression⟩+⟨matrix expression⟩∣
+			⟨matrix expression⟩^⟨integer⟩∣
+			⟨matrix expression⟩/⟨matrix expression⟩
 ```
 Sums and products of matrix expressions must be of compatible size; otherwise an error will result during their evaluation. Similarly, only square matrices may be raised to a power. A negative power is computed as the inverse of the matrix raised to the corresponding positive power. `a/b` is interpreted as `a*b^(-1)`.
 

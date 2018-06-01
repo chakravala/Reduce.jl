@@ -64,7 +64,7 @@ These consist of scalar variables and operators and follow the normal rules of t
 
 Because symbolic evaluation requires that each variable or expression has a value, it is necessary to add to REDUCE the concept of a quoted expression by analogy with the Lisp `quote` function. This is provided by the single quote mark `’`. For example,
 ```
-’a    	represents the Lisp S-expression	(quote a)
+’a    		represents the Lisp S-expression	(quote a)
 ’(a b c)   	represents the Lisp S-expression	(quote (a b c))
 ```
 Note, however, that strings are constants and therefore evaluate to themselves in symbolic mode. Thus, to print the string `~A String~`, one would write

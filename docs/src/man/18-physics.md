@@ -21,7 +21,7 @@ The binary `.` operator, which is normally used to denote the addition of an ele
 
 Components of vectors can be represented by including representations of unit vectors in the system. Thus if `eo` represents the unit vector `(1,0,0,0)`, `(p.eo)` represents the zeroth component of the four-vector `p`. Our metric and notation follows Bjorken and Drell “Relativistic Quantum Mechanics” (McGraw-Hill, New York, 1965). Similarly, an arbitrary component `p` may be represented by `(p.u)`. If contraction over components of vectors is required, then the declaration `index` must be used. Thus
 ```
-        index u;
+Algebra.index(:u)
 ```
 declares `u` as an index, and the simplification of
 ```
@@ -35,16 +35,13 @@ The metric tensor ``g^{μν}`` may be represented by `(u.v)`. If contraction ove
 
 Errors occur if indices are not properly matched in expressions.
 
-If a user later wishes to remove the index property from specific vectors, he can do it with the declaration `remind`. Thus `remind v1,…,vn;` removes the index flags from the variables `v1` through `vn`. However, these variables remain vectors in the system.
+If a user later wishes to remove the index property from specific vectors, he can do it with the declaration `remind`. Thus `Algebra.remind(v1,…,vn)` removes the index flags from the variables `v1` through `vn`. However, these variables remain vectors in the system.
 
 ### 18.1.2 G Operator for Gamma Matrices
 
-Syntax:
+```@docs
+Reduce.Algebra.g
 ```
-        G(ID:identifier[,EXPRN:vector_expression])  
-                :gamma_matrix_expression.
-```
-`g` is an n-ary operator used to denote a product of γ matrices contracted with Lorentz four-vectors. Gamma matrices are associated with fermion lines in a Feynman diagram. If more than one such line occurs, then a different set of γ matrices (operating in independent spin spaces) is required to represent each line. To facilitate this, the first argument of `g` is a line identification identifier (not a number) used to distinguish different lines.
 
 Thus
 ```
@@ -68,21 +65,15 @@ The notation of Bjorken and Drell is assumed in all operations involving γ matr
 
 ### 18.1.3 EPS Operator
 
-Syntax:
+```@docs
+Reduce.Algebra.eps
 ```
-         EPS(EXPRN1:vector_expression,...,EXPRN4:vector_exp):vector_exp.
-```
-The operator `eps` has four arguments, and is used only to denote the completely antisymmetric tensor of order 4 and its contraction with Lorentz four-vectors. Thus
-``
-ϵ_{ijkl} = \begin{cases} +1 & \text{if }i,j,k,l\text{ is an even permutation of 0,1,2,3} \\ - 1  & \text{if }i,j,k,l\text{ is an odd permutation of 0,1,2,3} \\ 0 & \text{otherwise} \end{cases}
-``
-A contraction of the form ``ϵ_{ijμν}p_μq_ν`` may be written as `eps(i,j,p,q)`, with `i` and `j` flagged as indices, and so on.
 
 ## 18.2 Vector Variables
 
 Apart from the line identification identifier in the `g` operator, all other arguments of the operators in this section are vectors. Variables used as such must be declared so by the type declaration `vector`, for example:
-```
-        vector  p1,p2;
+```Julia
+Algebra.vector(:p1,:p2)
 ```
 declares `p1` and `p2` to be vectors. Variables declared as indices or given a mass are automatically declared vector by these declarations.
 
@@ -113,8 +104,8 @@ When a Dirac expression is evaluated, the system computes one quarter of the tra
 The algorithms used for trace calculations are the best available at the time this system was produced. For example, in addition to the algorithm developed by Chisholm for contracting indices in products of traces, REDUCE uses the elegant algorithm of Kahane for contracting indices in γ matrix products. These algorithms are described in Chisholm, J. S. R., Il Nuovo Cimento X, 30, 426 (1963) and Kahane, J., Journal Math. Phys. 9, 1732 (1968).
 
 It is possible to prevent the trace calculation over any line identifier by the declaration `nospur`. For example,
-```
-        nospur l1,l2;
+```Julia
+Algebra.nospur(:l1,:l2)
 ```
 will mean that no traces are taken of γ matrix terms involving the line numbers `l1` and `l2`. However, in some calculations involving more than one line, a catastrophic error
 ```
@@ -137,8 +128,8 @@ but an alternative method is provided by two commands `mass` and `mshell`. `mass
 ⟨vector variable⟩=⟨scalar variable⟩
 ```
 for example,
-```
-        mass p1=m, q1=mu;
+```Julia
+Algebra.mass(:(p1==m), :(q1==mu))
 ```
 The only effect of this command is to associate the relevant scalar variable as a mass with the corresponding vector. If we now say
 ```
