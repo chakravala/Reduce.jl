@@ -2329,9 +2329,9 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "man/13-interactive.html#Interactive-Editing-1",
+    "location": "man/13-interactive.html#.2-Interactive-Editing-1",
     "page": "13 Commands for Interactive Use",
-    "title": "Interactive Editing",
+    "title": "13.2 Interactive Editing",
     "category": "section",
     "text": "Not initially supported by Reduce.jl parser, see upstream docs for more information."
 },
@@ -2525,7 +2525,7 @@ var documenterSearchIndex = {"docs": [
     "page": "16 User Contributed Packages",
     "title": "16 User Contributed Packages",
     "category": "section",
-    "text": "The complete REDUCE system includes a number of packages contributed by users that are provided as a service to the user community. Questions regarding these packages should be directed to their individual authors.All such packages have been precompiled as part of the installation process. However, many must be specifically loaded before they can be used. (Those that are loaded automatically are so noted in their description.) You should also consult the user notes for your particular implementation for further information on whether this is necessary. If it is, the relevant command is load_package, which takes a list of one or more package names as argument, for example:julia> load_package(:algint)although this syntax may vary from implementation to implementation.Nearly all these packages come with separate documentation and test files (except those noted here that have no additional documentation), which is included, along with the source of the package, in the REDUCE system distribution. These items should be studied for any additional details on the use of a particular package.The packages available in the current release of REDUCE are as follows:Pages = [\"16-packages.md\"]External packages from JuliaReducePkg:ReduceLinAlg.jl: Linear algebra package, upstream docs (LINALG / pdf), Julia docs (none yet)Additional upstream user contributed packages available."
+    "text": "The complete REDUCE system includes a number of packages contributed by users that are provided as a service to the user community. Questions regarding these packages should be directed to their individual authors.All such packages have been precompiled as part of the installation process. However, many must be specifically loaded before they can be used. (Those that are loaded automatically are so noted in their description.) You should also consult the user notes for your particular implementation for further information on whether this is necessary. If it is, the relevant command is load_package, which takes a list of one or more package names as argument, for example:julia> load_package(:algint)although this syntax may vary from implementation to implementation.Nearly all these packages come with separate documentation and test files (except those noted here that have no additional documentation), which is included, along with the source of the package, in the REDUCE system distribution. These items should be studied for any additional details on the use of a particular package.The packages available in the current release of REDUCE are as follows:Pages = [\"16-packages.md\"]External packages from JuliaReducePkg:ReduceLinAlg.jl: Linear algebra package, upstream docs (LINALG / pdf), Julia docs (stable / latest)Additional upstream user contributed packages available."
 },
 
 {
