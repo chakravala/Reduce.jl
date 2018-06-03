@@ -18,7 +18,7 @@ Pages = ["16-packages.md"]
 
 External packages from [JuliaReducePkg](https://github.com/JuliaReducePkg):
 
-- [ReduceLinAlg.jl](https://github.com/JuliaReducePkg/ReduceLinAlg.jl): *Linear algebra package*, upstream docs ([LINALG](http://www.reduce-algebra.com/manual/manualse127.html) / [pdf](http://www.reduce-algebra.com/manual/contributed/linalg.pdf)), Julia docs (none yet)
+- [ReduceLinAlg.jl](https://github.com/JuliaReducePkg/ReduceLinAlg.jl): *Linear algebra package*, upstream docs ([LINALG](http://www.reduce-algebra.com/manual/manualse127.html) / [pdf](http://www.reduce-algebra.com/manual/contributed/linalg.pdf)), Julia docs ([stable](https://JuliaReducePkg.github.io/ReduceLinAlg.jl/stable) / [latest](https://JuliaReducePkg.github.io/ReduceLinAlg.jl/latest))
 
 Additional upstream [user contributed packages](http://www.reduce-algebra.com/manual/manualch16.html) available.
 

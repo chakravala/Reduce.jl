@@ -24,7 +24,7 @@ would yield the same result, but *without* a recomputation of the integral.
 
 The operator `display` is available to display previous inputs. If its argument is a positive integer, n say, then the previous n inputs are displayed. If its argument is `all` (or in fact any non-numerical expression), then all previous inputs are displayed.
 
-## Interactive Editing
+## 13.2 Interactive Editing
 
 Not initially supported by Reduce.jl parser, see [upstream docs](http://www.reduce-algebra.com/manual/manualse77.html) for more information.
 

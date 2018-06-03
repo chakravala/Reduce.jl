@@ -98,12 +98,12 @@ end
 for fun in [switchbas;switches]
     @eval begin
         macro $fun(expr)
-            (r,on,off) = macroshift(expr)
+            (r,on,off) = macroshift(linefilter(expr))
             push!(on,$(string(fun)))
             Expr(:quote,rcall(r;on=on,off=off))
         end
         macro $(Symbol("off_",fun))(expr)
-            (r,on,off) = macroshift(expr)
+            (r,on,off) = macroshift(linefilter(expr))
             push!(off,$(string(fun)))
             Expr(:quote,rcall(r;on=on,off=off))
         end

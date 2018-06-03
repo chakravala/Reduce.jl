@@ -241,7 +241,7 @@ The list brackets can be left out if preferred. The above rules could also have 
 
 After such `let` rules have been input, `x` will always be evaluated as the square of `y`, and so on. This is so even if at the time the `let` rule was input, the variable `y` had a value other than `y`. (In contrast, the assignment `R"x:=y^2"` will set `x` equal to the square of the current value of `y`, which could be quite different.)
 
-The rule `let a\*b=c` means that whenever `a` and `b` are both factors in an expression their product will be replaced by `c`. For example, `a^5*b^7*w` would be replaced by `c^5*b^2*w`.
+The rule `let a*b=c` means that whenever `a` and `b` are both factors in an expression their product will be replaced by `c`. For example, `a^5*b^7*w` would be replaced by `c^5*b^2*w`.
 
 The rule for `l+m` will not only replace all occurrences of `l+m` by `n`, but will also normally replace `l` by `n-m`, but not `m` by `n-l`. A more complete description of this case is given in Section 11.2.5.
 
