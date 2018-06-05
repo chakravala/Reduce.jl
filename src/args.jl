@@ -30,6 +30,7 @@ const calculus = [
     :lcm,
     :compact,
     :changevar,
+    :odesolve,
 ]
 
 const cnan = [
@@ -227,6 +228,8 @@ solve(a::Expr,s::Array{Symbol,1}) = solve(a.head == :block ? a.args : [a],s)
 solve(a::Expr,s::Symbol) = solve(a,[s])
 solve(a::T,s::S) where T <: Tuple where S <: Tuple = solve(RExpr(a),RExpr(s)) |> parse
 solve(a::T,s::Symbol) where T <: Tuple = solve(a,(s,))
+
+odesolve(r...) = odesolve(RExpr.(r)...) |> parse
 
 changevar(r...) = changevar(RExpr.(r)...) |> parse
 map(a,b) = map(RExpr(a),RExpr(b)) |> parse
