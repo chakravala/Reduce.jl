@@ -185,14 +185,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "library.html#Reduce.linefilter",
-    "page": "Library",
-    "title": "Reduce.linefilter",
-    "category": "function",
-    "text": "linefilter(::Expr)\n\nRecursively filters out :line blocks from Expr objects\n\n\n\n"
-},
-
-{
     "location": "library.html#Reduce.Rational",
     "page": "Library",
     "title": "Reduce.Rational",
@@ -2133,7 +2125,7 @@ var documenterSearchIndex = {"docs": [
     "page": "11 Substitution Commands",
     "title": "Reduce.Algebra.sub",
     "category": "function",
-    "text": "sub(::Union{Dict,Pair},expr)\n\nMake variable substitutions using Reduce\'s native sub command. Syntax:\n\nR\"(⟨substitution_list⟩,⟨EXPRN1:algebraic⟩)\"\n\nwhere ⟨substitution_list⟩ is a list of one or more equations of the form\n\n⟨VAR:kernel⟩ = ⟨EXPRN:algebraic⟩\n\nor a kernel that evaluates to such a list.\n\nThe sub operator gives the algebraic result of replacing every occurrence of the variable var in the expression EXPRN1 by the expression EXPRN. Specifically, EXPRN1 is first evaluated using all available rules. Next the substitutions are made, and finally the substituted expression is reevaluated. When more than one variable occurs in the substitution list, the substitution is performed by recursively walking down the tree representing EXPRN1, and replacing every VAR found by the appropriate EXPRN. The EXPRN are not themselves searched for any occurrences of the various VARs. The trivial case sub(EXPRN1)returns the algebraic value ofEXPRN1`.\n\nExamples:\n\njulia> Algebra.sub((:(x=a+y),:(y=y+1)),:(x^2+y^2))\n:((a + y) ^ 2 + (y + 1) ^ 2)\n\nand with @rcall s = (x=a+y,y=y+1),\n\njulia> Algebra.sub(:s,:(x^2+y^2))\n:((a + y) ^ 2 + (y + 1) ^ 2)\n\nNote that the global assignments R\"x:=a+y\", etc., do not take place.\n\nEXPRN1 can be any valid algebraic expression whose type is such that a substitution process is defined for it (e.g., scalar expressions, lists and matrices). An error will occur if an expression of an invalid type for substitution occurs either in EXPRN or EXPRN1.\n\n\n\nsub(T::DataType,expr::Expr)\n\nMake a substitution to convert numerical values to type T\n\n\n\n"
+    "text": "sub(::Union{Dict,Pair},expr)\n\nMake variable substitutions using Reduce\'s native sub command. Syntax:\n\nR\"(⟨substitution_list⟩,⟨EXPRN1:algebraic⟩)\"\n\nwhere ⟨substitution_list⟩ is a list of one or more equations of the form\n\n⟨VAR:kernel⟩ = ⟨EXPRN:algebraic⟩\n\nor a kernel that evaluates to such a list.\n\nThe sub operator gives the algebraic result of replacing every occurrence of the variable var in the expression EXPRN1 by the expression EXPRN. Specifically, EXPRN1 is first evaluated using all available rules. Next the substitutions are made, and finally the substituted expression is reevaluated. When more than one variable occurs in the substitution list, the substitution is performed by recursively walking down the tree representing EXPRN1, and replacing every VAR found by the appropriate EXPRN. The EXPRN are not themselves searched for any occurrences of the various VARs. The trivial case sub(EXPRN1)returns the algebraic value ofEXPRN1`.\n\nExamples:\n\njulia> Algebra.sub((:(x=a+y),:(y=y+1)),:(x^2+y^2))\n:((a + y) ^ 2 + (y + 1) ^ 2)\n\nand with @rcall s = (x=a+y,y=y+1),\n\njulia> Algebra.sub(:s,:(x^2+y^2))\n:((a + y) ^ 2 + (y + 1) ^ 2)\n\nNote that the global assignments R\"x:=a+y\", etc., do not take place.\n\nEXPRN1 can be any valid algebraic expression whose type is such that a substitution process is defined for it (e.g., scalar expressions, lists and matrices). An error will occur if an expression of an invalid type for substitution occurs either in EXPRN or EXPRN1.\n\n\n\n"
 },
 
 {
