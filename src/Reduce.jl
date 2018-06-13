@@ -1,6 +1,6 @@
 __precompile__()
 module Reduce
-using ForceImport
+using ForceImport, SyntaxTree
 using Compat; import Compat.String
 
 #   This file is part of Reduce.jl. It is licensed under the MIT license

@@ -1,7 +1,7 @@
-using Reduce, Compat
+using SyntaxTree, Reduce, Compat
 using Base.Test
 @force using Reduce.Algebra
-is_windows() && (Reduce.ColCheck(false); * = Algebra.:*)
+is_windows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 
 # write your own tests here
 @test showerror(STDOUT,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
@@ -60,8 +60,7 @@ println()
 @test NaN//NaN |> isnan
 @test join(split(R"x+1;x+2"))|> string == "x+1;\nx+2"
 @test sub(:x=>7,:x+7) == sub([:x=>7,:z=>21],:z-:x)
-@test sub(Float64,prod((:x-:n)^:n,:n,1,7)|>horner) |> typeof == Expr
-@test sub(Float64,:(7^(x+1))) |> typeof == Expr
+@test SyntaxTree.sub(Float64,prod((:x-:n)^:n,:n,1,7)|>horner) |> typeof == Expr
 @test squash(Expr(:function,:(fun(x)),:(z=3;z+=:x))).args[2] == squash(:(y=:x;y+=3))
 @test squash(:(sqrt(x)^2)) == :x
 @test Expr(:block,:(x+1)) |> RExpr == R"1+x"
