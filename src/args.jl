@@ -109,8 +109,8 @@ end
 
 for fun in [calculus;alg]
     @eval begin
-        function $fun(expr::Compat.String,s...;be=0)
-            convert(Compat.String, $fun(RExpr(expr),s...;be=be))
+        function $fun(expr::String,s...;be=0)
+            convert(String, $fun(RExpr(expr),s...;be=be))
         end
     end
 end

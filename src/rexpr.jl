@@ -17,12 +17,12 @@ type RExpr <: Any
 str::Array{Compat.String,1}
 """
 struct RExpr
-    str::Array{Compat.String,1}
-    RExpr(r::Array{Compat.String,1}) = new(r)
+    str::Array{String,1}
+    RExpr(r::Array{String,1}) = new(r)
 end
 
-RExpr(r::Array{SubString{String},1}) = RExpr(convert(Array{Compat.String,1},r))
-RExpr(str::Compat.String) = RExpr([str])
+RExpr(r::Array{SubString{String},1}) = RExpr(convert(Array{String,1},r))
+RExpr(str::String) = RExpr([str])
 
 """
     RExpr(e::Expr)
@@ -64,7 +64,7 @@ macro R_str(str)
     RExpr(str)
 end
 
-function rtrim(r::Array{Compat.String,1})
+function rtrim(r::Array{String,1})
     n = deepcopy(r)
     h = 1
     l = length(r)
@@ -75,7 +75,7 @@ function rtrim(r::Array{Compat.String,1})
 end
 
 function split(r::RExpr)
-    n = Compat.String[]
+    n = String[]
     for h ∈ 1:length(r.str)
         p = split(replace(r.str[h],r"(\$)|(;\n)"=>";"),r"(?<!\!#[0-9a-fA-F]{4});")
         for t ∈ 1:length(p)
@@ -84,10 +84,10 @@ function split(r::RExpr)
     return RExpr(rtrim(n))
 end
 
-string(r::RExpr) = convert(Compat.String,r)
+string(r::RExpr) = convert(String,r)
 join(r::RExpr) = RExpr(string(r))
-join(r::Array{RExpr,1}) = vcat(convert.(Array{Compat.String,1},r)...) |> RExpr
-show(io::IO, r::RExpr) = print(io,convert(Compat.String,r))
+join(r::Array{RExpr,1}) = vcat(convert.(Array{String,1},r)...) |> RExpr
+show(io::IO, r::RExpr) = print(io,convert(String,r))
 
 cols = 80
 
@@ -112,13 +112,13 @@ function linelength()
     return c
 end
 
-@compat function show(io::IO, ::MIME"text/plain", r::RExpr)
+function show(io::IO, ::MIME"text/plain", r::RExpr)
     length(r.str) > 1 && (print(io,string(r),";"); return nothing)
     ColCheck() && linelength()
     print(io,rcall(r;on=[:nat]) |> string |> chomp)
 end
 
-@compat function show(io::IO, ::MIME"text/latex", r::RExpr)
+function show(io::IO, ::MIME"text/latex", r::RExpr)
     rcall(R"on latex")
     write(rs,r)
     rd = readsp(rs)
@@ -308,7 +308,7 @@ ListPrint = ( () -> begin
     return join(a)
 end
 
-@noinline function JSymReplace(str::Compat.String)
+@noinline function JSymReplace(str::String)
     for key ∈ keys(repjlr)
         str = replace(str, key => repjlr[key])
     end
@@ -344,8 +344,8 @@ end
 RSymReplace(str::SubString{String}) = str |> String |> RSymReplace
 
 convert(::Type{RExpr}, r::RExpr) = r
-convert(::Type{Array{Compat.String,1}}, r::RExpr) = r.str
-convert(::Type{Compat.String}, r::RExpr) = join(r.str,";\n")
+convert(::Type{Array{String,1}}, r::RExpr) = r.str
+convert(::Type{String}, r::RExpr) = join(r.str,";\n")
 convert(::Type{T}, r::RExpr) where T = T <: Number ? eval(parse(r)) : parse(r)
 
 """

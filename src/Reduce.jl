@@ -1,7 +1,7 @@
 __precompile__()
 module Reduce
 using ForceImport, SyntaxTree
-using Compat; import Compat.String
+VERSION < v"0.7.0-" ? (using Compat) : (using LinearAlgebra)
 
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
@@ -51,13 +51,13 @@ export error, ReduceError
 import Base: error
 
 struct ReduceError <: Exception
-    errstr::Compat.String
+    errstr::String
 end
 
 Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce: "*chomp(err.errstr))
 
 function ReduceCheck(output) # check for REDUCE errors
-    contains(output,r"(([*]{5})|([+]{3}) )|( ?  \(Y or N\))") && throw(ReduceError(output))
+    ismatch(r"(([*]{5})|([+]{3}) )|( ?  \(Y or N\))",output) && throw(ReduceError(output))
 end
 
 function ReduceWarn(output) # check for REDUCE warnings
@@ -79,7 +79,7 @@ clears = (()->(c=true; return (tf=c)->(c≠tf && (c=tf); return c)))()
 const EOT = Char(4) # end of transmission character
 EOTstr = "symbolic write(int2id $(Int(EOT)))"
 
-function Base.write(rs::PSL, input::Compat.String)
+function Base.write(rs::PSL, input::String)
     clears() && clear(rs)
     write(rs.input,"$input; $EOTstr;\n")
 end
@@ -105,8 +105,7 @@ include("switch.jl") # load switch operators
 
 module Algebra
 importall Reduce
-using Compat
-import Compat.String
+!(VERSION < v"0.7.0-") && (using LinearAlgebra)
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
@@ -203,7 +202,7 @@ end
 
 export Algebra, @force
 
-Base.write(rs::PSL,r::RExpr) = write(rs,convert(Compat.String,r))
+Base.write(rs::PSL,r::RExpr) = write(rs,convert(String,r))
 
 import Base: zero, one
 
@@ -290,7 +289,7 @@ const s = quote; #global rs = PSL()
     load_package(:rlfi)
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
-    show(DevNull,"text/latex",R"int(sinh(e**i*z),z)")
+    show(devnull,"text/latex",R"int(sinh(e**i*z),z)")
     R"x" == R"x"
     ListPrint(0)
 end
@@ -318,6 +317,7 @@ end
 global preload = false
 try
     (ENV["REDPRE"] == "1") && (preload = true)
+catch
 end
 preload && include("precomp.jl")
 

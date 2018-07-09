@@ -4,7 +4,7 @@ using Base.Test
 is_windows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 
 # write your own tests here
-@test showerror(STDOUT,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
+@test showerror(stdout,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
 @test rcall(:((1+pi)^2)) == convert(Expr,RExpr(rcall("(1+pi)**2")))
 @test try; "1/0" |> rcall; false; catch; true; end
 @test Reduce.Reset() == nothing
@@ -16,10 +16,10 @@ is_windows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 @test string(R"x+1") |> typeof == String
 @test RExpr(:x) == R"x"
 @test RExpr(:x)*R"x" == R"x^2"
-@test convert(RExpr,R"x").str == convert(Array{Compat.String,1},R"x")
+@test convert(RExpr,R"x").str == convert(Array{String,1},R"x")
 @test load_package([:rlfi]) == load_package(:rlfi,:rlfi)
-@test show(STDOUT, R"") == nothing
-@test show(STDOUT,"text/latex",R"int(sinh(e**i*z),z)") == nothing
+@test show(stdout, R"") == nothing
+@test show(stdout,"text/latex",R"int(sinh(e**i*z),z)") == nothing
 @test Base.write(Reduce.rs, R"") |> typeof == Int; rcall(1)
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"

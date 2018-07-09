@@ -77,7 +77,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
     rfun = Symbol(:r,"_",mode)
     modefun = Symbol(:parse,"_",mode)
     argfun = Symbol(:args,"_",mode)
-    arty = (mode == :expr) ? :Any : :(Compat.String)
+    arty = (mode == :expr) ? :Any : :String
     exec = if mode == :expr
         :(Meta.parse(RSymReplace(js)))
     elseif mode == :unary
@@ -95,7 +95,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
             nsr = $arty[]
             $(if mode == :args
                 quote
-                    s = Array{Compat.String,1}()
+                    s = Array{String,1}()
                     for rs ∈ sr
                         push!(s,rs |> RExpr |> string)
                     end
@@ -114,7 +114,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     (h,state) = next(iter, state)
                     y = h
                     (h,state) = bematch(sexpr[h],sexpr,h,iter,state,"begin","end")
-                    $(mode != :expr ? :(push!(nsr,Compat.String("procedure "*js))) : :(nothing))
+                    $(mode != :expr ? :(push!(nsr,String("procedure "*js))) : :(nothing))
                     push!(nsr,$(if mode == :expr
                         :(Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be)))
                     elseif mode == :args
@@ -130,7 +130,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     !flag && (js = join(split(js,"end")[1:end+c],"end"))
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
-                    $(mode != :expr ? :(push!(nsr,Compat.String("begin "*js))) : :(nothing))
+                    $(mode != :expr ? :(push!(nsr,String("begin "*js))) : :(nothing))
                     push!(ep,$(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:(be+1))))
                     ep[1] == nothing && shift!(ep)
                     while !done(iter,state) & flag
@@ -148,7 +148,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         epr ≠ nothing && push!(ep,epr)
                     end
                     push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
-                    $(mode != :expr ? :(push!(nsr,Compat.String("end"))) : :(nothing))
+                    $(mode != :expr ? :(push!(nsr,String("end"))) : :(nothing))
                 elseif contains(sh[en],r"^return")
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
@@ -160,16 +160,16 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     push!(nsr,$(if mode == :expr
                         :(Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be)))
                     elseif mode == :args
-                        :(Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr,s;be=be)))
+                        :(String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> String |> RExpr,s;be=be)))
                     else
-                        :(Compat.String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> Compat.String |> RExpr;be=be)))
+                        :(String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> String |> RExpr;be=be)))
                     end))
                 elseif contains(sh[en],"for")
                     throw(ReduceError("for block parsing not yet supported"))
                 elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),braces)
                     $(if mode == :expr; quote
                         ts = sexpr[h]
-                        (h,state,mp) = loopshift(ts,'{','}',Compat.String,sexpr,h,iter,state)
+                        (h,state,mp) = loopshift(ts,'{','}',String,sexpr,h,iter,state)
                         smp = match(braces,join(mp,";\n")).match[2:end-1]
                         ListPrint(ListPrint()+1)
                         args = Array{$arty,1}(0)
@@ -203,7 +203,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),prefix)
                     $(if mode == :expr; quote
                     ts = sexpr[h]
-                    (h,state,mp) = loopshift(ts,'(',')',Compat.String,sexpr,h,iter,state)
+                    (h,state,mp) = loopshift(ts,'(',')',String,sexpr,h,iter,state)
                     smp = replace(join(mp,";\n"),"**",'^')
                     qr = IOBuffer()
                     while smp ≠ ""
@@ -360,13 +360,13 @@ for mode ∈ [:expr,:unary,:switch,:args]
         end
         $(if mode == :args
             quote
-                $rfun(fun::String,r::Array{Compat.String,1},s;be=0) = $modefun(fun,RExpr(r),s...;be=be)
-                $rfun(fun::String,r,s;be=0) = $modefun(fun,r |> Compat.String |> RExpr,s...;be=be)
+                $rfun(fun::String,r::Array{String,1},s;be=0) = $modefun(fun,RExpr(r),s...;be=be)
+                $rfun(fun::String,r,s;be=0) = $modefun(fun,r |> String |> RExpr,s...;be=be)
             end
         else
             quote
-                $rfun(fun::String,r::Array{Compat.String,1};be=0) = $modefun(fun,RExpr(r);be=be)
-                $rfun(fun::String,r;be=0) = $modefun(fun,r |> Compat.String |> RExpr;be=be)
+                $rfun(fun::String,r::Array{String,1};be=0) = $modefun(fun,RExpr(r);be=be)
+                $rfun(fun::String,r;be=0) = $modefun(fun,r |> String |> RExpr;be=be)
             end
         end)
         @noinline function $argfun(fun::String,mod::String,ls::Array{SubString{String},1},$(aargs...))
@@ -729,7 +729,7 @@ end
 end
 
 function unparse(expr::Expr)
-    str = Array{Compat.String,1}(0)
+    str = Array{String,1}(0)
     io = IOBuffer()
     if expr.head == :block
         for line ∈ expr.args # block structure
@@ -860,6 +860,4 @@ function mat(expr)
     end
 end
 
-function mat(expr,original...)
-    |(typeof.(original)...) <: Matrix ? mat(expr) : expr
-end
+mat(expr,original...) = |(typeof.(original)...) <: Matrix ? mat(expr) : expr

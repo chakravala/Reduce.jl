@@ -16,7 +16,7 @@ ans = nothing
 Examine the buffer in the repl to see if the input is complete
 """
 function finished(s)
-    str = Compat.String(LineEdit.buffer(s))
+    str = String(LineEdit.buffer(s))
     if length(str) == 0
         return false
     elseif contains(str,r"(^|\n)[^%\n]*(;|\$)[ ]*(%[^\n]*)?$")
@@ -68,13 +68,13 @@ end
 
 function LineEdit.complete_line(c::ReduceCompletionProvider, s)
     buf = s.input_buffer
-    partial = Compat.String(buf.data[1:buf.ptr-1])
+    partial = String(buf.data[1:buf.ptr-1])
     full = LineEdit.input_string(s) # complete latex
     ret, range, should_complete = REPLCompletions.bslash_completions(full, endof(partial))[2]
     if length(ret) > 0 && should_complete
         return ret, partial[range], true
     end
-    return Compat.String[], 0:-1, false
+    return String[], 0:-1, false
 end
 
 function create_reduce_repl(repl, main)
@@ -128,6 +128,7 @@ function repl_init(repl)
             end)
         main_mode.keymap_dict = LineEdit.keymap_merge(
             main_mode.keymap_dict, reduce_prompt_keymap)
+    catch
     end
     nothing
 end

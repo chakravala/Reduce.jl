@@ -10,7 +10,7 @@ R"x+2" == R"2+x-1+1"
 string(R"x+1")
 RExpr(:x) == R"x"
 Algebra.:*(RExpr(:x),R"x") == R"x^2"
-convert(RExpr,R"x").str == convert(Array{Compat.String,1},R"x")
+convert(RExpr,R"x").str == convert(Array{String,1},R"x")
 load_package([:rlfi]) == load_package(:rlfi,:rlfi)
 rcall(:(x^2+2x+1),off=[:factor])
 rcall("x + 1","factor")

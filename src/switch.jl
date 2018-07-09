@@ -77,8 +77,8 @@ end
 for fun in [switchbas;switches]
     @eval begin
         $(unfoldgen(fun,:switch))
-        function $fun(expr::Compat.String;be=0)
-            convert(Compat.String, $fun(RExpr(expr);be=be))
+        function $fun(expr::String;be=0)
+            convert(String, $fun(RExpr(expr);be=be))
         end
     end
 end
@@ -86,7 +86,7 @@ end
 for fun in switchtex
     @eval begin
         $(unfoldgen(fun,:switch))
-        function $fun(expr::Compat.String;be=0)
+        function $fun(expr::String;be=0)
             convert(String, $fun(RExpr(expr);be=be))
         end
         macro $fun(expr)

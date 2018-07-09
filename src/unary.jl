@@ -151,8 +151,8 @@ end
 for fun in [sbas;sdep;sfun;snum;scom;sint]
     @eval begin
         $(Reduce.unfoldgen(fun,:unary))
-        function $fun(expr::Compat.String;be=0)
-            convert(Compat.String, $fun(RExpr(expr);be=be))
+        function $fun(expr::String;be=0)
+            convert(String, $fun(RExpr(expr);be=be))
         end
         #=macro $fun(expr)
             :($$(QuoteNode(fun))($(esc(expr))))
