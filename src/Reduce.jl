@@ -18,7 +18,7 @@ struct PSL <: Base.AbstractPipe
         output = Pipe()
         rsl = `$(split(rpsl))`
         dirf = @__DIR__
-        if !is_windows()
+        if !Sys.iswindows()
             try
                 process = _spawn(rsl, input, output)
             catch
@@ -57,12 +57,12 @@ end
 Base.showerror(io::IO, err::ReduceError) = print(io,"Reduce: "*chomp(err.errstr))
 
 function ReduceCheck(output) # check for REDUCE errors
-    ismatch(r"(([*]{5})|([+]{3}) )|( ?  \(Y or N\))",output) && throw(ReduceError(output))
+    occursin(r"(([*]{5})|([+]{3}) )|( ?  \(Y or N\))",output) && throw(ReduceError(output))
 end
 
 function ReduceWarn(output) # check for REDUCE warnings
-    if contains(output,r"[*]{3}")
-        info("REDUCE: "*chomp(output))
+    if occursin(r"[*]{3}",output)
+        @info "REDUCE: $(chomp(output))"
         join(split(output,r"[*]{3}.*\n"))
     else
         output
@@ -89,7 +89,7 @@ const RES = Regex("\n($EOT\n$SOS)|(\n$SOS\n$EOT)|(\n$SOS$EOT\n)|($EOT\n)")
 
 function Base.read(rs::PSL) # get result and strip prompts/EOT char
     out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output))
-    is_windows() && (out = replace(out,r"\r" => ""))
+    Sys.iswindows() && (out = replace(out,r"\r" => ""))
     out = replace(replace(out,r"\$\n\n" => "\n\n"),RES=>"")
     out = replace(out,Regex(SOS) => "")
     ReduceCheck(out)
@@ -215,7 +215,7 @@ for T ∈ [:Any,:Expr,:Symbol]
     end
 end
 
-import Base.LinAlg: transpose, ctranspose
+import LinearAlgebra: transpose, ctranspose
 
 transpose(r::ExprSymbol) = r
 ctranspose(r::ExprSymbol) = Algebra.conj(r)
@@ -277,8 +277,8 @@ const s = quote; #global rs = PSL()
     write(rs.input,"off nat; $EOTstr;\n")
     banner = readuntil(rs.output,EOT) |> String
     readavailable(rs.output)
-    rcsl = contains(banner," CSL ")
-    if is_windows()
+    rcsl = occursin(" CSL ",banner)
+    if Sys.iswindows()
         banner = replace(banner,r"\r" => "")
         println(split(String(banner),'\n')[rcsl ? 1 : end-3])
         ColCheck(false)

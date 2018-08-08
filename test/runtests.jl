@@ -1,5 +1,5 @@
 using SyntaxTree, Reduce, Compat
-using Base.Test
+using Test
 @force using Reduce.Algebra
 is_windows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 
@@ -64,14 +64,14 @@ println()
 @test squash(Expr(:function,:(fun(x)),:(z=3;z+=:x))).args[2] == squash(:(y=:x;y+=3))
 @test squash(:(sqrt(x)^2)) == :x
 @test Expr(:block,:(x+1)) |> RExpr == R"1+x"
-@test limit((1-1/:n)^-:n,:n,Inf) == e
+@test limit((1-1/:n)^-:n,:n,Inf) == ℯ
 @test log(exp(:pi)) == π
 @test 2//Inf == 0
 @test Inf//2 == Inf
 
 @test (rcall("x"); Algebra.ws() == :x)
 @test (operator(:x); operator(:x); clear(:x); true)
-@test try det([:x :y]) catch true end
+@test try det([:x :y]) catch; true end
 @test join([R"1",R"1"]) == R"1;1"
 @test list([R"1",R"x"]) == list((1,:x))
 @test Reduce.lister(:x) == R"x"

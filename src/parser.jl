@@ -48,7 +48,7 @@ const assign = r"^([A-Za-z_ ][A-Za-z_0-9 ]*)(:=)"
 end
 
 function loopshift(js,openpar,closepar,T,sexpr,h,iter,state)
-    ep = Array{T,1}(0)
+    ep = Array{T,1}(undef,0)
     c = becount(js,openpar,closepar)
     flag = c ≥ 0
     !flag && (js = join(split(js,closepar)[1:end+c],closepar))
@@ -109,7 +109,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 sh = split(sexpr[h],r"[ ]+")
                 en = 1
                 isempty(replace(sh[en]," "=>"")) && (en = 2); #show(sh[en])
-                if contains(sh[en],r"^procedure")
+                if occursin(r"^procedure",sh[en])
                     js = join(split(sexpr[h],"procedure")[2:end],"procedure")
                     (h,state) = next(iter, state)
                     y = h
@@ -122,9 +122,9 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     else
                         :($rfun(fun,sexpr[y:h];be=be) |> string)
                     end))
-                elseif contains(sh[en],r"^begin")
+                elseif occursin(r"^begin",sh[en])
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
-                    ep = Array{$arty,1}(0)
+                    ep = Array{$arty,1}(undef,0)
                     c = becount(js,"begin","end")
                     flag = c ≥ 0
                     !flag && (js = join(split(js,"end")[1:end+c],"end"))
@@ -132,7 +132,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
                     $(mode != :expr ? :(push!(nsr,String("begin "*js))) : :(nothing))
                     push!(ep,$(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:(be+1))))
-                    ep[1] == nothing && shift!(ep)
+                    ep[1] == nothing && popfirst!(ep)
                     while !done(iter,state) & flag
                         (h,state) = next(iter, state)
                         cQ = c
@@ -149,13 +149,13 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     end
                     push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
                     $(mode != :expr ? :(push!(nsr,String("end"))) : :(nothing))
-                elseif contains(sh[en],r"^return")
+                elseif occursin(r"^return",sh[en])
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
                     (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
                     rp = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...))))
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
-                elseif contains(sexpr[h],assign)
+                elseif occursin(assign,sexpr[h])
                     sp = split(sexpr[h], ":=",limit=2)
                     push!(nsr,$(if mode == :expr
                         :(Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be)))
@@ -164,15 +164,15 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     else
                         :(String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> String |> RExpr;be=be)))
                     end))
-                elseif contains(sh[en],"for")
+                elseif occursin("for",sh[en])
                     throw(ReduceError("for block parsing not yet supported"))
-                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),braces)
+                elseif occursin(braces,$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                         ts = sexpr[h]
                         (h,state,mp) = loopshift(ts,'{','}',String,sexpr,h,iter,state)
                         smp = match(braces,join(mp,";\n")).match[2:end-1]
                         ListPrint(ListPrint()+1)
-                        args = Array{$arty,1}(0)
+                        args = Array{$arty,1}(undef,0)
                         while smp ≠ ""
                             lsM = match(braces,smp)
                             lsm = lsM ≠ nothing ? lsM.match[2:end-1] : smp
@@ -195,24 +195,24 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         length(args)==1 && typeof(args[1]) <: Tuple && (args = args[1])
                         push!(nsr,Tuple(args))
                     end; else; :(nothing); end)
-                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),"=>")
+                elseif occursin("=>",$((mode == :expr) ? :(sexpr[h]) : :("")))
                     sp = split(sexpr[h],r"=>")
                     stuff = String.(split(sp[2],r"(when)|(and)"))
                     ar = $rfun.(fun,stuff;be=be)
                     push!(nsr,$rfun(fun,sp[1];be=be) => length(ar) ≠ 1 ? ar : ar[1])
-                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),prefix)
+                elseif occursin(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                     ts = sexpr[h]
                     (h,state,mp) = loopshift(ts,'(',')',String,sexpr,h,iter,state)
-                    smp = replace(join(mp,";\n"),"**",'^')
+                    smp = replace(join(mp,";\n"),"**"=>'^')
                     qr = IOBuffer()
                     while smp ≠ ""
-                        args = Array{$arty,1}(0)
-                        if contains(smp,r"^\(")
+                        args = Array{$arty,1}(undef,0)
+                        if occursin(r"^\(",smp)
                             push!(args,$(argrfun(mode,rfun,:(match(parens,smp).match[2:end-1]))))
                             smp = split(smp,parens;limit=2)[end]
                             print(qr,"($(args...))")
-                            if !contains(smp,prefix)
+                            if !occursin(prefix,smp)
                                 $(if mode == :expr; quote
                                     if contains(smp,infix1)
                                         print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
@@ -233,15 +233,15 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         pf = match(prefix,smp).match |> String
                         sp = split(smp,prefix;limit=2)
                         $(if mode == :expr; quote 
-                            if contains(sp[1],infix2)
+                            if occursin(infix2,sp[1])
                                 rq = split(sp[1],infix2)[1]
-                                if contains(rq,infix1)
+                                if occursin(infix1,rq)
                                     rq = RSymReplace(match(infix1,rq).match) * RSymReplace(split(rq,infix1)[end])
                                 else
                                     rq = RSymReplace(rq)
                                 end
                                 print(qr, rq * RSymReplace(match(infix2,sp[1]).match))
-                            elseif contains(sp[1],infix1)
+                            elseif occursin(infix1,sp[1])
                                 print(qr, RSymReplace(match(infix1,sp[1]).match) * RSymReplace(split(sp[1],infix1)[end]))
                             else
                                 print(qr, RSymReplace(sp[1]))
@@ -252,7 +252,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         smp = split(sp[2],parens;limit=2)[end]
                         lsm = match(parens,sp[2]).match[2:end-1]
                         if pf == "mat"
-                            mt = matchall(parens,lsm)
+                            mt = collect((m.match for m=eachmatch(parens,lsm)))
                             for row ∈ mt
                                 elm = split(row[2:end-1],',')
                                 push!(args,$(if mode == :expr
@@ -284,8 +284,8 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 :("$pf($(join(args,',')))")
                             end))
                         end
-                        !contains(smp,prefix) && ($(if mode == :expr; quote
-                            if contains(smp,infix1)
+                        !occursin(prefix,smp) && ($(if mode == :expr; quote
+                            if occursin(infix1,smp)
                                 print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
                                 smp = ""
                             else
@@ -298,17 +298,17 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     end
                     push!(nsr,$((mode == :expr) ? :("("*String(take!(qr))*")" |> Meta.parse |> linefilter) : :qr))
                     end; else; :(nothing); end)
-                elseif contains(sh[en],"end")
+                elseif occursin("end",sh[en])
                     nothing
                 elseif isempty(sh[en])
                     nothing
-                elseif contains($((mode == :expr) ? :(sexpr[h]) : :("")),"=")
+                elseif occursin("=",$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                     sp = split(sexpr[h],"=")
                     push!(nsr,$(:(Expr(:call,ListPrint()>0 ? :(=) : :(==),
                             $rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))))
                     end; end)
-                elseif contains(sexpr[h],":")
+                elseif occursin(":",sexpr[h])
                     sp = split(sexpr[h],":")
                     push!(nsr,$(if mode == :expr
                         :(Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))
@@ -371,19 +371,19 @@ for mode ∈ [:expr,:unary,:switch,:args]
         end)
         @noinline function $argfun(fun::String,mod::String,ls::Array{SubString{String},1},$(aargs...))
             mode = Symbol(mod)
-            args = Array{$arty,1}(0)
+            args = Array{$arty,1}(undef,0)
             lsi = 1:length(ls)
             lss = start(lsi)
             while !done(lsi,lss)
                 (lsh,lss) = next(lsi, lss)
-                if contains(ls[lsh],r"^begin")
+                if occursin(r"^begin",ls[lsh])
                     js = join(split(ls[lsh],"begin")[2:end],"begin")
                     (lsh,lss,ep) = loopshift(js,"begin","end",$arty,ls,lsh,lsi,lss)
                     sep = "begin $(join(ep,',')) end"
                     push!(args,$(argrfun(mode,rfun,:sep)))
-                elseif contains(ls[lsh],prefix)
+                elseif occursin(prefix,ls[lsh])
                     js = ls[lsh]
-                    ep = Array{$arty,1}(0)
+                    ep = Array{$arty,1}(undef,0)
                     c = count(z->z=='(',js)-count(z->z==')',js)-1
                     flag = c ≥ -1
                     !flag && (js = join(split(js,')')[1:end+c],')'))
@@ -533,7 +533,7 @@ function print_args(io::IO,a::Array{Any,1})
     print(io, "(")
     for (i, arg) in enumerate(a)
         show_expr(io, arg)
-        i ≠ endof(a) ? print(io,",") : print(io,")")
+        i ≠ lastindex(a) ? print(io,",") : print(io,")")
     end
 end
 
@@ -560,7 +560,7 @@ end
             print(io,ListPrint()>0 ? "=" : ":=")
             show_expr(io,expr.args[2])
         end
-    elseif contains(string(expr.head),r"[*\/+-^]=$")
+    elseif occursin(r"[*\/+-^]=$",string(expr.head))
         if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
             throw(ReduceError("function assignment for $(expr.head) not supported"))
         else
@@ -729,7 +729,7 @@ end
 end
 
 function unparse(expr::Expr)
-    str = Array{String,1}(0)
+    str = Array{String,1}(undef,0)
     io = IOBuffer()
     if expr.head == :block
         for line ∈ expr.args # block structure
@@ -784,7 +784,7 @@ end
         return Expr(expr.head,unfold_expr.(mode,fun,expr.args,s...)...)
     elseif expr.head == :for
         return Expr(expr.head,expr.args[1],unfold_expr.(mode,fun,expr.args[2:end],s...)...)
-    elseif contains(string(expr.head),r"=$")
+    elseif occursin(r"=$",string(expr.head))
         if (typeof(expr.args[1]) == Expr) && (expr.args[1].head == :call)
             return Expr(expr.head,expr.args[1],unfold_expr_force.(mode,fun,expr.args[2:end],s...)...)
         else
@@ -840,7 +840,7 @@ function mat(expr)
         if typeof(expr.args[1]) == Expr && expr.args[1].head == :row
             rows = length(expr.args)
             cols = length(expr.args[1].args)
-            out = Array{Any,2}(rows,cols)
+            out = Array{Any,2}(undef,rows,cols)
             for k ∈ 1:rows
                 for l ∈ 1:cols
                     out[k,l] = expr.args[k].args[l]
@@ -849,7 +849,7 @@ function mat(expr)
             return out
         else
             rows = length(expr.args)
-            out = Array{Any,1}(rows)
+            out = Array{Any,1}(undef,rows)
             for k ∈ 1:rows
                 out[k] = expr.args[k]
             end

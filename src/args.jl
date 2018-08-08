@@ -236,8 +236,8 @@ map(a,b) = map(RExpr(a),RExpr(b)) |> parse
 map(a::S,b::T) where S <: ExprSymbol where T <: MatOnly = map(RExpr(a),RExpr(b)) |> parse |> mat
 select(a,b)  = select(RExpr(a),RExpr(b)) |> parse
 
-order(::Void) = order(R"nil") |> parse
-korder(::Void) = korder(R"nil") |> parse
+order(::Nothing) = order(R"nil") |> parse
+korder(::Nothing) = korder(R"nil") |> parse
 
 export ∑, ∏, sub
 

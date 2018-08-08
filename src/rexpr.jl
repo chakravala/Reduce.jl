@@ -101,7 +101,7 @@ Reduce.linelength()::Integer
 and sets the output line length to the integer `tput cols`. It returns the output line length (so that it can be stored for later resetting of the output line if needed).
 """
 function linelength()
-    c = readstring(`tput cols`) |> parse
+    c = read(`tput cols`,String) |> parse
     global cols
     if c ≠ cols
         ws = rcall("ws")
@@ -281,10 +281,10 @@ ListPrint = ( () -> begin
     end)()
 
 @inline function SubReplace(sym::Symbol,str::String)
-    a = matchall(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)
+    a = collect((m.match for m = eachmatch(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)))
     for s ∈ 1:length(a)
-        if !isinfix(a[s]) && !contains(a[s],r"[()]") && 
-            contains(a[s], sym == :r ? gexrjl : gexjlr)
+        if !isinfix(a[s]) && !occursin(r"[()]",a[s]) && 
+            occursin(sym == :r ? gexrjl : gexjlr,a[s])
             w = _subst(sym == :r ? symrjl : symjlr, a[s])
             if w == ""
                 c = 1
@@ -313,19 +313,19 @@ end
         str = replace(str, key => repjlr[key])
     end
     SubCall() && !isinfix(str) && (str = SubReplace(:jl,str))
-    contains(str,"!#") && (str = replace(rcall(str,:nat),r"\n"=>""))
+    occursin("!#",str) && (str = replace(rcall(str,:nat),r"\n"=>""))
     return str
 end
 
 @noinline function RSymReplace(str::String)
     clean = replace(str,r"[ ;\n]"=>"")
-    paren = contains(clean,r"^\(((?>[^\(\)]+)|(?R))*\)$")
+    paren = occursin(r"^\(((?>[^\(\)]+)|(?R))*\)$",clean)
     (isempty(clean)|(clean=="()")) && (return str)
     SubCall() && !isinfix(str) && (str = SubReplace(:r,str))
-    if contains(str,"!#")
+    if occursin("!#",str)
         rsp = split(str,';')
         for h in 1:length(rsp)
-            if contains(rsp[h],"!#")
+            if occursin("!#",rsp[h])
                 sp = split(rsp[h],r"!#")
                 rsp[h] = join([sp[1],replace(rcall("!#"*sp[end]*";",:nat),r"\n"=>"")])
             end
