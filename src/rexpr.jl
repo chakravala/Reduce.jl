@@ -297,7 +297,7 @@ ListPrint = ( () -> begin
                 end
                 PipeClogged(w ≠ "", c, "substitution")
             end
-            w ≠ "" ? (a[s] = w) : info("If this is a recurring problem, try with `Reduce.SubCall(false)`.")
+            w ≠ "" ? (a[s] = w) : (@info "If this is a recurring problem, try with `Reduce.SubCall(false)`.")
         end
         if sym == :r
             a[s] == "inf" && (a[s] = "Inf")
@@ -407,7 +407,7 @@ julia> R\"int(sin(x), x)\" |> RExpr |> rcall
     rlfi && rcall(R"off latex")
     for o in offa
         o == :nat && (return join(sp))
-        o == :latex && shift!(sp)
+        o == :latex && popfirst!(sp)
     end
     return mode ? sp |> RExpr |> split : sp
 end
@@ -467,7 +467,7 @@ end
         while k ≤ length(nex.args)
             found = false
             if typeof(nex.args[k]) == Expr &&
-                    contains(string(nex.args[k].head),r"[*\/+-^]=$")
+                    occursin(r"[*\/+-^]=$",string(nex.args[k].head))
                 var = nex.args[k].args[1]
                 for h ∈ 1:k-1
                     if typeof(nex.args[h]) == Expr &&

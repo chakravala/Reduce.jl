@@ -22,9 +22,9 @@ struct PSL <: Base.AbstractPipe
             try
                 process = _spawn(rsl, input, output)
             catch
-                if is_linux()
+                if Sys.islinux()
                     rsl = `$(joinpath(dirf,"..","deps","usr","bin"))/$rpsl`
-                elseif is_apple()
+                elseif Sys.isapple()
                     rsl = `$(joinpath(dirf,"..","deps","csl"))/$rpsl -w`
                 else
                     rsl = `$(joinpath(dirf,"..","Reduce-svn$(rsvn[ρ])-src","bin"))/$rpsl`
@@ -70,7 +70,7 @@ function ReduceWarn(output) # check for REDUCE warnings
 end
 
 function PipeClogged(tf::Bool,c::Int,info::String)
-    warn("Reduce pipe clogged by $info, $(tf ? "success" : "failure") after $c tries")
+    @warn "Reduce pipe clogged by $info, $(tf ? "success" : "failure") after $c tries"
 end
 
 clear(rs::PSL) = (write(rs.input,";\n"); readavailable(rs.output))

@@ -19,7 +19,7 @@ function finished(s)
     str = String(LineEdit.buffer(s))
     if length(str) == 0
         return false
-    elseif contains(str,r"(^|\n)[^%\n]*(;|\$)[ ]*(%[^\n]*)?$")
+    elseif occursin(r"(^|\n)[^%\n]*(;|\$)[ ]*(%[^\n]*)?$",str)
         return true
     else
         return false
@@ -70,7 +70,7 @@ function LineEdit.complete_line(c::ReduceCompletionProvider, s)
     buf = s.input_buffer
     partial = String(buf.data[1:buf.ptr-1])
     full = LineEdit.input_string(s) # complete latex
-    ret, range, should_complete = REPLCompletions.bslash_completions(full, endof(partial))[2]
+    ret, range, should_complete = REPLCompletions.bslash_completions(full, lastindex(partial))[2]
     if length(ret) > 0 && should_complete
         return ret, partial[range], true
     end

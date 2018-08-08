@@ -1,7 +1,7 @@
 using SyntaxTree, Reduce, Compat
 using Test
 @force using Reduce.Algebra
-is_windows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
+Sys.iswindows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 
 # write your own tests here
 @test showerror(stdout,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
@@ -42,7 +42,7 @@ is_windows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 @test Reduce.parsegen(:calctest,:args) |> typeof == Expr
 @test Reduce.parsegen(:switchtest,:switch) |> typeof == Expr
 @test Reduce.parsegen(:unarytest,:unary) |> typeof == Expr
-!(VERSION < v"0.6.0") && is_linux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String
+!(VERSION < v"0.6.0") && Sys.islinux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String
 @test :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr |> rcall |> Reduce.parse |> typeof == Expr
 @test :(int(sin(im*x+pi)^2-1,x)) |> rcall |> typeof == Expr
 @test int(:(x^2+y),:x) |> RExpr == int("x^2+y","x") |> RExpr

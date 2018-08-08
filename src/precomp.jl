@@ -1,5 +1,5 @@
 global rs = nothing
-info("Compiling extended Reduce parser methods.")
+@info "Compiling extended Reduce parser methods."
 Load(); atexit(() -> kill(rs))
 rcall(:((1+pi)^2)) == convert(Expr,RExpr(rcall("(1+pi)**2")))
 try; "1/0" |> rcall; false; catch; true; end
@@ -29,7 +29,7 @@ Algebra.ceiling(1.2)
 Algebra.impart(:(1+2*im))
 #Algebra.impart(2+1.7im)
 #Algebra.bernoulli(2)
-!(VERSION < v"0.6.0") && is_linux() && Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;")
+!(VERSION < v"0.6.0") && Sys.islinux() && Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;")
 Algebra.int(:(x^2+y),:x) |> RExpr == Algebra.int("x^2+y","x") |> RExpr
 R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> Reduce.parse
 Algebra.df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z)

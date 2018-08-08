@@ -7,17 +7,17 @@ include("svn.jl")
 if isfile("ver")
     global ver = NaN
     open("ver","r") do f
-        global ver = readstring(f) |> parse
+        global ver = read(f,String) |> parse
     end
     if ver ≠ ρ
-        if is_linux()
+        if Sys.islinux()
             run(`rm -rf $(joinpath(wdir,"usr"))`)
-        elseif is_apple()
+        elseif Sys.isapple()
             run(`rm -rf $(joinpath(wdir,"csl"))`)
-        elseif is_windows()
+        elseif Sys.iswindows()
             run(`cmd /C DEL /F /S /Q /A "$(joinpath(wdir,"reduce.exe"))"`)
         end
-        run(is_windows() ? `cmd /C DEL /F /S /Q /A "ver"` : `rm ver`)
+        run(Sys.windows() ? `cmd /C DEL /F /S /Q /A "ver"` : `rm ver`)
     end
 end
 
@@ -33,9 +33,9 @@ if !is_windows()
             process = _spawn(`$rpsl`)
             kill(process)
         catch
-            if is_linux()
+            if Sys.islinux()
                 cmd = `$(joinpath(wdir,"usr","bin"))/$rpsl`
-            elseif is_apple()
+            elseif Sys.isapple()
                 cmd = `$(joinpath(wdir,"psl"))/$rpsl`
             else
                 cmd = `$(joinpath(wdir,"Reduce-svn$(rsvn[ρ])-src","bin"))/$rpsl`
@@ -52,7 +52,7 @@ if !is_windows()
         println("Building Reduce.jl with CSL binaries ... ")
         if is_linux()
             src = "/reduce-csl_"
-            if contains(readstring(`uname -m`),"64")
+            if occursin("64",read(`uname -m`,String))
                 download(http*date[ρ]*"/linux64"*src*rsvn[ρ]*"_amd64.tgz"*dl,joinpath(wdir,rtg))
             else
                 download(http*date[ρ]*"/linux32"*src*rsvn[ρ]*"_i386.tgz"*dl,joinpath(wdir,rtg))

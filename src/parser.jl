@@ -55,7 +55,7 @@ function loopshift(js,openpar,closepar,T,sexpr,h,iter,state)
     y = h
     (h,state) = bematch(js,sexpr,h,iter,state,openpar,closepar)
     push!(ep,js,sexpr[y+1:h]...)
-    ep[1] == nothing && shift!(ep)
+    ep[1] == nothing && popfirst!(ep)
     while !done(iter,state) & flag
         (h,state) = next(iter, state)
         cQ = c
@@ -182,13 +182,13 @@ for mode ∈ [:expr,:unary,:switch,:args]
                             if pre ≠ ""
                                 af = $argfun(fun,$(string(mode)),split(pre,','),be)
                                 for k ∈ af
-                                    k≠nothing && push!(args, k≠[nothing] ? k : Array{Any,1}(0))
+                                    k≠nothing && push!(args, k≠[nothing] ? k : Array{Any,1}(undef,0))
                                 end
                             end
                             smp = length(lsd)≠1 ? lsd[end][2:end] : ""
                             if lsM ≠ nothing
                                 af = $(argrfun(mode,rfun,:(lsM.match)))
-                                push!(args, af≠[nothing] ? af : Array{Any,1}(0))
+                                push!(args, af≠[nothing] ? af : Array{Any,1}(undef,0))
                             end
                         end
                         ListPrint(ListPrint()-1)
@@ -214,7 +214,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                             print(qr,"($(args...))")
                             if !occursin(prefix,smp)
                                 $(if mode == :expr; quote
-                                    if contains(smp,infix1)
+                                    if occursin(infix1,smp)
                                         print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
                                         smp = ""
                                     else
@@ -224,7 +224,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 else
                                     :(print(qr, smp); smp = "")
                                 end)
-                            elseif contains(smp,infix1)
+                            elseif occursin(infix1,smp)
                                 print(qr, RSymReplace(match(infix1,smp).match))
                                 smp = split(smp,infix1)[end]
                             end
@@ -390,7 +390,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     lsy = lsh
                     (lsh,lss) = bematch(js,ls,lsh,lsi,lss,'(',')')
                     push!(ep,js,ls[lsy+1:lsh]...)
-                    ep[1] == nothing && shift!(ep)
+                    ep[1] == nothing && popfirst!(ep)
                     sep = join(ep,',')
                     push!(args,$(argrfun(mode,rfun,:sep)))
                 else
@@ -819,7 +819,7 @@ function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
 end
 
 function unfold_expr(mode::Symbol, fun::Symbol, ex, s...; force=true)
-    typeof(ex) in [Void,LineNumberNode] ? ex : unfold_expr_force(mode,fun,ex,s...)
+    typeof(ex) in [Nothing,LineNumberNode] ? ex : unfold_expr_force(mode,fun,ex,s...)
 end
 
 function unfold(mode::Symbol,fun::Symbol,expr::Expr,s...)
