@@ -1,12 +1,8 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-if VERSION >= v"0.7.0-DEV.4445"
-    import REPL: LineEdit, LineEditREPL, REPLCompletions
-    using REPL
-else
-    import Base: LineEdit, REPL, REPLCompletions
-end
+using REPL
+import REPL: LineEdit, LineEditREPL, REPLCompletions
 
 ans = nothing
 

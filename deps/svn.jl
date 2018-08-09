@@ -15,10 +15,6 @@ rsvn = Dict(
   1 =>  "4372",
   2 =>  "4567")
 
-if VERSION >= v"0.7.0-DEV.4445"
-    function _spawn(cmd, input=devnull, output=devnull)
-        run(pipeline(cmd, stdin=input, stdout=output, stderr=stderr), wait=false)
-    end
-else
-    _spawn(cmd, input=DevNull, output=DevNull) = spawn(cmd, (input, output, STDERR))
+function _spawn(cmd, input=devnull, output=devnull)
+    run(pipeline(cmd, stdin=input, stdout=output, stderr=stderr), wait=false)
 end

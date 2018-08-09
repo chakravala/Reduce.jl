@@ -1,6 +1,7 @@
 global rs = nothing
-@info "Compiling extended Reduce parser methods."
-Load(); atexit(() -> kill(rs))
+@info "Precompiling extra Reduce methods (set `ENV[\"REDPRE\"]=\"0\"` to disable)"
+Reduce.Load(); atexit(() -> kill(rs))
+
 rcall(:((1+pi)^2)) == convert(Expr,RExpr(rcall("(1+pi)**2")))
 try; "1/0" |> rcall; false; catch; true; end
 RExpr("(x+i)^3")
@@ -22,14 +23,14 @@ Expr(:function,:fun,:(return y=a^3+3*a^2*b+3*a*b^2+b^3)) |> factor |> expand
 try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> parse; false; catch; true; end
 R"begin; 1:2; end" |> Reduce.parse |> RExpr |> string
 latex(:(x+1))
-Algebra.length(:(x+y))
-Algebra.log(:(e^x))
-Algebra.nextprime(100)
-Algebra.ceiling(1.2)
+#Algebra.length(:(x+y))
+Algebra.log(:(ℯ^x))
+#Algebra.nextprime(100)
+#Algebra.ceiling(1.2)
 Algebra.impart(:(1+2*im))
 #Algebra.impart(2+1.7im)
 #Algebra.bernoulli(2)
-!(VERSION < v"0.6.0") && Sys.islinux() && Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;")
+Sys.islinux() && Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;")
 Algebra.int(:(x^2+y),:x) |> RExpr == Algebra.int("x^2+y","x") |> RExpr
 R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> Reduce.parse
 Algebra.df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z)
@@ -42,9 +43,7 @@ Algebra.:^(:x,2) == :(x^2)
 Algebra.://(NaN,NaN)
 join(split(R"x+1;x+2"))
 Algebra.sub(:x=>7,Algebra.:+(:x,7)) == Algebra.sub([:x=>7,:z=>21],Algebra.:-(:z,:x))
-Algebra.sub(Float64,Algebra.prod(Algebra.:^(:(x-n),:n),:n,1,7)|>horner)
-Algebra.sub(Float64,:(7^(x+1)))
-squash(Expr(:function,:(fun(x)),:(z=3;z+=:x))).args[2] == squash(:(y=:x;y+=3))
+#squash(Expr(:function,:(fun(x)),:(z=3;z+=:x))).args[2] == squash(:(y=:x;y+=3))
 squash(:(sqrt(x)^2))
 Expr(:block,:(x+1)) |> RExpr == R"1+x"
 Algebra.limit(Algebra.:^(Algebra.:-(1,Algebra.:/(1,:n)),Algebra.:-(:n)),:n,Inf)
@@ -52,9 +51,9 @@ Algebra.log(Algebra.exp(:pi))
 Algebra.://(2,Inf)
 Algebra.://(Inf,2)
 
-rcall("x"); Reduce.ws()
-Algebra.operator(:x); Algebra.operator(:x); Algebra.clear(:x);
-try Algebra.det([:x :y]) catch true end
+rcall("x")
+Algebra.operator(:x); Algebra.clear(:x);
+#try Algebra.det([:x :y]) catch; true end
 join([R"1",R"1"]) == R"1;1"
 list([R"1",R"x"]) == list((1,:x))
 Reduce.lister(:x) == R"x"
@@ -64,7 +63,7 @@ Reduce.lister(:x) == R"x"
 Algebra.det([:a :b; :c :d])
 Algebra.tp([:a;:b]) == [:a :b;]
 transpose(:x)
-ctranspose(:x)
+adjoint(:x)
 Algebra.operator(:cbrt)
 Algebra.rlet(:(cbrt(~x))=>:(x^(1/3)))
 Algebra.rlet([:(cbrt(~x))=>:(x^(1/3))])
@@ -74,7 +73,7 @@ Algebra.:+(1,R"x")
 Algebra.inv([:a :b; :c :d])
 Algebra.inv(1)
 Algebra.:\([1],[2])
-Algebra.://(1.0,1.0)
+#Algebra.://(1.0,1.0)
 Algebra.:/([:a :b; :c :d],2)
 Algebra.:+([:a :b; :c :d],1) == Algebra.:+(1,[:a :b; :c :d])
 Algebra.:+([:x],1) == Algebra.:+(1,[:x])

@@ -46,13 +46,13 @@ julia> Pkg.add("Reduce"); Pkg.build("Reduce")
 julia> using Reduce
 Reduce (Free CSL version, revision 4521),  11-March-2018 ...
 ```
-For users who wish to experiment with precomplation, it is possible to enable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "1"` in julia (only effective when `Reduce` is being compiled).
+For linux users who wish to speed up frequent precompilation, it is possible to disable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "0"` in julia (only effective when `Reduce` is being compiled).
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
 
 ## Background
 
-The `Reduce` package currently provides a robust interface to directly use the PSL version of REDUCE within the Julia language and the REPL. This is achieved by interfacing the abstract syntax tree of `Expr` objects with the parser generator for `RExpr` objects and then using an `IOBuffer` to communicate with `redpsl`.
+The `Reduce` package currently provides a robust interface to directly use the CSL version of REDUCE within the Julia language and the REPL. This is achieved by interfacing the abstract syntax tree of `Expr` objects with the parser generator for `RExpr` objects and then using an `IOBuffer` to communicate with `redpsl`.
 
 > REDUCE is a system for doing scalar, vector and matrix algebra by computer, which also supports arbitrary precision numerical approximation and interfaces to gnuplot to provide graphics. It can be used interactively for simple calculations but also provides a full programming language, with a syntax similar to other modern programming languages.
 > REDUCE has a long and distinguished place in the history of computer algebra systems. Other systems that address some of the same issues but sometimes with rather different emphasis are Axiom, Macsyma (Maxima), Maple and Mathematica.
@@ -82,18 +82,18 @@ julia> ans^-:n
 :(1 // ((n - 1) // n) ^ n)
 
 julia> limit(ans,:n,Inf)
-e = 2.7182818284590...
+ℯ = 2.7182818284590...
 ```
 Julia abstract syntax trees are automatically converted into sequences of reduce statements (using `RExpr` constructor) that are in return parsed into julia `quote` blocks usig `parse`.
 The `rcall` method is used to evaluate any type of expression.
 ```Julia
 julia> :(int(sin(im*x+pi)^2-1,x)) |> rcall
-:((1 - (e ^ (4x) + 4 * e ^ (2x) * x)) // (8 * e ^ (2x)))
+:((1 - (ℯ ^ (4x) + 4 * ℯ ^ (2x) * x)) // (8 * ℯ ^ (2x)))
 ```
 However, there are often multiple equivalent ways of achieving the same result:
 ```Julia
 julia> int(sin(im*:x+π)^2-1,:x)
-:((1 - (e ^ (4x) + 4 * e ^ (2x) * x)) // (8 * e ^ (2x)))
+:((1 - (ℯ ^ (4x) + 4 * ℯ ^ (2x) * x)) // (8 * ℯ ^ (2x)))
 ```
 The output of `rcall` will be the same as its input type.
 ```Julia
@@ -146,7 +146,7 @@ where `z` is a program variable and `:a` and `:b` are symbolic variables.
 ### Output mode
  Various output modes are supported. While in the REPL, the default `nat` output mode will be displayed for `RExpr` objects.
 ```Julia
-julia> :(sin(x*im) + cos(y*φ)) |> RExpr
+julia> :(sin(x*im) + cos(y*MathConstants.φ)) |> RExpr
 
      (sqrt(5) + 1)*y
 cos(-----------------) + sinh(x)*i
@@ -156,12 +156,12 @@ This same output can also be printed to the screen by calling `print(nat(r))` me
 
 It is possible to direclty convert a julia expression object to LaTeX code using the `latex` method.
 ```Julia
-julia> print(@latex sin(x) + cos(y*φ))
+julia> print(@latex sin(x) + cos(y*MathConstants.φ))
 \begin{displaymath}
 \cos \left(\left(\left(\sqrt {5}+1\right) y\right)/2\right)+\sin \,x
 \end{displaymath}
 ```
-Internally, this command essentially expands to `rcall(:(sin(x) + cos(y*φ)),:latex) |> print`, which is equivalent.
+Internally, this command essentially expands to `rcall(:(sin(x) + cos(y*MathConstants.φ)),:latex) |> print`, which is equivalent.
 
 In `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.
 

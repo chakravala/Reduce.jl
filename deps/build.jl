@@ -50,7 +50,7 @@ if !Sys.iswindows()
         dl = "/download"
         cd(wdir)
         println("Building Reduce.jl with CSL binaries ... ")
-        if is_linux()
+        if Sys.islinux()
             src = "/reduce-csl_"
             if occursin("64",read(`uname -m`,String))
                 download(http*date[ρ]*"/linux64"*src*rsvn[ρ]*"_amd64.tgz"*dl,joinpath(wdir,rtg))
@@ -61,7 +61,7 @@ if !Sys.iswindows()
             run(`tar -xvf $(rtg)`)
             run(`rm $(rtg)`)
             writever(ρ)
-        elseif is_apple()
+        elseif Sys.isapple()
             snap = "Reduce-snapshot"
             download(http*date[ρ]*"/macintosh/"*snap*"_"*rsvn[ρ]*".dmg"*dl,joinpath(wdir,"$(snap)_$(date[ρ]).dmg"))
             run(`hdiutil attach $(wdir)/$(snap)_$(date[ρ]).dmg`)

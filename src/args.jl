@@ -146,7 +146,7 @@ for fun in iops
 end
 
 const MatExpr = Union{Array{Any,2},Array{Expr,2},Array{Symbol,2},Expr,Symbol,<:Number}
-const Mat = Union{Vector,RowVector,Array{Any,2},Array{Expr,2},Array{Symbol,2}}
+const Mat = Union{Vector,Adjoint,Array{Any,2},Array{Expr,2},Array{Symbol,2}}
 const MatOnly = Union{Array{Any,2},Array{Expr,2},Array{Symbol,2}}
 const ESN = Union{Expr,Symbol,<:Number}
 
@@ -158,12 +158,12 @@ const ESN = Union{Expr,Symbol,<:Number}
 *(a::T,s::S) where T <: MatOnly where S <: ESN = *(RExpr(a),RExpr(s)) |> parse |> mat
 *(a::T,s::S) where T <: ESN where S <: MatOnly = *(RExpr(a),RExpr(s)) |> parse |> mat
 *(a::T,s::S) where T <: MatOnly where S <: MatOnly = *(RExpr(a),RExpr(s)) |> parse |> mat
-*(a::T,s::S) where T <: Vector where S <: RowVector = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: Vector where S <: Adjoint = *(RExpr(a),RExpr(s)) |> parse |> mat
 *(a::T,s::S) where T <: Vector where S <: MatExpr = *(RExpr(a),RExpr(s)) |> parse |> mat
-*(a::T,s::S) where T <: RowVector where S <: Vector = *(RExpr(a),RExpr(s)) |> parse |> mat
-*(a::T,s::S) where T <: RowVector where S <: MatExpr = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: Adjoint where S <: Vector = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: Adjoint where S <: MatExpr = *(RExpr(a),RExpr(s)) |> parse |> mat
 *(a::T,s::S) where T <: MatExpr where S <: Vector = *(RExpr(a),RExpr(s)) |> parse |> mat
-*(a::T,s::S) where T <: MatExpr where S <: RowVector = *(RExpr(a),RExpr(s)) |> parse |> mat
+*(a::T,s::S) where T <: MatExpr where S <: Adjoint = *(RExpr(a),RExpr(s)) |> parse |> mat
 
 for o in [:+,:-]
     @eval begin
@@ -174,22 +174,22 @@ for o in [:+,:-]
             $o(RExpr(a)*RExpr(ones(size(s))),RExpr(s)) |> parse |> mat
         end
         $o(a::T,s::S) where T <: MatOnly where S <: MatOnly = $o(RExpr(a),RExpr(s)) |> parse |> mat
-        $o(a::T,s::S) where T <: Vector where S <: RowVector = $o(RExpr(a),RExpr(s)) |> parse |> mat
+        $o(a::T,s::S) where T <: Vector where S <: Adjoint = $o(RExpr(a),RExpr(s)) |> parse |> mat
         $o(a::T,s::S) where T <: Vector where S <: MatOnly = $o(RExpr(a),RExpr(s)) |> parse |> mat
         function $o(a::T,s::ESN) where T <: Vector
             $o(RExpr(a),RExpr(s)*RExpr(ones(size(a)))) |> parse |> mat
         end
-        $o(a::T,s::S) where T <: RowVector where S <: Vector = $o(RExpr(a),RExpr(s)) |> parse |> mat
-        $o(a::T,s::S) where T <: RowVector where S <: MatOnly = $o(RExpr(a),RExpr(s)) |> parse |> mat
-        function $o(a::T,s::ESN) where T <: RowVector
+        $o(a::T,s::S) where T <: Adjoint where S <: Vector = $o(RExpr(a),RExpr(s)) |> parse |> mat
+        $o(a::T,s::S) where T <: Adjoint where S <: MatOnly = $o(RExpr(a),RExpr(s)) |> parse |> mat
+        function $o(a::T,s::ESN) where T <: Adjoint
             $o(RExpr(a),RExpr(s)*RExpr(ones(size(a)))) |> parse |> mat
         end
         $o(a::T,s::S) where T <: MatOnly where S <: Vector = $o(RExpr(a),RExpr(s)) |> parse |> mat
         function $o(a::ESN,s::S) where S <: Vector
             $o(RExpr(a)*RExpr(ones(size(s))),RExpr(s)) |> parse |> mat
         end
-        $o(a::T,s::S) where T <: MatOnly where S <: RowVector = $o(RExpr(a),RExpr(s)) |> parse |> mat
-        function $o(a::ESN,s::S) where S <: RowVector
+        $o(a::T,s::S) where T <: MatOnly where S <: Adjoint = $o(RExpr(a),RExpr(s)) |> parse |> mat
+        function $o(a::ESN,s::S) where S <: Adjoint
             $o(RExpr(a)*RExpr(ones(size(s))),RExpr(s)) |> parse |> mat
         end
     end

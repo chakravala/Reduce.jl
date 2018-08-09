@@ -2,7 +2,6 @@
 #   Copyright (C) 2017 Michael Reed
 
 const switchbas = [
-    :expand,
     :complex,
     :div,
     :lcm,
@@ -55,6 +54,8 @@ const switches = [
     :nointsubst,
 ]
 
+push!(VERSION < v"1.0-" ? switchbas : switches, :expand)
+
 const switchtex = [
     :nat,
     :latex
@@ -98,12 +99,12 @@ end
 for fun in [switchbas;switches]
     @eval begin
         macro $fun(expr)
-            (r,on,off) = macroshift(linefilter(expr))
+            (r,on,off) = macroshift(expr)
             push!(on,$(string(fun)))
             Expr(:quote,rcall(r;on=on,off=off))
         end
         macro $(Symbol("off_",fun))(expr)
-            (r,on,off) = macroshift(linefilter(expr))
+            (r,on,off) = macroshift(expr)
             push!(off,$(string(fun)))
             Expr(:quote,rcall(r;on=on,off=off))
         end
@@ -112,7 +113,7 @@ end
 
 function macroshift(r)
     if typeof(r) == Expr && r.head == :macrocall
-        (expr,on,off) = macroshift(r.args[2])
+        (expr,on,off) = macroshift(r.args[3])
         if r.args[1] ∈ onswitch
             (expr,push!(on,string(r.args[1])[2:end]),off)
         elseif r.args[1] ∈ offswitch

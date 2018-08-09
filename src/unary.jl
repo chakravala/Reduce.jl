@@ -1,7 +1,7 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-VERSION >= v"0.7.0-DEV.4445" && (import LinearAlgebra: factorize)
+import LinearAlgebra: factorize
 
 const sbas = [
     :abs,
@@ -181,7 +181,7 @@ Syntax:
 This operator takes a single matrix argument and returns its transpose.
 """
 tp(r::Array{T,1}) where T <: ExprSymbol = r |> RExpr |> tp |> parse |> mat
-tp(r::Union{Vector,RowVector}) = r |> RExpr |> tp |> parse |> mat
+tp(r::Union{Vector,Adjoint}) = r |> RExpr |> tp |> parse |> mat
 
 """
     length(r)
@@ -279,7 +279,7 @@ julia> Algebra.scientific_notation(m,n);
 with `m` and `n` both positive integers, sets the format so that a number with more than `m` digits before the decimal point, or `n` or more zeros after the decimal point is printed in scientific notation.
 """
 scientific_notation(r::T) where T <: Tuple = scientific_notation(RExpr(r)) |> parse
-scientific_notation(r::Union{Vector,RowVector}) = scientific_notation(list(r)) |> parse
+scientific_notation(r::Union{Vector,Adjoint}) = scientific_notation(list(r)) |> parse
 scientific_notation(r::T...) where T <: Number = scientific_notation(list(r)) |> parse
 
 for fun in [sint;sran]
@@ -301,7 +301,7 @@ end
 for fun in scom
     @eval begin
         function $fun(x::T) where T <: Number
-            "$x" |> parse |> RExpr |> $fun |> parse |> eval
+            "$x" |> Meta.parse |> RExpr |> $fun |> parse |> eval
         end
     end
 end

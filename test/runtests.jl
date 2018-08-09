@@ -1,7 +1,6 @@
-using SyntaxTree, Reduce, Compat
+using SyntaxTree, Reduce
 using Test
 @force using Reduce.Algebra
-Sys.iswindows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 
 # write your own tests here
 @test showerror(stdout,ReduceError("A Portable General-Purpose Computer Algebra System")) == nothing
@@ -32,17 +31,17 @@ Sys.iswindows() && VERSION < v"0.7-" && (Reduce.ColCheck(false); * = Algebra.:*)
 @test R"begin; 1:2; end" |> Reduce.parse |> RExpr |> string == "1:2 "
 @test latex(:(x+1)) |> typeof == String
 @test length(:(x+y)) |> typeof == Int
-@test log(:(e^x)) == :x
+@test log(:(ℯ^x)) == :x
 @test nextprime(100) == 101
 @test ceiling(1.2) == 2
 @test impart(:(1+2*im)) == 2
-@test impart(2+1.7im) == 17//10
-@test bernoulli(2) == 1//6
+@test impart(2+1.7im) == 17/10
+@test bernoulli(2) == 1/6
 @test Reduce.parsegen(:parsetest,:expr) |> typeof == Expr
 @test Reduce.parsegen(:calctest,:args) |> typeof == Expr
 @test Reduce.parsegen(:switchtest,:switch) |> typeof == Expr
 @test Reduce.parsegen(:unarytest,:unary) |> typeof == Expr
-!(VERSION < v"0.6.0") && Sys.islinux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String
+Sys.islinux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof == String
 @test :((x+im+π)^2; int(1/(1+x^3),x)) |> RExpr |> rcall |> Reduce.parse |> typeof == Expr
 @test :(int(sin(im*x+pi)^2-1,x)) |> rcall |> typeof == Expr
 @test int(:(x^2+y),:x) |> RExpr == int("x^2+y","x") |> RExpr
@@ -55,7 +54,7 @@ println()
 @test nextprime("3") == "5"
 @test expand("(x-2)^2") |> RExpr == R"(x-2)^2"
 @test nat("x+1") |> RExpr == "\nx + 1\n" |> RExpr
-#@test macroexpand(@factor(:(x^2+2x+1))) == :((x+1)^2)
+@test macroexpand(@__MODULE__(),@factor(:(x^2+2x+1))) == :((x+1)^2)
 @test :x^2 == :(x^2)
 @test NaN//NaN |> isnan
 @test join(split(R"x+1;x+2"))|> string == "x+1;\nx+2"
@@ -77,11 +76,11 @@ println()
 @test Reduce.lister(:x) == R"x"
 @test !latex(false)
 @test (@rounded @factor x^2-2x+1) == :((x-1)^2)
-#@test (@rounded @off_factor @rcall x^2) == :(x^2)
+@test (@rounded @off_factor @rcall x^2) == :(x^2)
 @test det([:a :b; :c :d]) == :(a*d-b*c)
 @test tp([:a;:b]) == [:a :b;]
 @test transpose(:x) == :x
-@test ctranspose(:x) == :(repart(x)-impart(x)*im)
+@test adjoint(:x) == :(repart(x)-impart(x)*im)
 operator(:cbrt)
 @test (rlet(:(cbrt(~x))=>:(x^(1/3))); true)
 @test (rlet([:(cbrt(~x))=>:(x^(1/3))]); true)
@@ -94,6 +93,6 @@ operator(:cbrt)
 @test [:a :b; :c :d]/2 |> typeof <: Array
 @test [:a :b; :c :d]+1 == 1+[:a :b; :c :d]
 @test [:x] + 1 == 1 + [:x]
-#@test [:x,:y]' + 1 == 1 + [:x,:y]'
+@test [:x,:y]' + 1 == 1 + [:x,:y]'
 @test solve(:(x-1),:x) == solve((:(x-1),),:x)
 @test (order(nothing); korder(nothing); true)

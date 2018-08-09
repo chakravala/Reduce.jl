@@ -536,7 +536,7 @@ function detectinf(e)
     return nothing
 end
 
-@inline irr(expr) = expr ∈ [:e,:π,:Inf,:NaN] ? eval(expr) : expr
+@inline irr(expr) = expr ∈ [:ℯ,:π,:(MathConstants.γ),:(MathConstants.φ),:Inf,:NaN] ? eval(expr) : expr
 
 parsegen(:parse,:expr) |> eval
 
@@ -562,7 +562,7 @@ end
 
 @noinline function show_expr(io::IO, expr::Expr) # recursively unparse Julia expression
     if expr.head == :call
-        if VERSION >= v"0.7.0-DEV.4445" && expr.args[1] == :(:)
+        if expr.args[1] == :(:)
             show_expr(io,expr.args[2])
             print(io,":")
             show_expr(io,expr.args[3])
@@ -657,6 +657,12 @@ end
         end
         print(io,"}")
         ListPrint(ListPrint()-1)
+    elseif expr.head == :.
+        if expr.args[1] == :MathConstants
+            print(io,JSymReplace(string(expr)))
+        else
+            throw(ReduceError("$(expr.args[1]) module scope not supported"))
+        end
     elseif expr.head == :line; nothing
     else
         throw(ReduceError("Nested :$(expr.head) block structure not supported\n\n$expr"))
@@ -700,7 +706,7 @@ function show_expr(io::IO, ex)
             i ≠ l && print(io,",")
         end
         print(io,")")
-    elseif typeof(ex) <: RowVector
+    elseif typeof(ex) <: Adjoint
         print(io,"mat((")
         l = length(ex)
         for i ∈ 1:l
@@ -742,7 +748,7 @@ function show_expr(io::IO, ex)
 end
 
 @inline function unparse_irrational(ex::T) where T <: Irrational
-    if ex == e
+    if ex == ℯ
         return "e"
     elseif ex == π
         return "pi"

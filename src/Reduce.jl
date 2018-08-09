@@ -1,7 +1,6 @@
 __precompile__()
 module Reduce
-using ForceImport, SyntaxTree
-VERSION < v"0.7.0-" ? (using Compat) : (using LinearAlgebra)
+using ForceImport, SyntaxTree, LinearAlgebra
 
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
@@ -91,7 +90,7 @@ function Base.read(rs::PSL) # get result and strip prompts/EOT char
     out = String(readuntil(rs.output,EOT))*String(readavailable(rs.output))
     Sys.iswindows() && (out = replace(out,r"\r" => ""))
     out = replace(replace(out,r"\$\n\n" => "\n\n"),RES=>"")
-    out = replace(out,Regex(SOS) => "")
+    out = replace(out,Regex(SOS) => "") |> chomp |> chomp |> join
     ReduceCheck(out)
     return ReduceWarn(out)
 end
@@ -104,8 +103,7 @@ include("repl.jl") # load repl features
 include("switch.jl") # load switch operators
 
 module Algebra
-using Reduce
-!(VERSION < v"0.7.0-") && (using LinearAlgebra)
+using Reduce, LinearAlgebra
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
@@ -215,10 +213,17 @@ for T ∈ [:Any,:Expr,:Symbol]
     end
 end
 
-import LinearAlgebra: transpose, ctranspose
+zero(::Type{RExpr}) = R"0"
+zero(::RExpr) = R"0"
+one(::Type{RExpr}) = R"1"
+one(::RExpr) = R"1"
+
+import LinearAlgebra: transpose, adjoint
 
 transpose(r::ExprSymbol) = r
-ctranspose(r::ExprSymbol) = Algebra.conj(r)
+transpose(r::RExpr) = r
+adjoint(r::ExprSymbol) = Algebra.conj(r)
+adjoint(r::RExpr) = Algebra.conj(r)
 
 ## Setup
 
@@ -282,7 +287,6 @@ const s = quote; #global rs = PSL()
     if Sys.iswindows()
         banner = replace(banner,r"\r" => "")
         println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-        ColCheck(false)
     else
         ReduceCheck(banner)
         println(split(String(banner),'\n')[rcsl ? 1 : end-3])
@@ -315,10 +319,10 @@ function Load()
     return nothing
 end
 
-global preload = false
+global preload = Sys.islinux() ? true : false
 try
     global preload
-    (ENV["REDPRE"] == "1") && (preload = true)
+    (ENV["REDPRE"] == "0") && (preload = false)
 catch
 end
 preload && include("precomp.jl")

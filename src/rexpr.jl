@@ -2,7 +2,7 @@
 #   Copyright (C) 2017 Michael Reed
 
 export RExpr, @RExpr, @R_str, rcall, @rcall, convert, ==, string, show, squash, list
-import Base: parse, convert, ==, getindex, *, split, string, show, join
+import Base: parse, convert, ==, getindex, *, split, string, show, join, String
 
 export ExprSymbol
 const ExprSymbol = Union{<:Expr,<:Symbol}
@@ -40,7 +40,7 @@ cos(---------------) + sinh(x)*i
 """
 RExpr(expr::Expr) = expr |> unparse |> RExpr |> split
 
-function RExpr(r::T) where T <: Union{Array,RowVector,Tuple,Pair}
+function RExpr(r::T) where T <: Union{Array,Adjoint,Tuple,Pair}
     out = IOBuffer()
     show_expr(out,r)
     return out |> take! |> String |> RExpr
@@ -84,6 +84,7 @@ function split(r::RExpr)
     return RExpr(rtrim(n))
 end
 
+String(r::RExpr) = convert(String,r)
 string(r::RExpr) = convert(String,r)
 join(r::RExpr) = RExpr(string(r))
 join(r::Array{RExpr,1}) = vcat(convert.(Array{String,1},r)...) |> RExpr
@@ -101,7 +102,7 @@ Reduce.linelength()::Integer
 and sets the output line length to the integer `tput cols`. It returns the output line length (so that it can be stored for later resetting of the output line if needed).
 """
 function linelength()
-    c = read(`tput cols`,String) |> parse
+    c = read(`tput cols`,String) |> Meta.parse
     global cols
     if c ≠ cols
         ws = rcall("ws")
@@ -137,16 +138,19 @@ end
 
 const r_to_jl = Dict(
     "i"             =>  "im",
-    "euler_gamma"   =>  "eulergamma",
     "infinity"      =>  "Inf"
 )
 
 const r_to_jl_utf = Dict(
     "pi"            =>  "π",
-    #"e"             =>  "ℯ",
-    "golden_ratio"  =>  "φ",
+    "e"             =>  "ℯ",
+    "euler_gamma"   =>  "MathConstants.γ",
+    "golden_ratio"  =>  "MathConstants.φ"
+)
+
+const r_to_jl_ifx = Dict(
     "**"            =>  "^",
-    "/"             =>  "//"
+    "/"             =>  "/"
     #"~"             =>  "\""
 )
 
@@ -160,9 +164,12 @@ const jl_to_r = Dict(
 
 const jl_to_r_utf = Dict(
     "π"             =>  "pi",
-    #"ℯ"             =>  "e",
-    "γ"             =>  "euler_gamma",
-    "φ"             =>  "golden_ratio",
+    "ℯ"             =>  "e",
+    "MathConstants.γ"=> "euler_gamma",
+    "MathConstants.φ"=> "golden_ratio"
+)
+
+const jl_to_r_ifx = Dict(
     "//"            =>  "/"
     #"\""            =>  "~"
 )
@@ -179,7 +186,7 @@ true
 list(r::T) where T <: Tuple = RExpr(r)
 list(r::Array{RExpr,1}) = "{$(replace(join(split(join(r)).str,','),":="=>"="))}" |> RExpr
 list(a::T) where T <: Vector = length(a) ≠ 0 ? list(lister.(a)) : R"{}"
-list(a::T) where T <: RowVector = list([a...])
+list(a::T) where T <: Adjoint = list([a...])
 list(a::T) where T <: Matrix = list([a[:,k] for k ∈ 1:size(a)[2]])
 list(r...) = list(r)
 lister(expr) = typeof(expr) <: Vector ? list(expr) : RExpr(expr)
@@ -207,8 +214,10 @@ end
 
 const symrjl = _syme(r_to_jl)
 const symjlr = _syme(jl_to_r)
-reprjl = r_to_jl_utf
-const repjlr = jl_to_r_utf
+const reprjlu = r_to_jl_utf
+const repjlru = jl_to_r_utf
+reprjl = r_to_jl_ifx
+const repjlr = jl_to_r_ifx
 const gexrjl = Regex("($(join(keys(r_to_jl),")|(")))")
 const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
 
@@ -218,7 +227,7 @@ const gexjlr = Regex("($(join(keys(jl_to_r),")|(")))")
 Toggle whether to use '/' or '//' for division in julia expressions
 """
 Rational = ( () -> begin
-        gs = true
+        gs = false
         return (tf=gs)->(gs≠tf && (gs=tf; reprjl["/"]=gs ? "//" : "/"); return gs)
     end)()
 
@@ -258,7 +267,7 @@ SubFail = ( () -> begin
 Toggle whether to reset REPL linewidth on each show
 """
 ColCheck = ( () -> begin
-        gs = true
+        gs = Sys.iswindows() ? false : true
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
@@ -282,24 +291,43 @@ ListPrint = ( () -> begin
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
-@inline function SubReplace(sym::Symbol,str::String)
+@inline function SubReplace(sym::Symbol,str::String;utf=false)
     a = collect((m.match for m = eachmatch(r"([^ ()+*\^\/-]+|[()+*\^\/-])",str)))
     for s ∈ 1:length(a)
-        if !isinfix(a[s]) && !occursin(r"[()]",a[s]) && 
-            occursin(sym == :r ? gexrjl : gexjlr,a[s])
-            w = _subst(sym == :r ? symrjl : symjlr, a[s])
-            if w == ""
-                c = 1
-                f = SubFail()
-                h = SubHold()
-                while w == "" && c < f
-                    sleep(sqrt(c)*h)
-                    w = _subst(sym == :r ? symrjl : symjlr, a[s])
-                    c += 1
+        if !isinfix(a[s]) && !occursin(r"[()]",a[s])
+            if utf
+                for key in keys(sym == :r ? reprjlu : repjlru)
+                    if a[s] == key
+                        a[s] = replace(a[s],key=>(sym == :r ? reprjlu[key] : repjlru[key]))
+                    end
                 end
-                PipeClogged(w ≠ "", c, "substitution")
+            else
+                if occursin(sym == :r ? gexrjl : gexjlr,a[s])
+                    w = _subst(sym == :r ? symrjl : symjlr, a[s])
+                    if w == ""
+                        c = 1
+                        f = SubFail()
+                        h = SubHold()
+                        while w == "" && c < f
+                            sleep(sqrt(c)*h)
+                            w = _subst(sym == :r ? symrjl : symjlr, a[s])
+                            c += 1
+                        end
+                        PipeClogged(w ≠ "", c, "substitution")
+                    end
+                    w ≠ "" ? (a[s] = w) : (@info "If this is a recurring problem, try with `Reduce.SubCall(false)`.")
+                end
             end
-            w ≠ "" ? (a[s] = w) : (@info "If this is a recurring problem, try with `Reduce.SubCall(false)`.")
+        elseif isinfix(a[s]) && utf
+            if (s ≠ length(a)) && (a[s+1] == a[s]) && (a[s] ∈ ["*","/"])
+                a[s] *= a[s+1]
+                a[s+1] = ""
+            end
+            for key in keys(sym == :r ? reprjl : repjlr)
+                if a[s] == key
+                    a[s] = replace(a[s],key=>(sym == :r ? reprjl[key] : repjlr[key]))
+                end
+            end
         end
         if sym == :r
             a[s] == "inf" && (a[s] = "Inf")
@@ -311,10 +339,8 @@ ListPrint = ( () -> begin
 end
 
 @noinline function JSymReplace(str::String)
-    for key ∈ keys(repjlr)
-        str = replace(str, key => repjlr[key])
-    end
-    SubCall() && !isinfix(str) && (str = SubReplace(:jl,str))
+    str = SubReplace(:jl,str;utf=true)
+    SubCall() && !isinfix(str) && (str = SubReplace(:jl,str;utf=false))
     occursin("!#",str) && (str = replace(rcall(str,:nat),r"\n"=>""))
     return str
 end
@@ -323,23 +349,26 @@ end
     clean = replace(str,r"[ ;\n]"=>"")
     paren = occursin(r"^\(((?>[^\(\)]+)|(?R))*\)$",clean)
     (isempty(clean)|(clean=="()")) && (return str)
-    SubCall() && !isinfix(str) && (str = SubReplace(:r,str))
+    if SubCall() && !isinfix(str) && !occursin(str,".")
+        str = SubReplace(:r,str;utf=false)
+    end
     if occursin("!#",str)
         rsp = split(str,';')
         for h in 1:length(rsp)
-            if occursin("!#",rsp[h])
-                sp = split(rsp[h],r"!#")
-                rsp[h] = join([sp[1],replace(rcall("!#"*sp[end]*";",:nat),r"\n"=>"")])
+            psr = split(rsp[h],'.')
+            mod = false
+            for k in 1:length(psr)
+                if occursin("!#",psr[k])
+                    sp = split(psr[k],r"!#")
+                    psr[k] = join([sp[1],replace(rcall("!#"*sp[end]*";",:nat),r"\n"=>"")])
+                    mod = true
+                end
             end
+            mod && (rsp[h] = join(psr))
         end
         str = join(rsp)
     end
-    for key in keys(reprjl)
-        str = replace(str, key => reprjl[key])
-    end
-    str == "inf" && (str = "Inf")
-    str == " - inf" && (str = "-Inf")
-    (str == "nan") | (str == " - nan") && (str = "NaN")
+    str = SubReplace(:r,str;utf=true)
     return paren ? "("*str*")" : str
 end
 
@@ -364,8 +393,8 @@ julia> R\"int(sin(x), x)\" |> RExpr |> rcall
 @noinline function rcall(r::RExpr;
         on::Union{Array{Symbol,1},Array{String,1}}=Symbol[],
         off::Union{Array{Symbol,1},Array{String,1}}=Symbol[])
-    typeof(on) == Array{String,1} ? (ona = convert(Array{Symbol,1},on)) : (ona = on)
-    typeof(off) == Array{String,1} ? (offa = convert(Array{Symbol,1},off)) : (offa = off)
+    typeof(on) == Array{String,1} ? (ona = Symbol.(on)) : (ona = on)
+    typeof(off) == Array{String,1} ? (offa = Symbol.(off)) : (offa = off)
     ons = IOBuffer()
     onr = IOBuffer()
     offs = IOBuffer()
@@ -444,7 +473,7 @@ macro rcall(r,switches...)
     Expr(:quote,rcall(r.head == :quote ? r.args[1] : r, switches...))
 end
 
-rcall(r,switches...) = rcall(r;on=Symbol[switches...])
+rcall(r,switches...) = rcall(r;on=Symbol.([switches...]))
 
 function ==(r::RExpr, s::RExpr)
     n = expand(r).str
@@ -453,7 +482,7 @@ function ==(r::RExpr, s::RExpr)
     l≠length(m) && (return false)
     b = true
     for j∈1:l
-        b &= "if($(n[j]))=($(m[j]))then 1 else 0"|>rcall|>parse|>eval|>Bool
+        b &= "if($(n[j]))=($(m[j]))then 1 else 0"|>rcall|>Meta.parse|>eval|>Bool
     end
     return b
 end
