@@ -27,7 +27,7 @@ function writever(rv)
     end
 end
 
-if !is_windows()
+if !Sys.iswindows()
     try
         try
             process = _spawn(`$rpsl`)

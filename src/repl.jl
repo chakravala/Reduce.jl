@@ -104,7 +104,8 @@ function repl_init(repl)
         main_mode = rirepl.interface.modes[1]
         reduce_mode = create_reduce_repl(rirepl, main_mode)
         push!(rirepl.interface.modes, reduce_mode)
-        const reduce_prompt_keymap = Dict{Any,Any}(
+        #const reduce_prompt_keymap = dict{any,any}(
+        reduce_prompt_keymap = dict{any,any}(
             '}' => function (s,args...)
                 if isempty(s) || position(LineEdit.buffer(s)) == 0
                     buf = copy(LineEdit.buffer(s))

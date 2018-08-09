@@ -143,6 +143,7 @@ const r_to_jl = Dict(
 
 const r_to_jl_utf = Dict(
     "pi"            =>  "π",
+    #"e"             =>  "ℯ",
     "golden_ratio"  =>  "φ",
     "**"            =>  "^",
     "/"             =>  "//"
@@ -159,6 +160,7 @@ const jl_to_r = Dict(
 
 const jl_to_r_utf = Dict(
     "π"             =>  "pi",
+    #"ℯ"             =>  "e",
     "γ"             =>  "euler_gamma",
     "φ"             =>  "golden_ratio",
     "//"            =>  "/"

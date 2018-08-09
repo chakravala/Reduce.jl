@@ -18,14 +18,17 @@ end
 """
 REDUCE begin and end marker match for parsegen
 """
-@noinline function bematch(js,sexpr,h,iter,state,openpar,closepar)
+@noinline function bematch(js,sexpr,iter,next,openpar,closepar)
+    (h,state) = next
     y = h
     c = becount(js,openpar,closepar)
     flag = c > 0
-    while !done(iter,state) & flag
-        (y,state) = next(iter, state)
+    nxt = iterate(iter, state)
+    while (nxt !== nothing) & flag
+        (y,state) = nxt
         c += becount(sexpr[y],openpar,closepar)
         flag = c > 0
+        flag && (nxt = iterate(iter, state))
     end
     return (y,state)
 end
@@ -47,17 +50,20 @@ const assign = r"^([A-Za-z_ ][A-Za-z_0-9 ]*)(:=)"
     end
 end
 
-function loopshift(js,openpar,closepar,T,sexpr,h,iter,state)
+function loopshift(js,openpar,closepar,T,sexpr,iter,next)
     ep = Array{T,1}(undef,0)
     c = becount(js,openpar,closepar)
     flag = c ≥ 0
     !flag && (js = join(split(js,closepar)[1:end+c],closepar))
+    (h,state) = next
     y = h
-    (h,state) = bematch(js,sexpr,h,iter,state,openpar,closepar)
+    nxt = bematch(js,sexpr,iter,next,openpar,closepar)
+    (h,state) = nxt
     push!(ep,js,sexpr[y+1:h]...)
     ep[1] == nothing && popfirst!(ep)
-    while !done(iter,state) & flag
-        (h,state) = next(iter, state)
+    nxt = iterate(iter, state)
+    while (nxt !== nothing) & flag
+        (h,state) = nxt
         cQ = c
         js = sexpr[h]
         c += becount(js,openpar,closepar)
@@ -66,11 +72,13 @@ function loopshift(js,openpar,closepar,T,sexpr,h,iter,state)
             flag = false
         end
         y = h
-        (h,state) = bematch(js,sexpr,h,iter,state,openpar,closepar)
+        nxt = bematch(js,sexpr,iter,nxt,openpar,closepar)
+        (h,state) = nxt
         epr = vcat(js,sexpr[y+1:h]...)
         epr ≠ nothing && push!(ep,epr...)
+        flag && (nxt = iterate(iter, state))
     end
-    return (h,state,ep)
+    return ((h,state),ep)
 end
 
 for mode ∈ [:expr,:unary,:switch,:args]
@@ -103,17 +111,19 @@ for mode ∈ [:expr,:unary,:switch,:args]
             end)
             sexpr = split(r).str
             iter = 1:length(sexpr)
-            state = start(iter); #show(sexpr)
-            while !done(iter,state)
-                (h,state) = next(iter, state)
+            next = iterate(iter); #show(sexpr)
+            while next !== nothing
+                (h,state) = next
                 sh = split(sexpr[h],r"[ ]+")
                 en = 1
                 isempty(replace(sh[en]," "=>"")) && (en = 2); #show(sh[en])
                 if occursin(r"^procedure",sh[en])
                     js = join(split(sexpr[h],"procedure")[2:end],"procedure")
-                    (h,state) = next(iter, state)
+                    next = iterate(iter, state)
+                    (h,state) = next
                     y = h
-                    (h,state) = bematch(sexpr[h],sexpr,h,iter,state,"begin","end")
+                    next = bematch(sexpr[h],sexpr,iter,next,"begin","end")
+                    (h,state) = next
                     $(mode != :expr ? :(push!(nsr,String("procedure "*js))) : :(nothing))
                     push!(nsr,$(if mode == :expr
                         :(Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be)))
@@ -129,12 +139,14 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     flag = c ≥ 0
                     !flag && (js = join(split(js,"end")[1:end+c],"end"))
                     y = h
-                    (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
+                    next = bematch(js,sexpr,iter,next,"begin","end")
+                    (h,state) = next
                     $(mode != :expr ? :(push!(nsr,String("begin "*js))) : :(nothing))
                     push!(ep,$(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:(be+1))))
                     ep[1] == nothing && popfirst!(ep)
-                    while !done(iter,state) & flag
-                        (h,state) = next(iter, state)
+                    next = iterate(iter, state)
+                    while (next !== nothing) & flag
+                        (h,state) = next
                         cQ = c
                         js = sexpr[h]
                         c += becount(js,"begin","end")
@@ -143,16 +155,20 @@ for mode ∈ [:expr,:unary,:switch,:args]
                             flag = false
                         end
                         y = h
-                        (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
+                        next = bematch(js,sexpr,iter,next,"begin","end")
+                        (h,state) = next
                         epr = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:cQ))
                         epr ≠ nothing && push!(ep,epr)
+                        flag && (next = iterate(iter, state))
                     end
+                    next = (h,state)
                     push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
                     $(mode != :expr ? :(push!(nsr,String("end"))) : :(nothing))
                 elseif occursin(r"^return",sh[en])
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
-                    (h,state) = bematch(js,sexpr,h,iter,state,"begin","end")
+                    next = bematch(js,sexpr,iter,next,"begin","end")
+                    (h,state) = next
                     rp = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...))))
                     $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
                 elseif occursin(assign,sexpr[h])
@@ -169,7 +185,8 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 elseif occursin(braces,$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                         ts = sexpr[h]
-                        (h,state,mp) = loopshift(ts,'{','}',String,sexpr,h,iter,state)
+                        (next,mp) = loopshift(ts,'{','}',String,sexpr,iter,next)
+                        (h,state) = next
                         smp = match(braces,join(mp,";\n")).match[2:end-1]
                         ListPrint(ListPrint()+1)
                         args = Array{$arty,1}(undef,0)
@@ -203,7 +220,8 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 elseif occursin(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                     ts = sexpr[h]
-                    (h,state,mp) = loopshift(ts,'(',')',String,sexpr,h,iter,state)
+                    (next,mp) = loopshift(ts,'(',')',String,sexpr,iter,next)
+                    (h,state) = next
                     smp = replace(join(mp,";\n"),"**"=>'^')
                     qr = IOBuffer()
                     while smp ≠ ""
@@ -327,9 +345,9 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         :(if string(exc) == ""
                             c = 1
                             f = SubFail()
-                            h = SubHold()
+                            H = SubHold()
                             while string(exc) == "" && c < f
-                                sleep(sqrt(c)*h)
+                                sleep(sqrt(c)*H)
                                 exc = $exec
                                 c += 1
                             end
@@ -344,6 +362,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     end)
                     push!(nsr, exc)
                 end
+                next = iterate(iter, state)
             end
             $(if mode == :expr
                 quote
@@ -373,12 +392,14 @@ for mode ∈ [:expr,:unary,:switch,:args]
             mode = Symbol(mod)
             args = Array{$arty,1}(undef,0)
             lsi = 1:length(ls)
-            lss = start(lsi)
-            while !done(lsi,lss)
-                (lsh,lss) = next(lsi, lss)
+            nxt = iterate(lsi)
+            (lsh,lss) = nxt
+            while nxt !== nothing
+                (lsh,lss) = nxt
                 if occursin(r"^begin",ls[lsh])
                     js = join(split(ls[lsh],"begin")[2:end],"begin")
-                    (lsh,lss,ep) = loopshift(js,"begin","end",$arty,ls,lsh,lsi,lss)
+                    (nxt,ep) = loopshift(js,"begin","end",$arty,ls,lsi,nxt)
+                    (lsh,lss) = nxt
                     sep = "begin $(join(ep,',')) end"
                     push!(args,$(argrfun(mode,rfun,:sep)))
                 elseif occursin(prefix,ls[lsh])
@@ -388,7 +409,8 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     flag = c ≥ -1
                     !flag && (js = join(split(js,')')[1:end+c],')'))
                     lsy = lsh
-                    (lsh,lss) = bematch(js,ls,lsh,lsi,lss,'(',')')
+                    nxt = bematch(js,ls,lsi,nxt,'(',')')
+                    (lsh,lss) = nxt
                     push!(ep,js,ls[lsy+1:lsh]...)
                     ep[1] == nothing && popfirst!(ep)
                     sep = join(ep,',')
@@ -396,6 +418,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 else
                     push!(args,$(argrfun(mode,rfun,:(ls[lsh]))))
                 end
+                nxt = iterate(lsi, lss)
             end
             return args
         end

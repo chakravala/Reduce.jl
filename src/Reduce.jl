@@ -62,7 +62,7 @@ end
 
 function ReduceWarn(output) # check for REDUCE warnings
     if occursin(r"[*]{3}",output)
-        @info "REDUCE: $(chomp(output))"
+        @info "REDUCE: $(chomp(chomp(output)))"
         join(split(output,r"[*]{3}.*\n"))
     else
         output
@@ -104,7 +104,7 @@ include("repl.jl") # load repl features
 include("switch.jl") # load switch operators
 
 module Algebra
-importall Reduce
+using Reduce
 !(VERSION < v"0.7.0-") && (using LinearAlgebra)
 
 include("unary.jl") # load unary operators
@@ -270,8 +270,9 @@ __init__() = (Load(); atexit(() -> kill(rs)))
 # Server setup
 
 const s = quote; #global rs = PSL()
-    global offs = ""
+    offs = ""
     for o in offlist
+        global offs
         o != :nat && (offs = offs*"off $o; ")
     end
     write(rs.input,"off nat; $EOTstr;\n")
@@ -316,6 +317,7 @@ end
 
 global preload = false
 try
+    global preload
     (ENV["REDPRE"] == "1") && (preload = true)
 catch
 end
