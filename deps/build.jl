@@ -7,7 +7,7 @@ include("svn.jl")
 if isfile("ver")
     global ver = NaN
     open("ver","r") do f
-        global ver = read(f,String) |> parse
+        global ver = parse(Int,read(f,String))
     end
     if ver ≠ ρ
         if Sys.islinux()
