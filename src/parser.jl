@@ -233,7 +233,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                             if !occursin(prefix,smp)
                                 $(if mode == :expr; quote
                                     if occursin(infix1,smp)
-                                        print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
+                                        print(qr, RSymReplace(match(infix1,smp).match), RSymReplace(split(smp,infix1)[end]))
                                         smp = ""
                                     else
                                         print(qr, RSymReplace(smp))
@@ -258,9 +258,9 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 else
                                     rq = RSymReplace(rq)
                                 end
-                                print(qr, rq * RSymReplace(match(infix2,sp[1]).match))
+                                print(qr, rq, RSymReplace(match(infix2,sp[1]).match))
                             elseif occursin(infix1,sp[1])
-                                print(qr, RSymReplace(match(infix1,sp[1]).match) * RSymReplace(split(sp[1],infix1)[end]))
+                                print(qr, RSymReplace(match(infix1,sp[1]).match), RSymReplace(split(sp[1],infix1)[end]))
                             else
                                 print(qr, RSymReplace(sp[1]))
                             end; end
@@ -304,7 +304,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         end
                         !occursin(prefix,smp) && ($(if mode == :expr; quote
                             if occursin(infix1,smp)
-                                print(qr, RSymReplace(match(infix1,smp).match) * RSymReplace(split(smp,infix1)[end]))
+                                print(qr, RSymReplace(match(infix1,smp).match), RSymReplace(split(smp,infix1)[end]))
                                 smp = ""
                             else
                                 print(qr, RSymReplace(smp))
