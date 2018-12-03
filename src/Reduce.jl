@@ -1,6 +1,7 @@
 __precompile__()
 module Reduce
 using ForceImport, SyntaxTree, LinearAlgebra
+!isdefined(Reduce,:linefilter!) && (linefilter! = SyntaxTree.linefilter)
 
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed

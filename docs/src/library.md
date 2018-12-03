@@ -47,7 +47,7 @@ Reduce.unfoldgen
 ```
 
 ```@docs
-Reduce.linefilter
+Reduce.linefilter!
 ```
 
 ```@docs

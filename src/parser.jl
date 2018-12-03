@@ -314,7 +314,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                             :(print(qr, smp); smp = "")
                         end))
                     end
-                    push!(nsr,$((mode == :expr) ? :("("*String(take!(qr))*")" |> Meta.parse |> linefilter) : :qr))
+                    push!(nsr,$((mode == :expr) ? :("("*String(take!(qr))*")" |> Meta.parse |> linefilter!) : :qr))
                     end; else; :(nothing); end)
                 elseif occursin("end",sh[en])
                     nothing
@@ -600,7 +600,7 @@ end
         show_expr(io,expr.args[1])
         show_expr(io,expr.args[2])
     elseif expr.head == :block
-        lxpr = linefilter(expr)
+        lxpr = linefilter!(expr)
         if length(lxpr.args) == 1
             show_expr(io,lxpr.args[1])
         else
