@@ -22,11 +22,11 @@ using Test
 @test Base.write(Reduce.rs, R"") |> typeof == Int; rcall(1)
 @test (x = :(x^2+2x+1); rcall(x,off=[:factor]) == x)
 @test rcall("x + 1","factor") == "x + 1"
-@test Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr
+@test Expr(:function,:(fun(z)),:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse |> typeof == Expr
 @test Expr(:for,:(i=2:34),:(product(i))) |> rcall |> eval |> typeof == BigInt
 @test try; Expr(:type,false,:x) |> RExpr; false; catch; true; end
 @test try; :(@time f(x)) |> RExpr; false; catch; true; end
-@test (x = Expr(:function,:fun,:(return y=a^3+3*a^2*b+3*a*b^2+b^3)); x==x |> Reduce.factor |> expand)
+@test (x = Expr(:function,:(fun(z)),:(return y=a^3+3*a^2*b+3*a*b^2+b^3)); x==x |> Reduce.factor |> expand)
 @test try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> Reduce.parse; false; catch; true; end
 @test R"begin; 1:2; end" |> Reduce.parse |> RExpr |> string == "1:2 "
 @test latex(:(x+1)) |> typeof == String
@@ -46,7 +46,7 @@ Sys.islinux() && @test Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;") |> typeof =
 @test :(int(sin(im*x+pi)^2-1,x)) |> rcall |> typeof == Expr
 @test int(:(x^2+y),:x) |> RExpr == int("x^2+y","x") |> RExpr
 @test R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> Reduce.parse |> typeof == Expr
-@test df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z) |> typeof == RExpr
+@test df(Expr(:function,:(fun(z)),:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z) |> typeof == RExpr
 @test :([1 2; 3 4]) |> RExpr |> Reduce.parse |> RExpr == [1 2; 3 4] |> RExpr
 println()
 #@test Reduce.repl_init(Base.active_repl)==nothing

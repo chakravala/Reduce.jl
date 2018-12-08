@@ -3,6 +3,12 @@
 
 export unfold, mat, treecombine!, irr
 
+try
+    Reduce.linefilter!(1)
+catch       
+    Reduce.linefilter!(r::Any) = r
+end
+
 """
 REDUCE begin and end marker counter for parsegen
 """
@@ -41,12 +47,10 @@ const infix2 = r"(([\^+\/])|([*]{1,2}))$"
 const assign = r"^([A-Za-z_ ][A-Za-z_0-9 ]*)(:=)"
 
 @inline function argrfun(mode::Symbol,rfun::Symbol,sep,be=:be)
-    if mode == :expr
-        :($rfun(fun,$sep;be=$be))
-    elseif mode == :args
-        :($rfun(fun,$sep,s;be=$be) |> string)
+    if mode == :args
+        :($rfun(fun,io,$sep,s;be=$be))
     else
-        :($rfun(fun,$sep;be=$be) |> string)
+        :($rfun(fun,io,$sep;be=$be))
     end
 end
 
@@ -85,21 +89,21 @@ for mode ∈ [:expr,:unary,:switch,:args]
     rfun = Symbol(:r,"_",mode)
     modefun = Symbol(:parse,"_",mode)
     argfun = Symbol(:args,"_",mode)
-    arty = (mode == :expr) ? :Any : :String
+    arty = (mode == :expr) ? :String : :String
     exec = if mode == :expr
-        :(Meta.parse(RSymReplace(js)))
+        :(RSymReplace(js))
     elseif mode == :unary
-        :("$fun($js)" |> RExpr |> rcall)
+        :("$fun($js)" |> rcall)
     elseif mode == :switch
-        :(rcall("$js" |> RExpr, fun))
+        :(rcall("$js", fun))
     elseif mode == :args
-        :("$fun($(join([js,s...],',')))" |> RExpr |> rcall)
+        :("$fun($(join([js,s...],',')))" |> rcall)
     end
     mode != :args ? (fargs = [:(r::RExpr)]) : (fargs = [:(r::RExpr),Expr(:...,:sr)])
     mode != :args ? (aargs = [:be]) : (aargs = [:be,Expr(:...,:s)])
     quote
         export $modefun
-        @noinline function $modefun(fun::String,$(fargs...);be=0)
+        @noinline function $modefun(fun::String,io::IO,$(fargs...);be=0)
             nsr = $arty[]
             $(if mode == :args
                 quote
@@ -124,26 +128,26 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     y = h
                     next = bematch(sexpr[h],sexpr,iter,next,"begin","end")
                     (h,state) = next
-                    $(mode != :expr ? :(push!(nsr,String("procedure "*js))) : :(nothing))
-                    push!(nsr,$(if mode == :expr
-                        :(Expr(:function,Meta.parse(js),$rfun(fun,sexpr[y:h];be=be)))
+                    print(io,String($(mode ≠ :expr ? "procedure " : "function ")*js))
+                    $(if mode == :expr
+                        :(print(io,"\n"); $rfun(fun,io,sexpr[y:h];be=be); print(io,"\nend"))
                     elseif mode == :args
-                        :($rfun(fun,sexpr[y:h],s;be=be) |> string)
+                        :(print(io,";"); $rfun(fun,io,sexpr[y:h],s;be=be))
                     else
-                        :($rfun(fun,sexpr[y:h];be=be) |> string)
-                    end))
+                        :(print(io,";"); $rfun(fun,io,sexpr[y:h];be=be))
+                    end)
                 elseif occursin(r"^begin",sh[en])
                     js = join(split(sexpr[h],"begin")[2:end],"begin")
-                    ep = Array{$arty,1}(undef,0)
+                    #ep = Array{$arty,1}(undef,0)
                     c = becount(js,"begin","end")
                     flag = c ≥ 0
                     !flag && (js = join(split(js,"end")[1:end+c],"end"))
                     y = h
                     next = bematch(js,sexpr,iter,next,"begin","end")
                     (h,state) = next
-                    $(mode != :expr ? :(push!(nsr,String("begin "*js))) : :(nothing))
-                    push!(ep,$(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:(be+1))))
-                    ep[1] == nothing && popfirst!(ep)
+                    print(io,String("begin"*$(mode ≠ :expr ? :(" "*js) : :("\n"))))
+                    $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:(be+1)))
+                    #ep[1] == nothing && popfirst!(ep)
                     next = iterate(iter, state)
                     while (next !== nothing) & flag
                         (h,state) = next
@@ -157,29 +161,30 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         y = h
                         next = bematch(js,sexpr,iter,next,"begin","end")
                         (h,state) = next
-                        epr = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:cQ))
-                        epr ≠ nothing && push!(ep,epr)
+                        $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...)),:cQ))
+                        #epr ≠ nothing && push!(ep,epr)
                         flag && (next = iterate(iter, state))
                     end
                     next = (h,state)
-                    push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
-                    $(mode != :expr ? :(push!(nsr,String("end"))) : :(nothing))
+                    #push!(nsr,$((mode == :expr) ? :(Expr(:block,ep...)) : Expr(:...,:ep)))
+                    print(io,String("\nend"))
                 elseif occursin(r"^return",sh[en])
                     js = join(split(sexpr[h],"return")[2:end],"return")
                     y = h
                     next = bematch(js,sexpr,iter,next,"begin","end")
                     (h,state) = next
-                    rp = $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...))))
-                    $(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
+                    print(io,"return ")
+                    $(argrfun(mode,rfun,:(vcat(js,sexpr[y+1:h]...))))
+                    #$(mode != :expr ? :(push!(nsr,"return "*rp)) : :(push!(nsr,Expr(:return,rp))))
                 elseif occursin(assign,sexpr[h])
                     sp = split(sexpr[h], ":=",limit=2)
-                    push!(nsr,$(if mode == :expr
-                        :(Expr(:(=),Meta.parse(sp[1]),$rfun(fun,sp[2];be=be)))
+                    $(if mode == :expr
+                        :(print(io,sp[1],"="); $rfun(fun,io,sp[2];be=be))
                     elseif mode == :args
-                        :(String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> String |> RExpr,s;be=be)))
+                        :(print(io,String(sp[1]),":="); $rfun(fun,io,sp[2] |> String |> RExpr,s;be=be))
                     else
-                        :(String(sp[1]) * ":=" * string($rfun(fun,sp[2] |> String |> RExpr;be=be)))
-                    end))
+                        :(print(io,String(sp[1]),":="); $rfun(fun,io,sp[2] |> String |> RExpr;be=be))
+                    end)
                 elseif occursin("for",sh[en])
                     throw(ReduceError("for block parsing not yet supported"))
                 elseif occursin(braces,$((mode == :expr) ? :(sexpr[h]) : :("")))
@@ -215,35 +220,43 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 elseif occursin("=>",$((mode == :expr) ? :(sexpr[h]) : :("")))
                     sp = split(sexpr[h],r"=>")
                     stuff = String.(split(sp[2],r"(when)|(and)"))
-                    ar = $rfun.(fun,stuff;be=be)
-                    push!(nsr,$rfun(fun,sp[1];be=be) => length(ar) ≠ 1 ? ar : ar[1])
+                    ios = [IOBuffer() for k ∈ 1:length(stuff)]
+                    $rfun.(fun,ios,stuff;be=be)
+                    ar = String.(take!.(ios))
+                    $rfun(fun,io,sp[1];be=be)
+                    print(io," => ")
+                    print(io,length(ar) ≠ 1 ? "["*join(ar,',')*"]" : ar[1])
                 elseif occursin(prefix,$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                     ts = sexpr[h]
                     (next,mp) = loopshift(ts,'(',')',String,sexpr,iter,next)
                     (h,state) = next
                     smp = replace(join(mp,";\n"),"**"=>'^')
-                    qr = IOBuffer()
+                    #$((mode == :expr) ? :(print(io,"(")) : :(nothing))
+                    print(io,"(")
+                    #qr = IOBuffer()
                     while smp ≠ ""
                         args = Array{$arty,1}(undef,0)
                         if occursin(r"^\(",smp)
-                            push!(args,$(argrfun(mode,rfun,:(match(parens,smp).match[2:end-1]))))
+                            print(io,"(")
+                            $(argrfun(mode,rfun,:(match(parens,smp).match[2:end-1])))
+                            print(io,")")
                             smp = split(smp,parens;limit=2)[end]
-                            print(qr,"($(args...))")
+                            #print(qr,"($(args...))")
                             if !occursin(prefix,smp)
                                 $(if mode == :expr; quote
                                     if occursin(infix1,smp)
-                                        print(qr, RSymReplace(match(infix1,smp).match), RSymReplace(split(smp,infix1)[end]))
+                                        print(io, RSymReplace(match(infix1,smp).match), RSymReplace(split(smp,infix1)[end]))
                                         smp = ""
                                     else
-                                        print(qr, RSymReplace(smp))
+                                        print(io, RSymReplace(smp))
                                         smp = ""
                                     end; end
                                 else
-                                    :(print(qr, smp); smp = "")
+                                    :(print(io, smp); smp = "")
                                 end)
                             elseif occursin(infix1,smp)
-                                print(qr, RSymReplace(match(infix1,smp).match))
+                                print(io, RSymReplace(match(infix1,smp).match))
                                 smp = split(smp,infix1)[end]
                             end
                             continue
@@ -258,34 +271,37 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 else
                                     rq = RSymReplace(rq)
                                 end
-                                print(qr, rq, RSymReplace(match(infix2,sp[1]).match))
+                                print(io, rq, RSymReplace(match(infix2,sp[1]).match))
                             elseif occursin(infix1,sp[1])
-                                print(qr, RSymReplace(match(infix1,sp[1]).match), RSymReplace(split(sp[1],infix1)[end]))
+                                print(io, RSymReplace(match(infix1,sp[1]).match), RSymReplace(split(sp[1],infix1)[end]))
                             else
-                                print(qr, RSymReplace(sp[1]))
+                                print(io, RSymReplace(sp[1]))
                             end; end
                         else
-                            :(print(qr, sp[1]))
+                            :(print(io, sp[1]))
                         end)
                         smp = split(sp[2],parens;limit=2)[end]
                         lsm = match(parens,sp[2]).match[2:end-1]
                         if pf == "mat"
+                            print(io, $(mode == :expr ? :("[") : :("$pf(")))
                             mt = collect((m.match for m=eachmatch(parens,lsm)))
                             for row ∈ mt
                                 elm = split(row[2:end-1],',')
-                                push!(args,$(if mode == :expr
-                                    :(Expr(:row,$argfun(fun,$(string(mode)),elm,be)...))
+                                print(io,$(if mode == :expr
+                                    :(join($argfun(fun,$(string(mode)),elm,be),' '))
                                 elseif mode == :args
                                     :($argfun(fun,$(string(mode)),elm,be,s) |> string)
                                 else
                                     :($argfun(fun,$(string(mode)),elm,be) |> string)
                                 end))
+                                print(io,$(mode == :expr ? :(";") : :(",")))
                             end
-                            print(qr, $(if mode == :expr
+                            print(io, $(mode == :expr ? :("]") : :(")")))
+                            #=print(qr, $(if mode == :expr
                                 :(Expr(:vcat,args...) |> string)
                             else
                                 :("$pf($(join(args,',')))")
-                            end))
+                            end))=#
                         else
                             ls = split(lsm,',')
                             push!(args,$(if mode == :expr
@@ -296,25 +312,27 @@ for mode ∈ [:expr,:unary,:switch,:args]
                                 :($argfun(fun,$(string(mode)),ls,be) |> string)
                             end)...)
                             rq = "$(RSymReplace(pf))($(join(args,',')))"
-                            print(qr, $(if mode == :expr
-                                :(((isinfix(pf) && length(args) == 1) ? rq : "($rq)"))
+                            print(io, $(if mode == :expr
+                                :(((isinfix(pf) && length(args) == 1) ? [rq] : ["(",rq,")"]))
                             else
-                                :("$pf($(join(args,',')))")
-                            end))
+                                :([pf,"(",join(args,','),")"])
+                            end)...)
                         end
                         !occursin(prefix,smp) && ($(if mode == :expr; quote
                             if occursin(infix1,smp)
-                                print(qr, RSymReplace(match(infix1,smp).match), RSymReplace(split(smp,infix1)[end]))
+                                print(io, RSymReplace(match(infix1,smp).match), RSymReplace(split(smp,infix1)[end]))
                                 smp = ""
                             else
-                                print(qr, RSymReplace(smp))
+                                print(io, RSymReplace(smp))
                                 smp = ""
                             end; end
                         else
-                            :(print(qr, smp); smp = "")
+                            :(print(io, smp); smp = "")
                         end))
                     end
-                    push!(nsr,$((mode == :expr) ? :("("*String(take!(qr))*")" |> Meta.parse |> linefilter!) : :qr))
+                    print(io,")")
+                    #$((mode == :expr) ? :(print(io,")")) : :(nothing))
+                    #push!(nsr,$((mode == :expr) ? :("("*String(take!(qr))*")" |> Meta.parse |> linefilter!) : :qr))
                     end; else; :(nothing); end)
                 elseif occursin("end",sh[en])
                     nothing
@@ -323,18 +341,19 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 elseif occursin("=",$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                     sp = split(sexpr[h],"=")
-                    push!(nsr,$(:(Expr(:call,ListPrint()>0 ? :(=) : :(==),
-                            $rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))))
+                    $rfun(fun,io,sp[1];be=be)
+                    print(io,ListPrint()>0 ? " = " : " == ")
+                    $rfun(fun,io,sp[2];be=be)
+                    #push!(nsr,$(:(Expr(:call,ListPrint()>0 ? :(=) : :(==),
+                    #        $rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))))
                     end; end)
                 elseif occursin(":",sexpr[h])
                     sp = split(sexpr[h],":")
-                    push!(nsr,$(if mode == :expr
-                        :(Expr(:(:),$rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))
-                    elseif mode == :args
-                        :(($rfun(fun,sp[1],[];be=be)|>string)*":"*($rfun(fun,sp[2],s;be=be)|>string))
+                    $(if mode == :args
+                        :($rfun(fun,io,sp[1],[];be=be); print(io,":"); $rfun(fun,io,sp[2],s;be=be))
                     else
-                        :(($rfun(fun,sp[1];be=be)|>string)*":"*($rfun(fun,sp[2];be=be)|>string))
-                    end))
+                        :($rfun(fun,io,sp[1];be=be); print(io,":"); $rfun(fun,io,sp[2];be=be))
+                    end)
                 else
                     js=sexpr[h]
                     se=sum(sh.=="end")
@@ -360,11 +379,12 @@ for mode ∈ [:expr,:unary,:switch,:args]
                         end)
                     else; nothing
                     end)
-                    push!(nsr, exc)
+                    print(io, exc)
                 end
                 next = iterate(iter, state)
+                print(io,"\n")
             end
-            $(if mode == :expr
+            #=$(if mode == :expr
                 quote
                     u = length(nsr)
                     return u==1 ? nsr[1] : (u==0 ? nothing : Expr(:block,nsr...))
@@ -375,17 +395,17 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 else
                     return nsr |> RExpr |> split
                 end)
-            end)
+            end)=#
         end
         $(if mode == :args
             quote
-                $rfun(fun::String,r::Array{String,1},s;be=0) = $modefun(fun,RExpr(r),s...;be=be)
-                $rfun(fun::String,r,s;be=0) = $modefun(fun,r |> String |> RExpr,s...;be=be)
+                $rfun(fun::String,io::IO,r::Array{String,1},s;be=0) = $modefun(fun,io,RExpr(r),s...;be=be)
+                $rfun(fun::String,io::IO,r,s;be=0) = $modefun(fun,io,r |> String |> RExpr,s...;be=be)
             end
         else
             quote
-                $rfun(fun::String,r::Array{String,1};be=0) = $modefun(fun,RExpr(r);be=be)
-                $rfun(fun::String,r;be=0) = $modefun(fun,r |> String |> RExpr;be=be)
+                $rfun(fun::String,io::IO,r::Array{String,1};be=0) = $modefun(fun,io,RExpr(r);be=be)
+                $rfun(fun::String,io::IO,r;be=0) = $modefun(fun,io,r |> String |> RExpr;be=be)
             end
         end)
         @noinline function $argfun(fun::String,mod::String,ls::Array{SubString{String},1},$(aargs...))
@@ -394,6 +414,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
             lsi = 1:length(ls)
             nxt = iterate(lsi)
             (lsh,lss) = nxt
+            io = IOBuffer()
             while nxt !== nothing
                 (lsh,lss) = nxt
                 if occursin(r"^begin",ls[lsh])
@@ -401,7 +422,8 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     (nxt,ep) = loopshift(js,"begin","end",$arty,ls,lsi,nxt)
                     (lsh,lss) = nxt
                     sep = "begin $(join(ep,',')) end"
-                    push!(args,$(argrfun(mode,rfun,:sep)))
+                    $(argrfun(mode,rfun,:sep))
+                    push!(args,String(take!(io)))
                 elseif occursin(prefix,ls[lsh])
                     js = ls[lsh]
                     ep = Array{$arty,1}(undef,0)
@@ -414,9 +436,11 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     push!(ep,js,ls[lsy+1:lsh]...)
                     ep[1] == nothing && popfirst!(ep)
                     sep = join(ep,',')
-                    push!(args,$(argrfun(mode,rfun,:sep)))
+                    $(argrfun(mode,rfun,:sep))
+                    push!(args,String(take!(io)))
                 else
-                    push!(args,$(argrfun(mode,rfun,:(ls[lsh]))))
+                    $(argrfun(mode,rfun,:(ls[lsh])))
+                    push!(args,String(take!(io)))
                 end
                 nxt = iterate(lsi, lss)
             end
@@ -434,8 +458,13 @@ function parsegen(fun::Symbol,mode::Symbol)
     fune = (fun == ://) ? :/ : (fun == :rlet) ? :let : fun
     mf = Symbol(:parse,"_",mode)
     a = mode != :args ? [:(r::RExpr)] : [:(r::RExpr),Expr(:...,:s)]
-    return mode ≠ :expr ? :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0)) :
-    :($fun($(a...);be=0) = $mf($(string(fune)),$(a...);be=0) |> treecombine! |> irr)
+    return Expr(:function,:($fun($(a...);be=0)),quote
+        io = IOBuffer()
+        $mf($(string(fune)),io,$(a...);be=0) 
+        return $(mode ≠ :expr ? :(out = take!(io) |> String |> RExpr |> split;
+            $(string(fun)) in ["nat","latex"] ? string(out) : out) :
+        :(h = take!(io) |> String; println(h); chomp(h) |> Meta.parse |> linefilter! |> treecombine! |> irr))
+    end)
 end
 
 """
@@ -833,17 +862,19 @@ end
 end
 
 function unfold_expr_force(mode::Symbol, fun::Symbol, ex, s...)
-    out = nothing
     (typeof(ex) == LineNumberNode) && (return ex)
+    io = IOBuffer()
     if mode == :unary
-        out = parse_unary(string(fun),RExpr(ex);be=0)
+        parse_unary(string(fun),io,RExpr(ex);be=0)
     elseif mode == :switch
-        out = parse_switch(string(fun),RExpr(ex);be=0)
+        parse_switch(string(fun),io,RExpr(ex);be=0)
     elseif mode ==:args
-        out = parse_args(string(fun),RExpr(ex),s...;be=0)
+        parse_args(string(fun),io,RExpr(ex),s...;be=0)
     else
         throw(ReduceError("Parse mode not supported."))
     end
+    out = String(take!(io)) |> RExpr |> split
+    fun in [:nat,:latex] && (out = string(out))
     fun ∈ switchtex ? out : typeof(ex) <: Matrix ? mat(out) : convert(Expr, out)
 end
 
