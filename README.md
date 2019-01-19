@@ -51,7 +51,7 @@ julia> Pkg.add("Reduce"); Pkg.build("Reduce")
 julia> using Reduce
 Reduce (Free CSL version, revision 4521),  11-March-2018 ...
 ```
-For linux users who wish to speed up frequent precompilation, it is possible to disable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "0"` in julia (only effective when `Reduce` is being compiled).
+For users who wish to experimentally apply additional precompilation, it is possible to enable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "1"` in julia (only effective when `Reduce` is being compiled).
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
 

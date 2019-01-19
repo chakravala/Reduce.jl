@@ -320,10 +320,10 @@ function Load()
     return nothing
 end
 
-global preload = Sys.islinux() ? true : false
+global preload = false
 try
     global preload
-    (ENV["REDPRE"] == "0") && (preload = false)
+    (ENV["REDPRE"] ≠ "0") && (preload = true)
 catch
 end
 preload && include("precomp.jl")
