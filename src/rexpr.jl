@@ -102,19 +102,15 @@ Reduce.linelength()::Integer
 and sets the output line length to the integer `tput cols`. It returns the output line length (so that it can be stored for later resetting of the output line if needed).
 """
 function linelength()
-    try
-        c = read(`tput cols`,String) |> Meta.parse
-        global cols
-        if c ≠ cols
-            ws = rcall("ws")
-            rcall("linelength($c)")
-            rcall(ws)
-            cols = c
-        end
-        return c
-    catch
-        ColCheck(false)
+    c = displaysize(stdout)[2]
+    global cols
+    if c ≠ cols
+        ws = rcall("ws")
+        rcall("linelength($c)")
+        rcall(ws)
+        cols = c
     end
+    return c
 end
 
 function show(io::IO, ::MIME"text/plain", r::RExpr)
@@ -271,7 +267,7 @@ SubFail = ( () -> begin
 Toggle whether to reset REPL linewidth on each show
 """
 ColCheck = ( () -> begin
-        gs = Sys.iswindows() ? false : true
+        gs = true
         return (tf=gs)->(gs≠tf && (gs=tf); return gs)
     end)()
 
