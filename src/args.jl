@@ -241,7 +241,7 @@ korder(::Nothing) = korder(R"nil") |> parse
 
 export ∑, ∏, sub
 
-(∑, ∏) = (sum, prod)
+const (∑, ∏) = (sum, prod)
 
 @doc """
     sum(expr,k,lolim,uplim)

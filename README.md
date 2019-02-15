@@ -135,6 +135,65 @@ julia> Expr(:function,:(example(a,b)),quote
 ```
 where `z` is a program variable and `:a` and `:b` are symbolic variables.
 
+### Loading packages
+
+Packages which come shipped with REDUCE can be loaded with the `load_package` method. For example, the `optimize` method is available with
+
+```julia
+julia> load_package(:scope)
+
+julia> Algebra.optimize(:(z = a^2*b^2+10*a^2*m^6+a^2*m^2+2*a*b*m^4+2*b^2*m^6+b^2*m^2))
+quote
+    g40 = b * a
+    g44 = m * m
+    g41 = g44 * b * b
+    g42 = g44 * a * a
+    g43 = g44 * g44
+    z = g41 + g42 + g40 * (2g43 + g40) + g43 * (2g41 + 10g42)
+end
+```
+Other packages can be loaded, but not all of them come with pre-defined Julia dispatch methods.
+
+### Matrices
+
+Some special support for symbolic matrices has also been added to `Reduce.Algebra` methods,
+```Julia
+julia> [:x 1; :y 2]^-1
+2×2 Array{Any,2}:
+ :(2 / (2x - y))   :(-1 / (2x - y))
+ :(-y / (2x - y))  :(x / (2x - y))
+```
+The `jacobian` method has been added to the [ReduceLinAlg](https://github.com/JuliaReducePkg/ReduceLinAlg.jl) package, which is dedicated to the LINALG extra package included with Reduce binaries.
+
+```julia
+julia> using ReduceLinAlg
+
+julia> eqns = [:x1-:x2, :x1+:x2-:x3+:x6t, :x1+:x3t-:x4, 2*:x1tt+:x2tt+:x3tt+:x4t+:x6ttt, 3*:x1tt+2*:x2tt+:x5+0.1*:x8, 2*:x6+:x7, 3*:x6+4*:x7, :x8-sin(:x8)]
+8-element Array{Expr,1}:
+ :(x1 - x2)
+ :(x1 - ((x3 - x6t) - x2))
+ :((x3t - x4) + x1)
+ :(x4t + x6ttt + x3tt + x2tt + 2x1tt)
+ :((10x5 + x8 + 20x2tt + 30x1tt) // 10)
+ :(2x6 + x7)
+ :(3x6 + 4x7)
+ :(x8 - sin(x8))
+
+julia> vars = [:x1, :x2, :x3, :x4, :x6, :x7, :x1t, :x2t, :x3t, :x6t, :x7t, :x6tt, :x7tt];
+
+julia> jacobian(eqns, vars) |> Reduce.mat
+8×13 Array{Any,2}:
+ 1  -1   0   0  0  0  0  0  0  0  0  0  0
+ 1   1  -1   0  0  0  0  0  0  1  0  0  0
+ 1   0   0  -1  0  0  0  0  1  0  0  0  0
+ 0   0   0   0  0  0  0  0  0  0  0  0  0
+ 0   0   0   0  0  0  0  0  0  0  0  0  0
+ 0   0   0   0  2  1  0  0  0  0  0  0  0
+ 0   0   0   0  3  4  0  0  0  0  0  0  0
+ 0   0   0   0  0  0  0  0  0  0  0  0  0
+```
+The package also provides a demonstration of how additional `Reduce` methods can be imported into Julia.
+
 ### Output mode
  Various output modes are supported. While in the REPL, the default `nat` output mode will be displayed for `RExpr` objects.
 ```Julia
@@ -171,6 +230,24 @@ reduce> df(atan(golden_ratio*x),x);
        2*(x  + 3*x  + 1)
 ```
 
+## Troubleshooting
+
+If the `reduce>` REPL is not appearing when `}` is pressed or the Reduce pipe is broken, the session can be restored by simply calling `Reduce.Reset()`, without requiring a restart of `julia` or reloading the package. This kills the currently running Reduce session and then re-initializes it for new use.
+
+Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
+
+
+## AbstractTensors interoperability
+
+By importing the [AbstractTensors.jl](https://github.com/chakravala/AbstractTensors.jl) module, the `Reduce` is able to correctly bypass operations on `TensorAlgebra` elements to the correct methods within the scope of the `Reduce.Algebra` module.
+This requires no additional overhead for the [Grassmann.jl](https://github.com/chakravala/Grassmann.jl) or `Reduce` packages, because the `AbstractTensors` interoperability interface enables separate precompilation of both.
+
+### OhMyREPL Compatibility
+
+Reduce.jl is compatible with the [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl) package.
+
+Place `using Reduce` as first package to load in `~/.julia/config/startup.jl` to ensure the REPL loads properly (when also `using OhMyREPL`). Otherwise, if you are loading this package when Julia has already been started, load it after `OhMyREPL`.
+
 ## Background
 
 The `Reduce` package currently provides a robust interface to directly use the CSL version of REDUCE within the Julia language and the REPL. This is achieved by interfacing the abstract syntax tree of `Expr` objects with the parser generator for `RExpr` objects and then using an `IOBuffer` to communicate with `redpsl`.
@@ -183,15 +260,3 @@ Releases of `Reduce.jl` enable the general application of various REDUCE functio
 
 > Julia is a high-level, high-performance dynamic programming language for numerical computing. It provides a sophisticated compiler, distributed parallel execution, numerical accuracy, and an extensive mathematical function library. Julia’s Base library, largely written in Julia itself, also integrates mature, best-of-breed open source C and Fortran libraries for linear algebra, random number generation, signal processing, and string processing.
 > The strongest legacy of Lisp in the Julia language is its metaprogramming support. Like Lisp, Julia represents its own code as a data structure of the language itself. Since code is represented by objects that can be created and manipulated from within the language, it is possible for a program to transform and generate its own code. This allows sophisticated code generation without extra build steps, and also allows true Lisp-style macros operating at the level of abstract syntax trees.
-
-## Troubleshooting
-
-If the `reduce>` REPL is not appearing when `}` is pressed or the Reduce pipe is broken, the session can be restored by simply calling `Reduce.Reset()`, without requiring a restart of `julia` or reloading the package. This kills the currently running Reduce session and then re-initializes it for new use.
-
-Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
-
-### OhMyREPL Compatibility
-
-Reduce.jl is compatible with the [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl) package.
-
-Place `using Reduce` as first package to load in the `~/.juliarc.jl` startup file to ensure the REPL loads properly (when also `using OhMyREPL`). Otherwise, if you are loading this package when Julia has already been started, load it after `OhMyREPL`.

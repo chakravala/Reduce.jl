@@ -15,11 +15,11 @@ convert(RExpr,R"x").str == convert(Array{String,1},R"x")
 load_package([:rlfi]) == load_package(:rlfi,:rlfi)
 rcall(:(x^2+2x+1),off=[:factor])
 rcall("x + 1","factor")
-Expr(:function,:fun,:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse
+Expr(:function,:(fun(z)),:(return begin; x = 700; y = x; end)) |> RExpr |> Reduce.parse
 Expr(:for,:(i=2:34),:(product(i))) |> rcall
 try; Expr(:type,false,:x) |> RExpr; false; catch; true; end
 try; :(@time f(x)) |> RExpr; false; catch; true; end
-Expr(:function,:fun,:(return y=a^3+3*a^2*b+3*a*b^2+b^3)) |> factor |> expand
+Expr(:function,:(fun(a,b)),:(return y=a^3+3*a^2*b+3*a*b^2+b^3)) |> factor |> expand
 try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> parse; false; catch; true; end
 R"begin; 1:2; end" |> Reduce.parse |> RExpr |> string
 latex(:(x+1))
@@ -33,7 +33,7 @@ Algebra.impart(:(1+2*im))
 Sys.islinux() && Reduce.RSymReplace("!#03a9; *x**2 + !#03a9;")
 Algebra.int(:(x^2+y),:x) |> RExpr == Algebra.int("x^2+y","x") |> RExpr
 R"/(2,begin 2; +(7,4); return +(4,*(2,7))+9 end)" |> Reduce.parse
-Algebra.df(Expr(:function,:fun,:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z)
+Algebra.df(Expr(:function,:(fun(z,c)),:(return begin; zn = z^2+c; nz = z^3-1; end))|>RExpr,:z)
 :([1 2; 3 4]) |> RExpr |> Reduce.parse |> RExpr == [1 2; 3 4] |> RExpr
 
 Algebra.nextprime("3")

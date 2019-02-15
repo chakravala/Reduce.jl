@@ -123,6 +123,24 @@ for var ∈ [variables;[:ws]]
     :($var() = rcall(RExpr($(string(var)))) |> parse) |> eval
 end
 
+function bypass(op::Symbol,T::ExprSymbol,args)
+    1 ∈ args && (@eval $op(x::X) where X<:$T = Base.$op(x))
+    if 2 ∈ args
+        @eval begin
+            $op(a::A,b::B) where {A<:ExprSymbol,B<:$T} = Base.$op(a,b)
+            $op(a::A,b::B) where {A<:$T,B<:ExprSymbol} = Base.$op(a,b)
+        end
+    end
+end
+
+import AbstractTensors: TensorAlgebra
+for op ∈ (:+,:-)
+    bypass(op,:TensorAlgebra,(1,2))
+end
+for op ∈ (:*,:/)
+    bypass(op,:TensorAlgebra,(2,))
+end
+
 @doc """
     ws()
 
