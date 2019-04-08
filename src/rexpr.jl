@@ -136,6 +136,21 @@ function show(io::IO, ::MIME"text/latex", r::RExpr)
     print(io,"\n\\end{eqnarray}")
 end
 
+function extract end
+
+macro subtype(x)
+    x.head ≠ :<: && throw(error("$x is not a subtype expression"))
+    name = x.args[1]
+    Expr(:struct,false,x,Expr(:block,Expr(:(::), :r, :RExpr))) |> eval
+    @eval begin
+        export $name
+        show(io::IO, r::$name) = show(io,r.r)
+        extract(r::$name) = r.r
+        Algebra.init_subtype($name)
+    end
+    nothing
+end
+
 const r_to_jl = Dict(
     "i"             =>  "im",
     "infinity"      =>  "Inf"

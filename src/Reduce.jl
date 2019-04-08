@@ -105,9 +105,17 @@ include("switch.jl") # load switch operators
 
 module Algebra
 using Reduce, LinearAlgebra
+import ..extract
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
+
+function init_subtype(name)
+    Expr(:block,[:(Base.$i(r::$name...)=$i(extract.(r)...)|>$name) for i ∈ [alg;iops]]...) |> eval
+    Expr(:block,[:($i(r::$name...)=$i(extract.(r)...)|>$name) for i ∈ [calculus;cnan;cmat]]...) |> eval
+    Expr(:block,[:(Base.$i(r::$name)=$i(extract(r))|>$name) for i ∈ [sbas;[:length]]]...) |> eval
+    Expr(:block,[:($i(r::$name)=$i(extract(r))|>$name) for i ∈ [sfun;snan;snum;scom;sint;sran;smat]]...) |> eval
+end
 
 const variables = [
     :root_multiplicities,
@@ -133,13 +141,22 @@ function bypass(op::Symbol,T::ExprSymbol,args)
     end
 end
 
-import AbstractTensors: TensorAlgebra
+import AbstractTensors: TensorAlgebra, value
+for op ∈ (:exp,:reverse)
+    bypass(op,:TensorAlgebra,(1,))
+end
 for op ∈ (:+,:-)
     bypass(op,:TensorAlgebra,(1,2))
 end
 for op ∈ (:*,:/)
     bypass(op,:TensorAlgebra,(2,))
 end
+abs(x::X) where X<:TensorAlgebra = sqrt(abs(value(LinearAlgebra.dot(x,x))))
+rank(x::X) where X<:TensorAlgebra = LinearAlgebra.rank(x)
+
+import DirectSum: SUB, PROD
+SUB(x::Expr) = -(x)
+PROD(x::AbstractVector{T}) where T<:Any = *(x...)
 
 @doc """
     ws()

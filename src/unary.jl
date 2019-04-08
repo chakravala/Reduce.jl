@@ -24,7 +24,7 @@ const sbas = [
     :asinh,
     :atan,
     :atanh,
-    :atan2,
+    #:atan2,
     :cos,
     :cosh,
     :cot,
@@ -42,10 +42,10 @@ const sbas = [
     :sqrt,
     :tan,
     :tanh,
-    :gamma,
 ]
 
 const sdep = [
+    :gamma,
     :beta,
     :besseli,
     :besselj,
