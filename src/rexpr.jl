@@ -138,14 +138,32 @@ end
 
 function extract end
 
+"""
+    Reduce.@subtype
+
+Can be used to create an `RExpr` wrapper type with a subtype relation
+```Julia
+julia> Reduce.@subtype FakeReal <: Real
+
+julia> FakeReal(:(x+1)) + FakeReal(:y)
+y + 1 + x
+```
+"""
 macro subtype(x)
     x.head ≠ :<: && throw(error("$x is not a subtype expression"))
     name = x.args[1]
     Expr(:struct,false,x,Expr(:block,Expr(:(::), :r, :RExpr))) |> eval
+    Expr(:block,[:($fun(r::$name) = $fun(r.r)) for fun ∈ [:String,:string,:join,:list,:parse,:mat]]...) |> eval
     @eval begin
         export $name
+        $name(x) = $name(RExpr(x))
+        RExpr(r::$name) = r.r
         show(io::IO, r::$name) = show(io,r.r)
-        extract(r::$name) = r.r
+        ==(a::$name,b::$name) = a.r == b.r
+        rcall(r::$name,s...) = rcall(r.r,s...)
+        convert(::Type{$name}, r::RExpr) = r.r
+        convert(::Type{Array{String,1}}, r::$name) = r.r.str
+        convert(::Type{String}, r::$name) = convert(String,r.r)
         Algebra.init_subtype($name)
     end
     nothing

@@ -96,3 +96,4 @@ operator(:cbrt)
 @test [:x,:y]' + 1 == 1 + [:x,:y]'
 @test solve(:(x-1),:x) == solve((:(x-1),),:x)
 @test (order(nothing); korder(nothing); true)
+@test (Reduce.@subtype FakeReal <: Real; FakeReal(:(x+1)) + FakeReal(:y) == FakeReal(:(x+1+y)))

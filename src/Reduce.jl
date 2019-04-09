@@ -105,16 +105,15 @@ include("switch.jl") # load switch operators
 
 module Algebra
 using Reduce, LinearAlgebra
-import ..extract
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
 
 function init_subtype(name)
-    Expr(:block,[:(Base.$i(r::$name...)=$i(extract.(r)...)|>$name) for i ∈ [alg;iops]]...) |> eval
-    Expr(:block,[:($i(r::$name...)=$i(extract.(r)...)|>$name) for i ∈ [calculus;cnan;cmat]]...) |> eval
-    Expr(:block,[:(Base.$i(r::$name)=$i(extract(r))|>$name) for i ∈ [sbas;[:length]]]...) |> eval
-    Expr(:block,[:($i(r::$name)=$i(extract(r))|>$name) for i ∈ [sfun;snan;snum;scom;sint;sran;smat]]...) |> eval
+    Expr(:block,[:(Base.$i(r::$name...)=$i(RExpr.(r)...)|>$name) for i ∈ [alg;iops]]...) |> eval
+    Expr(:block,[:($i(r::$name...)=$i(RExpr.(r)...)|>$name) for i ∈ [calculus;cnan;cmat]]...) |> eval
+    Expr(:block,[:(Base.$i(r::$name)=$i(RExpr(r))|>$name) for i ∈ [sbas;[:length]]]...) |> eval
+    Expr(:block,[:($i(r::$name)=$i(RExpr(r))|>$name) for i ∈ [sfun;snan;snum;scom;sint;sran;smat]]...) |> eval
 end
 
 const variables = [

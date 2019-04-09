@@ -4,8 +4,8 @@ os:
   - linux
   - osx
 julia:
-  - 0.7
   - 1.0
+  - 1.1
   - nightly
 matrix:
   allow_failures:
@@ -22,5 +22,6 @@ after_success:
   # push coverage results to Codecov
   - julia -e 'cd(Pkg.dir("Reduce")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
   # update docs
-  - julia -e 'Pkg.add("Documenter")'
+  - julia -e 'using Pkg; ps=PackageSpec(name="Documenter", version="0.19"); Pkg.add(ps); Pkg.pin(ps)'
   - julia -e 'cd(Pkg.dir("Reduce")); include(joinpath("docs", "make.jl"))'
+
