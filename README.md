@@ -13,6 +13,7 @@
 [![Docs Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://chakravala.github.io/Reduce.jl/stable)
 [![Docs Latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://chakravala.github.io/Reduce.jl/latest)
 [![Join the chat at gitter](https://badges.gitter.im/Reduce-jl/Lobby.svg)](https://gitter.im/Reduce-jl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Liberapay patrons](https://img.shields.io/liberapay/patrons/chakravala.svg)](https://liberapay.com/chakravala)
 
 The premise behind Reduce.jl is based on the idea that `Symbol` and `Expr` types can be translated into computer algebra rewrite commands and then automatically parsed back into Julia ASTs, essentially extending the Julia language into a fully programable symbolic AST rewrite environment.
 
@@ -237,7 +238,7 @@ If the `reduce>` REPL is not appearing when `}` is pressed or the Reduce pipe is
 Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
 
 
-## AbstractTensors interoperability
+### AbstractTensors interoperability
 
 By importing the [AbstractTensors.jl](https://github.com/chakravala/AbstractTensors.jl) module, the `Reduce` is able to correctly bypass operations on `TensorAlgebra` elements to the correct methods within the scope of the `Reduce.Algebra` module.
 This requires no additional overhead for the [Grassmann.jl](https://github.com/chakravala/Grassmann.jl) or `Reduce` packages, because the `AbstractTensors` interoperability interface enables separate precompilation of both.
@@ -246,7 +247,7 @@ This requires no additional overhead for the [Grassmann.jl](https://github.com/c
 
 Reduce.jl is compatible with the [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl) package.
 
-Place `using Reduce` as first package to load in `~/.julia/config/startup.jl` to ensure the REPL loads properly (when also `using OhMyREPL`). Otherwise, if you are loading this package when Julia has already been started, load it after `OhMyREPL`.
+Place `using Reduce` as first package to load in `~/.julia/config/startup.jl` to ensure the REPL loads properly (when also `using OhMyREPL`). Otherwise, if loading this package when Julia has already been started, load it after `OhMyREPL`.
 
 ## Background
 
