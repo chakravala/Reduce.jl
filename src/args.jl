@@ -82,8 +82,8 @@ const iops = [
     :+,
     :-,
     :*,
-    :^,
     :/,
+    :^,
     ://
 ]
 
@@ -92,7 +92,7 @@ const cmat = [
     #:cofactor
 ]
 
-Expr(:block,[:($i(r...)=Base.$i(r...)) for i ∈ [alg;iops]]...) |> eval
+Expr(:block,[:($i(r...)=Base.$i(r...)) for i ∈ [alg;iops[5:end]]]...) |> eval
 #Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
 :(export $([calculus;cnan;alg;iops;cmat]...)) |> eval
 #:(export $(Symbol.("@",[calculus;alg;iops])...)) |> eval
@@ -211,7 +211,6 @@ end
 
 export inv, \
 
-inv(r) = Base.inv(r)
 inv(r::RExpr) = r^-1
 inv(r::T) where T <: MatExpr = r^-1
 

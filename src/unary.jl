@@ -4,8 +4,8 @@
 import LinearAlgebra: factorize
 
 const sbas = [
-    :abs,
     :conj,
+    :abs,
     :factorial,
     :floor,
     :max,
@@ -139,7 +139,7 @@ const smat = [
     :tp,
 ]
 
-Expr(:block,[:($i(r)=Base.$i(r)) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> eval
+Expr(:block,[:($i(r)=Base.$i(r)) for i ∈ [sbas[2:end];sdep;sbat;[:length]]]...) |> eval
 #Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> eval
 :(export $([sbas;sdep;sfun;snan;snum;scom;sint;sran;sbat;smat;[:length]]...)) |> eval
 #:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval

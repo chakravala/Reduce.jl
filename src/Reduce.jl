@@ -105,6 +105,8 @@ include("switch.jl") # load switch operators
 
 module Algebra
 using Reduce, LinearAlgebra
+import DirectSum: conj, inv, PROD, SUM, -, /
+const *,+ = PROD,SUM
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
@@ -144,18 +146,12 @@ import AbstractTensors: TensorAlgebra, value
 for op ∈ (:exp,:reverse)
     bypass(op,:TensorAlgebra,(1,))
 end
-for op ∈ (:+,:-)
-    bypass(op,:TensorAlgebra,(1,2))
-end
-for op ∈ (:*,:/)
+for op ∈ (:+,:*,:/)
     bypass(op,:TensorAlgebra,(2,))
 end
+@eval bypass(:-,:TensorAlgebra,(1,2))
 abs(x::X) where X<:TensorAlgebra = sqrt(abs(value(LinearAlgebra.dot(x,x))))
 rank(x::X) where X<:TensorAlgebra = LinearAlgebra.rank(x)
-
-import DirectSum: SUB, PROD
-SUB(x::Expr) = -(x)
-PROD(x::AbstractVector{T}) where T<:Any = *(x...)
 
 @doc """
     ws()
