@@ -34,17 +34,32 @@ function respond(repl, main)
         end
         input = String(take!(buf))
         if !isempty(strip(input))
-            try
-                global ans = RExpr(input[1:end-1])
-                REPL.reset(repl)
-                if input[end] == ';'
-                    REPL.print_response(repl, ans, nothing, true, Base.have_color)
-                else
-                    REPL.print_response(repl, nothing, nothing, true, Base.have_color)
+            if VERSION < v"1.2"
+                try
+                    global ans = RExpr(input[1:end-1])
+                    REPL.reset(repl)
+                    if input[end] == ';'
+                        REPL.print_response(repl, ans, nothing, true, Base.have_color)
+                    else
+                        REPL.print_response(repl, nothing, nothing, true, Base.have_color)
+                    end
+                catch err
+                    REPL.reset(repl)
+                    REPL.print_response(repl, err, catch_backtrace(), true, Base.have_color)
                 end
-            catch err
-                REPL.reset(repl)
-                REPL.print_response(repl, err, catch_backtrace(), true, Base.have_color)
+            else
+                try
+                    global ans = RExpr(input[1:end-1])
+                    REPL.reset(repl)
+                    if input[end] == ';'
+                        REPL.print_response(repl, (ans, false), true, Base.have_color)
+                    else
+                        REPL.print_response(repl, (nothing, false), true, Base.have_color)
+                    end
+                catch
+                    REPL.reset(repl)
+                    REPL.print_response(repl, (catch_stack(), true), true, Base.have_color)
+                end
             end
         end
         REPL.prepare_next(repl)
