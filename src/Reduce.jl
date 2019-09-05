@@ -229,7 +229,11 @@ Khinchin's constant, defined as
 
 end
 
-export Algebra, @force
+export Algebra, @force, @vars
+
+macro vars(syms...)
+    Expr(:block,[Expr(:(=),esc(sym),QuoteNode(sym)) for sym ∈ syms]...)
+end
 
 Base.write(rs::PSL,r::RExpr) = write(rs,convert(String,r))
 
