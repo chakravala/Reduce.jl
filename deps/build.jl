@@ -17,7 +17,7 @@ if isfile("ver")
         elseif Sys.iswindows()
             run(`cmd /C DEL /F /S /Q /A "$(joinpath(wdir,"reduce.exe"))"`)
         end
-        run(Sys.windows() ? `cmd /C DEL /F /S /Q /A "ver"` : `rm ver`)
+        run(Sys.iswindows() ? `cmd /C DEL /F /S /Q /A "ver"` : `rm ver`)
     end
 end
 
