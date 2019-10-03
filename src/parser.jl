@@ -323,7 +323,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                 elseif occursin("=",$((mode == :expr) ? :(sexpr[h]) : :("")))
                     $(if mode == :expr; quote
                     sp = split(sexpr[h],"=")
-                    push!(nsr,$(:(Expr(:call,ListPrint()>0 ? :(=) : :(==),
+                    push!(nsr,$(:(Expr((ListPrint()>0 ? (:(=),) : (:call,:(==)))...,
                             $rfun(fun,sp[1];be=be),$rfun(fun,sp[2];be=be)))))
                     end; end)
                 elseif occursin(":",sexpr[h])
