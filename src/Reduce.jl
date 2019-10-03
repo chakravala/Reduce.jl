@@ -116,6 +116,9 @@ function init_subtype(name)
     Expr(:block,[:($i(r::$name...)=$i(RExpr.(r)...)|>$name) for i ∈ [calculus;cnan;cmat]]...) |> eval
     Expr(:block,[:(Base.$i(r::$name)=$i(RExpr(r))|>$name) for i ∈ [sbas;[:length]]]...) |> eval
     Expr(:block,[:($i(r::$name)=$i(RExpr(r))|>$name) for i ∈ [sfun;snan;snum;scom;sint;sran;smat]]...) |> eval
+    :(Base.promote(r::$name,x) = (r,$name(x))) |> eval
+    :(Base.promote(x,r::$name) = (r,$name(x))) |> eval
+    :(Base.signbit(r::$name) = false) |> eval
 end
 
 const variables = [

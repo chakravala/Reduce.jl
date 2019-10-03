@@ -23,6 +23,7 @@ end
 
 RExpr(r::Array{SubString{String},1}) = RExpr(convert(Array{String,1},r))
 RExpr(str::String) = RExpr([str])
+RExpr(t::Bool) = RExpr(t ? 1 : 0)
 
 """
     RExpr(e::Expr)
