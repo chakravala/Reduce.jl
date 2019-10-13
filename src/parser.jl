@@ -226,7 +226,7 @@ for mode ∈ [:expr,:unary,:switch,:args]
                     qr = IOBuffer()
                     while smp ≠ ""
                         args = Array{$arty,1}(undef,0)
-                        if occursin(r"^\(",smp)
+                        if occursin(r"^\s?\(",smp)
                             push!(args,$(argrfun(mode,rfun,:(match(parens,smp).match[2:end-1]))))
                             smp = split(smp,parens;limit=2)[end]
                             print(qr,"($(args...))")

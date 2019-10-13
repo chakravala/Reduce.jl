@@ -1,7 +1,7 @@
 name = "Reduce"
 uuid = "93e0c654-6965-5f22-aba9-9c1ae6b3c259"
 authors = ["Michael Reed"]
-version = "1.2.3"
+version = "1.2.4"
 
 [deps]
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
