@@ -357,6 +357,8 @@ function Load()
     return nothing
 end
 
+Preload() = (global rs=PSL(); global s; eval(s); atexit(()->kill(rs)))
+
 global preload = false
 try
     global preload

@@ -1,6 +1,6 @@
 global rs = nothing
 @info "Precompiling extra Reduce methods (set `ENV[\"REDPRE\"]=\"0\"` to disable)"
-Reduce.Load(); atexit(() -> kill(rs))
+Reduce.Preload(); atexit(() -> kill(rs))
 
 rcall(:((1+pi)^2)) == convert(Expr,RExpr(rcall("(1+pi)**2")))
 try; "1/0" |> rcall; false; catch; true; end
