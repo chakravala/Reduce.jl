@@ -43,6 +43,8 @@ Additional packages that depend on Reduce.jl are maintained at [JuliaReducePkg](
 
 The upstream REDUCE software created by Anthony C. Hearn is maintained by collaborators on [SourceForge](https://sourceforge.net/p/reduce-algebra/).
 
+This package is a heavily modifed version of Nathan Smith's [Maxima.jl](https://github.com/nsmith5/Maxima.jl) with many additional features.
+
 ## Setup
 
 The `Reduce` package provides the base functionality to work with Julia and Reduce expressions, provided that you have `redcsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redcsl` for you, success depends on the build tools installed. Automated testing for **Travis CI** and **appveyor** using Linux, OSX, and Windows are fully operational `using Reduce`.
