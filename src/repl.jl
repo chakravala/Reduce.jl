@@ -48,7 +48,7 @@ function repl_init(repl)
         prompt_text="reduce> ",
         prompt_color=:cyan,
         start_key='}',
-        mode_name="reduce",
+        mode_name="REDUCE",
         repl=repl,
     )
 end

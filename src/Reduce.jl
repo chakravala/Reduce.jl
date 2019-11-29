@@ -105,8 +105,23 @@ include("switch.jl") # load switch operators
 
 module Algebra
 using Reduce, LinearAlgebra
+import DirectSum
 import DirectSum: conj, inv, PROD, SUM, -, /
 const *,+ = PROD,SUM
+
+DS = false
+if DirectSum.sqrt ≠ Base.sqrt
+    DS = true
+    import DirectSum: sqrt, abs, expm1, log1p, sin, cos, sinh, cosh, ^
+end
+
+export expm1, log1p
+for T ∈ (RExpr,Expr,Symbol,String)
+    @eval begin
+        Base.expm1(z::$T) = exp(z)-1
+        Base.log1p(z::$T) = 1+log(z)
+    end
+end
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators
@@ -153,7 +168,6 @@ for op ∈ (:+,:*,:/)
     bypass(op,:TensorAlgebra,(2,))
 end
 @eval bypass(:-,:TensorAlgebra,(1,2))
-abs(x::X) where X<:TensorAlgebra = sqrt(abs(value(LinearAlgebra.dot(x,x))))
 rank(x::X) where X<:TensorAlgebra = LinearAlgebra.rank(x)
 
 @doc """
