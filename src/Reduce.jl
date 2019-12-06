@@ -112,7 +112,7 @@ const *,+ = PROD,SUM
 DS = false
 if DirectSum.sqrt ≠ Base.sqrt
     DS = true
-    import DirectSum: sqrt, abs, expm1, log1p, sin, cos, sinh, cosh, ^
+    import DirectSum: sqrt, abs, exp, expm1, log, log1p, sin, cos, sinh, cosh, ^
 end
 
 export expm1, log1p

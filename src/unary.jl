@@ -5,6 +5,8 @@ import LinearAlgebra: factorize
 
 const sbas = [
     :conj,
+    :exp,
+    :log,
     :cos,
     :cosh,
     :sin,
@@ -34,9 +36,7 @@ const sbas = [
     :coth,
     :csc,
     :csch,
-    :exp,
     :hypot,
-    :log,
     :log10,
     :sec,
     :sech,
@@ -139,7 +139,7 @@ const smat = [
     :tp,
 ]
 
-Expr(:block,[:(@inline $i(r)=Base.$i(r)) for i ∈ [sbas[(DS ? 8 : 2):end];sdep;sbat;[:length]]]...) |> eval
+Expr(:block,[:(@inline $i(r)=Base.$i(r)) for i ∈ [sbas[(DS ? 10 : 2):end];sdep;sbat;[:length]]]...) |> eval
 #Expr(:toplevel,[:(import Base: $i) for i ∈ [sbas;sdep;sbat;[:length]]]...) |> eval
 :(export $([sbas;sdep;sfun;snan;snum;scom;sint;sran;sbat;smat;[:length]]...)) |> eval
 #:(export $(Symbol.("@",[sbas;sdep;sfun;snum;scom;sint])...)) |> eval
