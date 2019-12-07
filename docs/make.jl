@@ -7,7 +7,6 @@ makedocs(
     # options
     modules = [Reduce],
     doctest = false,
-    format = :html,
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     sitename = "Reduce.jl",
     authors = "Michael Reed",
