@@ -44,10 +44,8 @@ makedocs(
 )
 
 deploydocs(
-    target = "build",
     repo   = "github.com/chakravala/Reduce.jl.git",
-    branch = "gh-pages",
-    latest = "master",
+    target = "build",
     deps = nothing,
-    make = nothing,
+    make = nothing
 )
