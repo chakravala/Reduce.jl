@@ -8,6 +8,7 @@ makedocs(
     modules = [Reduce],
     doctest = false,
     format = :html,
+    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     sitename = "Reduce.jl",
     authors = "Michael Reed",
     pages = Any[
@@ -43,4 +44,11 @@ makedocs(
         ]
 )
 
-deploydocs(repo = "github.com/chakravala/Reduce.jl.git")
+deploydocs(
+    target = "build",
+    repo   = "github.com/chakravala/Reduce.jl.git",
+    branch = "gh-pages",
+    latest = "master",
+    deps = nothing,
+    make = nothing,
+)
