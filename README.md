@@ -7,7 +7,7 @@
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/kaqu2yri4vxyr63n?svg=true)](https://ci.appveyor.com/project/chakravala/reduce-jl)
 [![Coverage Status](https://coveralls.io/repos/github/chakravala/Reduce.jl/badge.svg?branch=master)](https://coveralls.io/github/chakravala/Reduce.jl?branch=master)
-[![codecov.io](http://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](http://codecov.io/github/chakravala/Reduce.jl?branch=master)
+[![codecov.io](https://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](https://codecov.io/github/chakravala/Reduce.jl?branch=master)
 [![Docs Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://reduce.crucialflow.com/stable)
 [![Docs Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://reduce.crucialflow.com/dev)
 [![Join the chat at gitter](https://badges.gitter.im/Reduce-jl/Lobby.svg)](https://gitter.im/Reduce-jl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
