@@ -107,13 +107,9 @@ module Algebra
 using Reduce, LinearAlgebra
 import DirectSum
 import DirectSum: conj, inv, PROD, SUM, -, /
+import DirectSum: sqrt, abs, exp, expm1, log, log1p, sin, cos, sinh, cosh, ^
 const *,+ = PROD,SUM
 
-DS = false
-if DirectSum.sqrt ≠ Base.sqrt
-    DS = true
-    import DirectSum: sqrt, abs, exp, expm1, log, log1p, sin, cos, sinh, cosh, ^
-end
 
 export expm1, log1p
 for T ∈ (RExpr,Expr,Symbol,String)

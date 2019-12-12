@@ -92,7 +92,7 @@ const cmat = [
     #:cofactor
 ]
 
-Expr(:block,[:(@inline $i(r...)=Base.$i(r...)) for i ∈ [alg;iops[(DS ? 6 : 5):end]]]...) |> eval
+Expr(:block,[:(@inline $i(r...)=Base.$i(r...)) for i ∈ [alg;iops[6:end]]]...) |> eval
 #Expr(:toplevel,[:(import Base: $i) for i ∈ [alg;iops]]...) |> eval
 :(export $([calculus;cnan;alg;iops;cmat]...)) |> eval
 #:(export $(Symbol.("@",[calculus;alg;iops])...)) |> eval
@@ -211,13 +211,8 @@ end
 
 export inv, \
 
-if DS
-    inv(r::RExpr) = DirectSum.:^(r,-1)
-    inv(r::T) where T <: MatExpr = DirectSum.:^(r,-1)
-else
-    inv(r::RExpr) = r^-1
-    inv(r::T) where T<: MatExpr = r^-1
-end
+inv(r::RExpr) = DirectSum.:^(r,-1)
+inv(r::T) where T <: MatExpr = DirectSum.:^(r,-1)
 
 \(a,b) = Base.:\(a,b)
 \(a::T,s::S) where T <: MatExpr where S <: Vector = (RExpr(a)^-1)*RExpr(s) |> parse |> mat
