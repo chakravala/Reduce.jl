@@ -37,6 +37,8 @@ Additional packages that depend on Reduce.jl are maintained at [JuliaReducePkg](
 
 The upstream REDUCE software created by Anthony C. Hearn is maintained by collaborators on [SourceForge](https://sourceforge.net/p/reduce-algebra/).
 
+This package is a heavily modifed version of Nathan Smith's [Maxima.jl](https://github.com/nsmith5/Maxima.jl) with many additional features.
+
 ## Setup
 
 The `Reduce` package provides the base functionality to work with Julia and Reduce expressions, provided that you have `redcsl` in your path. On GNU/Linux/OSX/Windows, `Pkg.build("Reduce")` will automatically download a precompiled binary for you. If you are running a different Unix operating system, the build script will download the source and attempt to compile `redcsl` for you, success depends on the build tools installed. Automated testing for **Travis CI** and **appveyor** using Linux, OSX, and Windows are fully operational `using Reduce`.
@@ -49,6 +51,9 @@ Reduce (Free CSL version, revision 4521),  11-March-2018 ...
 For linux users who wish to speed up frequent precompilation, it is possible to disable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "0"` in julia (only effective when `Reduce` is being compiled).
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
+
+This `Reduce` package for the Julia language was created by [github.com/chakravala](https://github.com/chakravala) for mathematics and computer algebra research with the upstream developed REDUCE software.
+Please consider donating to show your thanks and appreciation to this Julia project for interfacing the upstream REDUCE language at [liberapay](https://liberapay.com/chakravala), [GitHub Sponsors](https://github.com/sponsors/chakravala), [Patreon](https://patreon.com/dreamscatter), or contribute (documentation, tests, examples) in the repository.
 
 ## Background
 
@@ -143,6 +148,65 @@ julia> Expr(:function,:(example(a,b)),quote
 ```
 where `z` is a program variable and `:a` and `:b` are symbolic variables.
 
+### Loading packages
+
+Packages which come shipped with REDUCE can be loaded with the `load_package` method. For example, the `optimize` method is available with
+
+```julia
+julia> load_package(:scope)
+
+julia> Algebra.optimize(:(z = a^2*b^2+10*a^2*m^6+a^2*m^2+2*a*b*m^4+2*b^2*m^6+b^2*m^2))
+quote
+    g40 = b * a
+    g44 = m * m
+    g41 = g44 * b * b
+    g42 = g44 * a * a
+    g43 = g44 * g44
+    z = g41 + g42 + g40 * (2g43 + g40) + g43 * (2g41 + 10g42)
+end
+```
+Other packages can be loaded, but not all of them come with pre-defined Julia dispatch methods.
+
+### Matrices
+
+Some special support for symbolic matrices has also been added to `Reduce.Algebra` methods,
+```Julia
+julia> [:x 1; :y 2]^-1
+2×2 Array{Any,2}:
+ :(2 / (2x - y))   :(-1 / (2x - y))
+ :(-y / (2x - y))  :(x / (2x - y))
+```
+The `jacobian` method has been added to the [ReduceLinAlg](https://github.com/JuliaReducePkg/ReduceLinAlg.jl) package, which is dedicated to the LINALG extra package included with Reduce binaries.
+
+```julia
+julia> using ReduceLinAlg
+
+julia> eqns = [:x1-:x2, :x1+:x2-:x3+:x6t, :x1+:x3t-:x4, 2*:x1tt+:x2tt+:x3tt+:x4t+:x6ttt, 3*:x1tt+2*:x2tt+:x5+0.1*:x8, 2*:x6+:x7, 3*:x6+4*:x7, :x8-sin(:x8)]
+8-element Array{Expr,1}:
+ :(x1 - x2)
+ :(x1 - ((x3 - x6t) - x2))
+ :((x3t - x4) + x1)
+ :(x4t + x6ttt + x3tt + x2tt + 2x1tt)
+ :((10x5 + x8 + 20x2tt + 30x1tt) // 10)
+ :(2x6 + x7)
+ :(3x6 + 4x7)
+ :(x8 - sin(x8))
+
+julia> vars = [:x1, :x2, :x3, :x4, :x6, :x7, :x1t, :x2t, :x3t, :x6t, :x7t, :x6tt, :x7tt];
+
+julia> jacobian(eqns, vars) |> Reduce.mat
+8×13 Array{Any,2}:
+ 1  -1   0   0  0  0  0  0  0  0  0  0  0
+ 1   1  -1   0  0  0  0  0  0  1  0  0  0
+ 1   0   0  -1  0  0  0  0  1  0  0  0  0
+ 0   0   0   0  0  0  0  0  0  0  0  0  0
+ 0   0   0   0  0  0  0  0  0  0  0  0  0
+ 0   0   0   0  2  1  0  0  0  0  0  0  0
+ 0   0   0   0  3  4  0  0  0  0  0  0  0
+ 0   0   0   0  0  0  0  0  0  0  0  0  0
+```
+The package also provides a demonstration of how additional `Reduce` methods can be imported into Julia.
+
 ### Output mode
  Various output modes are supported. While in the REPL, the default `nat` output mode will be displayed for `RExpr` objects.
 ```Julia
@@ -162,6 +226,8 @@ julia> print(@latex sin(x) + cos(y*MathConstants.φ))
 \end{displaymath}
 ```
 Internally, this command essentially expands to `rcall(:(sin(x) + cos(y*MathConstants.φ)),:latex) |> print`, which is equivalent.
+
+![latex-equation](https://latex.codecogs.com/svg.latex?\cos&space;\left(\left(\left(\sqrt&space;{5}&plus;1\right)&space;y\right)/2\right)&plus;\sin&space;x)
 
 In `IJulia` the display output of `RExpr` objects will be rendered LaTeX with the `rlfi` REDUCE package in `latex` mode.
 
@@ -183,8 +249,7 @@ If the `reduce>` REPL is not appearing when `}` is pressed or the Reduce pipe is
 
 Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
 
-### OhMyREPL Compatibility
+### AbstractTensors interoperability
 
-Reduce.jl is compatible with the [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl) package.
-
-Place `using Reduce` as first package to load in the `~/.juliarc.jl` startup file to ensure the REPL loads properly (when also `using OhMyREPL`). Otherwise, if you are loading this package when Julia has already been started, load it after `OhMyREPL`.
+By importing the [AbstractTensors.jl](https://github.com/chakravala/AbstractTensors.jl) module, the `Reduce` is able to correctly bypass operations on `TensorAlgebra` elements to the correct methods within the scope of the `Reduce.Algebra` module.
+This requires no additional overhead for the [Grassmann.jl](https://github.com/chakravala/Grassmann.jl) or `Reduce` packages, because the `AbstractTensors` interoperability interface enables separate precompilation of both.

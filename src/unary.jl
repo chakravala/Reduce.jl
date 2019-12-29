@@ -209,7 +209,7 @@ for fun in snan
 end
 
 """
-    rlet(::Union{Dict,Pair},expr)
+    rlet(::Union{Dict,Pair})
 
 The simplest use of the `let` statement is in the form
 ```
@@ -301,7 +301,7 @@ end
 for fun in scom
     @eval begin
         function $fun(x::T) where T <: Number
-            "$x" |> Meta.parse |> RExpr |> $fun |> parse |> eval
+            x |> RExpr |> $fun |> parse |> eval
         end
     end
 end

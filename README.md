@@ -6,14 +6,14 @@
 
 *Symbolic parser generator for Julia language expressions using REDUCE algebra term rewriter*
 
+[![DOI](https://zenodo.org/badge/90334073.svg)](https://zenodo.org/badge/latestdoi/90334073)
+[![Docs Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://reduce.crucialflow.com/stable)
+[![Docs Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://reduce.crucialflow.com/dev)
+[![Join the chat at gitter](https://badges.gitter.im/Reduce-jl/Lobby.svg)](https://gitter.im/Reduce-jl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/chakravala/Reduce.jl.svg?branch=master)](https://travis-ci.org/chakravala/Reduce.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/kaqu2yri4vxyr63n?svg=true)](https://ci.appveyor.com/project/chakravala/reduce-jl)
 [![Coverage Status](https://coveralls.io/repos/github/chakravala/Reduce.jl/badge.svg?branch=master)](https://coveralls.io/github/chakravala/Reduce.jl?branch=master)
 [![codecov.io](http://codecov.io/github/chakravala/Reduce.jl/coverage.svg?branch=master)](http://codecov.io/github/chakravala/Reduce.jl?branch=master)
-[![Docs Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://reduce.crucialflow.com/stable)
-[![Docs Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://reduce.crucialflow.com/dev)
-[![Join the chat at gitter](https://badges.gitter.im/Reduce-jl/Lobby.svg)](https://gitter.im/Reduce-jl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Liberapay patrons](https://img.shields.io/liberapay/patrons/chakravala.svg)](https://liberapay.com/chakravala)
 
 The premise behind Reduce.jl is based on the idea that `Symbol` and `Expr` types can be translated into computer algebra rewrite commands and then automatically parsed back into Julia ASTs, essentially extending the Julia language into a fully programable symbolic AST rewrite environment.
 
@@ -57,6 +57,9 @@ Reduce (Free CSL version, revision 4521),  11-March-2018 ...
 For users who wish to experimentally apply additional precompilation, it is possible to enable extra precompilation scripts by setting the environment variable `ENV["REDPRE"] = "1"` in julia (only effective when `Reduce` is being compiled).
 
 View the documentation [stable](https://chakravala.github.io/Reduce.jl/stable) / [latest](https://chakravala.github.io/Reduce.jl/latest) for more features and examples.
+
+This `Reduce` package for the Julia language was created by [github.com/chakravala](https://github.com/chakravala) for mathematics and computer algebra research with the upstream developed REDUCE software.
+Please consider donating to show your thanks and appreciation to this Julia project for interfacing the upstream REDUCE language at [liberapay](https://liberapay.com/chakravala), [GitHub Sponsors](https://github.com/sponsors/chakravala), [Patreon](https://patreon.com/dreamscatter), or contribute (documentation, tests, examples) in the repository.
 
 ## Usage
 
@@ -239,17 +242,10 @@ If the `reduce>` REPL is not appearing when `}` is pressed or the Reduce pipe is
 
 Otherwise, questions can be asked on gitter/discourse or submit your issue or pull-request if you require additional features or noticed some unusual edge-case behavior.
 
-
 ### AbstractTensors interoperability
 
 By importing the [AbstractTensors.jl](https://github.com/chakravala/AbstractTensors.jl) module, the `Reduce` is able to correctly bypass operations on `TensorAlgebra` elements to the correct methods within the scope of the `Reduce.Algebra` module.
 This requires no additional overhead for the [Grassmann.jl](https://github.com/chakravala/Grassmann.jl) or `Reduce` packages, because the `AbstractTensors` interoperability interface enables separate precompilation of both.
-
-### OhMyREPL Compatibility
-
-Reduce.jl is compatible with the [OhMyREPL.jl](https://github.com/KristofferC/OhMyREPL.jl) package.
-
-Place `using Reduce` as first package to load in `~/.julia/config/startup.jl` to ensure the REPL loads properly (when also `using OhMyREPL`). Otherwise, if loading this package when Julia has already been started, load it after `OhMyREPL`.
 
 ## Background
 

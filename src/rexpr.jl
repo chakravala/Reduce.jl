@@ -48,8 +48,15 @@ function RExpr(r::T) where T <: Union{Array,Adjoint,Tuple,Pair}
 end
 
 function RExpr(r::Any)
-    typeof(r) <: AbstractFloat && isinf(r) && (return RExpr((r > 0 ? "" : "-")*"infinity"))
-    typeof(r) <: Irrational && (return RExpr(unparse_irrational(r)))
+    if typeof(r) <: AbstractFloat && isinf(r)
+        return RExpr((r > 0 ? "" : "-")*"infinity")
+    elseif typeof(r) <: Irrational
+        return RExpr(unparse_irrational(r))
+    elseif typeof(r) <: Complex{Bool}
+        return RExpr("i")
+    elseif typeof(r) <: Complex
+        return RExpr("$(r.re)+$(r.im)*i")
+    end
     y = "$r"
     for key ∈ keys(repjlr)
         y = replace(y, key => repjlr[key])

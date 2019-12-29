@@ -680,6 +680,13 @@ function show_expr(io::IO, ex)
     elseif typeof(ex) <: Irrational
         print(io,unparse_irrational(ex))
         return nothing
+    elseif typeof(ex) <: Complex{Bool}
+        print(io,"i")
+    elseif typeof(ex) <: Complex
+        show_expr(io,ex.re)
+        print(io,"+")
+        show_expr(io,ex.im)
+        print(io,"*i")
     end
     if typeof(ex) <: Matrix
         print(io, "mat(")

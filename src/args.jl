@@ -980,7 +980,8 @@ julia> Algebra.totaldeg(:(a*x^2+b*x+c), (:p,:q,:r))
 
 The user may remove all assignments and substitution rules from any expression by the command `clear`, in the form
 ```
-R"clear ⟨expression⟩,…,⟨expression⟩ = ⟨terminator⟩"
+R"cilear ⟨expression⟩,…,⟨expression⟩ = ⟨terminator⟩"
+```
 e.g.
 ```Julia
 julia> Algebra.clear(:x,:(h(x,y)))

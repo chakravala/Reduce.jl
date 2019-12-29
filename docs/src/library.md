@@ -47,7 +47,7 @@ Reduce.unfoldgen
 ```
 
 ```@docs
-Reduce.linefilter!
+SyntaxTree.linefilter!
 ```
 
 ```@docs
@@ -72,4 +72,8 @@ Reduce.ColCheck
 
 ```@docs
 Reduce.PrintLog
+```
+
+```@docs
+ForceImport.var"@force"
 ```

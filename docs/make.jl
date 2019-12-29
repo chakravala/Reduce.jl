@@ -1,11 +1,11 @@
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-using Documenter, Reduce
+using Documenter, SyntaxTree, ForceImport, Reduce
 
 makedocs(
     # options
-    modules = [Reduce],
+    modules = [Reduce,SyntaxTree,ForceImport],
     doctest = false,
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     sitename = "Reduce.jl",
