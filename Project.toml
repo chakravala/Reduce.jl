@@ -8,14 +8,15 @@ REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 ReplMaker = "b873ce64-0db9-51f5-a568-4457d8e49576"
 ForceImport = "9dda63f9-cce7-5873-89fa-eccbb2fffcde"
 SyntaxTree = "a4af3ec5-f8ac-5fed-a759-c2e80b4d74cb"
-DirectSum = "22fd7b30-a8c0-5bf2-aabe-97783860d07c"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 AbstractTensors = "a8e43f4a-99b7-5565-8bf1-0165161caaea"
-Leibniz = "edad4870-8a01-11e9-2d75-8f02e448fc59"
 
 [compat]
 julia = "1"
-DirectSum = ">= 0.4.3"
+ForceImport = "0"
+SyntaxTree = "1"
+ReplMaker = "0"
+AbstractTensors = "0.4.1, 2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

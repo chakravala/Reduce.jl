@@ -211,8 +211,8 @@ end
 
 export inv, \
 
-inv(r::RExpr) = DirectSum.:^(r,-1)
-inv(r::T) where T <: MatExpr = DirectSum.:^(r,-1)
+inv(r::RExpr) = AbstractTensors.:^(r,-1)
+inv(r::T) where T <: MatExpr = AbstractTensors.:^(r,-1)
 
 \(a,b) = Base.:\(a,b)
 \(a::T,s::S) where T <: MatExpr where S <: Vector = (RExpr(a)^-1)*RExpr(s) |> parse |> mat

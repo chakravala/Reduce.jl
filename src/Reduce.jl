@@ -105,9 +105,9 @@ include("switch.jl") # load switch operators
 
 module Algebra
 using Reduce, LinearAlgebra
-import DirectSum
-import DirectSum: conj, inv, PROD, SUM, -, /
-import DirectSum: sqrt, abs, exp, expm1, log, log1p, sin, cos, sinh, cosh, ^
+import AbstractTensors
+import AbstractTensors: conj, inv, PROD, SUM, -, /
+import AbstractTensors: sqrt, abs, exp, expm1, log, log1p, sin, cos, sinh, cosh, ^
 const *,+ = PROD,SUM
 
 
