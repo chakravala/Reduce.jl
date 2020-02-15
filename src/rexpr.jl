@@ -419,6 +419,7 @@ convert(::Type{RExpr}, r::RExpr) = r
 convert(::Type{Array{String,1}}, r::RExpr) = r.str
 convert(::Type{String}, r::RExpr) = join(r.str,";\n")
 convert(::Type{T}, r::RExpr) where T = T <: Number ? eval(parse(r)) : parse(r)
+convert(::Type{Any}, r::RExpr) = r
 
 """
     rcall(r::RExpr)
