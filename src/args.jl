@@ -311,6 +311,7 @@ sub(s::Pair{<:Any,<:Any},expr) = sub(Dict(s),expr)
 sub(s::Array{<:Pair{<:Any,<:Any},1},expr) = sub(Dict(s...),expr)
 sub(s::Symbol,expr) = sub(string(s),expr)
 sub(s::T,expr) where T <: Tuple = sub(string(list(s)),expr)
+sub(s::Expr,expr) = sub(string(list(s)),expr)
 
 @doc """
     on(::Symbol...)
