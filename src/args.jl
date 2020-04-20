@@ -142,6 +142,9 @@ for fun in iops
         function $fun(a::T,b::ExprSymbol,s...) where T <: Number
             $fun(RExpr(a),RExpr(b),RExpr.(s)...) |> parse
         end
+        function $fun(a::A,b::B,c::ExprSymbol,s...) where {A<:Number,B<:Number}
+            $fun(RExpr(a),RExpr(b),RExpr(c),RExpr.(s)...) |> parse
+        end
     end
 end
 
