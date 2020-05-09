@@ -24,7 +24,6 @@ const calculus = [
     :totaldeg,
     :pochhammer,
     :fibonaccip,
-    :factor,
     :remfac,
     :gcd,
     :lcm,
