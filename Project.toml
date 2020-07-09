@@ -1,7 +1,7 @@
 name = "Reduce"
 uuid = "93e0c654-6965-5f22-aba9-9c1ae6b3c259"
 authors = ["Michael Reed"]
-version = "1.2.6"
+version = "1.2.7"
 
 [deps]
 REPL = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
@@ -16,7 +16,7 @@ julia = "1"
 ForceImport = "0"
 SyntaxTree = "1"
 ReplMaker = "0"
-AbstractTensors = "0.4.1, 2"
+AbstractTensors = "0.5"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
