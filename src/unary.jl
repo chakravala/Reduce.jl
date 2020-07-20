@@ -375,7 +375,7 @@ julia> Algebra.ceiling(:(-a))
 @doc """
     conj(r)
 
-This operator returns the ceiling (i.e., the least integer greater than the given argument) if its single argument has a numerical value. A non-numerical argument is returned as an expression in the original operator. For example:
+This operator returns the XXXXXXXX
 
 ```Julia
 julia> Algebra.conj(1+im)
