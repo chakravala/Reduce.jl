@@ -375,7 +375,7 @@ julia> Algebra.ceiling(:(-a))
 @doc """
     conj(r)
 
-This returns the complex conjugate of an expression, if that argument has an numerical value. A non-numerical argument is returned as an expression in the operators
+This returns the complex conjugate of an expression, if that argument has a numerical value. By default the complex conjugate of a non-numerical argument is returned as an expression in the operators
 `repart` and `impart`. For example:
 
 ```Julia
@@ -384,6 +384,19 @@ julia> Algebra.conj(1+im)
 
 julia> Algebra.conj(:(a+im*b))
 :(repart(a) - ((impart(a) + repart(b)) * im + impart(b)))
+
+However, if rules have been previously deﬁned for the complex conjugate(s) of one or more non-numerical terms appearing in the argument, these rules are applied and the expansion in terms of the operators `repart` and `impart` is suppressed.
+
+For example:
+```
+        realvalued a,b;  
+        conj(a+i*b)   ->   a-b*i  
+        let conj z => z!*, conj c => c!*;  
+        conj(a+b*z*z!*+z*c!*)   ->   a+b*z*z* + c*z*  
+        conj atan z    ->   atan(z*)
+```
+
+Note that in deﬁning the rule `conj z => z!*`, the rule `conj z!* => z` is (in eﬀect) automatically deﬁned. Note also that the standard elementary functions and their inverses (where appropriate) are automatically deﬁned to be `selfconjugate` so that `conj(f(z)) => f(conj(z))`. 
 ```
 """ Reduce.Algebra.conj
 
