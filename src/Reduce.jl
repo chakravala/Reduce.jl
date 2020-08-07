@@ -371,7 +371,6 @@ function Preload()
     global rs=PSL()
     offs = ""
     for o in offlist
-        global offs
         o != :nat && (offs = offs*"off $o; ")
     end
     write(rs.input,"off nat; $EOTstr;\n")
