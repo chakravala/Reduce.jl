@@ -358,32 +358,6 @@ function Load()
     return nothing
 end
 
-function Preload()
-    global rs=PSL()
-    offs = ""
-    for o in offlist
-        o != :nat && (offs = offs*"off $o; ")
-    end
-    write(rs.input,"off nat; $EOTstr;\n")
-    banner = readuntil(rs.output,EOT) |> String
-    readavailable(rs.output)
-    rcsl = occursin(" CSL ",banner)
-    if Sys.iswindows()
-        banner = replace(banner,r"\r" => "")
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-    else
-        ReduceCheck(banner)
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-    end
-    load_package(:rlfi)
-    offs |> RExpr |> rcall
-    rcall(R"on savestructr")
-    show(devnull,"text/latex",R"int(sinh(e**i*z),z)")
-    R"x" == R"x"
-    ListPrint(0)
-    atexit(()->kill(rs))
-end
-
 global preload = false
 try
     global preload
