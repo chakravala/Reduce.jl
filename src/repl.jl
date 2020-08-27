@@ -50,5 +50,6 @@ function repl_init(repl)
         start_key='}',
         mode_name="REDUCE",
         repl=repl,
+        startup_text=false,
     )
 end
