@@ -343,9 +343,6 @@ function Load()
     load_package(:rlfi)
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
-    show(devnull,"text/latex",R"int(sinh(e**i*z),z)")
-    R"x" == R"x"
-    ListPrint(0)
 
     if isdefined(Base,:active_repl) && isinteractive()
         repl_init(Base.active_repl)
