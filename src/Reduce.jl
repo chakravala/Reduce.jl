@@ -335,11 +335,10 @@ function Load()
     rcsl = occursin(" CSL ",banner)
     if Sys.iswindows()
         banner = replace(banner,r"\r" => "")
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
     else
         ReduceCheck(banner)
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
     end
+    global banner = split(String(banner),'\n')[rcsl ? 1 : end-3]
     load_package(:rlfi)
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
