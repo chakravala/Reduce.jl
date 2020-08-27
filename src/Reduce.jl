@@ -322,7 +322,9 @@ __init__() = (Load(); atexit(() -> kill(rs)))
 
 # Server setup
 
-const s = quote; #global rs = PSL()
+function Load()
+    global rs = PSL()
+
     offs = ""
     for o in offlist
         global offs
@@ -345,19 +347,12 @@ const s = quote; #global rs = PSL()
     show(devnull,"text/latex",R"int(sinh(e**i*z),z)")
     R"x" == R"x"
     ListPrint(0)
-end
 
-function Load()
-    global rs = PSL()
-    global s
     if isdefined(Base,:active_repl) && isinteractive()
-        eval(s)
         repl_init(Base.active_repl)
     elseif isdefined(Main,:IJulia)
-        eval(s)
     else
         atreplinit() do repl
-            eval(s)
             !isdefined(Main,:OhMyREPL) &&
                 (repl.interface = Base.REPL.setup_interface(repl))
             repl_init(Base.active_repl)
