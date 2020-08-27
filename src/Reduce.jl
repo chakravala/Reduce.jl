@@ -344,15 +344,16 @@ function Load()
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
 
-    if isdefined(Base,:active_repl) && isinteractive()
-        repl_init(Base.active_repl)
-    elseif isdefined(Main,:IJulia)
-    else
-        atreplinit() do repl
-            !isdefined(Main,:OhMyREPL) &&
-                (repl.interface = Base.REPL.setup_interface(repl))
+    if isinteractive()
+        if isdefined(Base,:active_repl)
             repl_init(Base.active_repl)
-            print('\n')
+        else
+            atreplinit() do repl
+                !isdefined(Main,:OhMyREPL) &&
+                    (repl.interface = Base.REPL.setup_interface(repl))
+                repl_init(Base.active_repl)
+                print('\n')
+            end
         end
     end
     return nothing
