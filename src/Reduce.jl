@@ -318,7 +318,7 @@ Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
 """
 Reset() = (kill(rs); Load())
-__init__() = (Load(); atexit(() -> kill(rs)))
+__init__() = (Load(); repl_init(); atexit(() -> kill(rs)))
 
 # Server setup
 
@@ -342,19 +342,6 @@ function Load()
     load_package(:rlfi)
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
-
-    if isinteractive()
-        if isdefined(Base,:active_repl)
-            repl_init(Base.active_repl)
-        else
-            atreplinit() do repl
-                !isdefined(Main,:OhMyREPL) &&
-                    (repl.interface = Base.REPL.setup_interface(repl))
-                repl_init(Base.active_repl)
-                print('\n')
-            end
-        end
-    end
     return nothing
 end
 
