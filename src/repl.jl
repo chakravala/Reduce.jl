@@ -50,5 +50,21 @@ function repl_init(repl)
         start_key='}',
         mode_name="REDUCE",
         repl=repl,
+        startup_text=false,
     )
+end
+
+function repl_init()
+    if isinteractive()
+        if isdefined(Base,:active_repl)
+            repl_init(Base.active_repl)
+        else
+            atreplinit() do repl
+                !isdefined(Main,:OhMyREPL) &&
+                    (repl.interface = Base.REPL.setup_interface(repl))
+                repl_init(Base.active_repl)
+                print('\n')
+            end
+        end
+    end
 end

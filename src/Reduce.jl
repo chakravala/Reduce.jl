@@ -318,57 +318,13 @@ Reduce (Free PSL version, revision 4015),  5-May-2017 ...
 ```
 """
 Reset() = (kill(rs); Load())
-__init__() = (Load(); atexit(() -> kill(rs)))
+__init__() = (Load(); repl_init(); atexit(() -> kill(rs)))
 
 # Server setup
 
-const s = quote; #global rs = PSL()
-    offs = ""
-    for o in offlist
-        global offs
-        o != :nat && (offs = offs*"off $o; ")
-    end
-    write(rs.input,"off nat; $EOTstr;\n")
-    banner = readuntil(rs.output,EOT) |> String
-    readavailable(rs.output)
-    rcsl = occursin(" CSL ",banner)
-    if Sys.iswindows()
-        banner = replace(banner,r"\r" => "")
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-    else
-        ReduceCheck(banner)
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
-    end
-    load_package(:rlfi)
-    offs |> RExpr |> rcall
-    rcall(R"on savestructr")
-    show(devnull,"text/latex",R"int(sinh(e**i*z),z)")
-    R"x" == R"x"
-    ListPrint(0)
-end
-
 function Load()
     global rs = PSL()
-    global s
-    if isdefined(Base,:active_repl) && isinteractive()
-        eval(s)
-        repl_init(Base.active_repl)
-    elseif isdefined(Main,:IJulia)
-        eval(s)
-    else
-        atreplinit() do repl
-            eval(s)
-            !isdefined(Main,:OhMyREPL) &&
-                (repl.interface = Base.REPL.setup_interface(repl))
-            repl_init(Base.active_repl)
-            print('\n')
-        end
-    end
-    return nothing
-end
 
-function Preload()
-    global rs=PSL()
     offs = ""
     for o in offlist
         o != :nat && (offs = offs*"off $o; ")
@@ -379,18 +335,14 @@ function Preload()
     rcsl = occursin(" CSL ",banner)
     if Sys.iswindows()
         banner = replace(banner,r"\r" => "")
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
     else
         ReduceCheck(banner)
-        println(split(String(banner),'\n')[rcsl ? 1 : end-3])
     end
+    global banner = split(String(banner),'\n')[rcsl ? 1 : end-3]
     load_package(:rlfi)
     offs |> RExpr |> rcall
     rcall(R"on savestructr")
-    show(devnull,"text/latex",R"int(sinh(e**i*z),z)")
-    R"x" == R"x"
-    ListPrint(0)
-    atexit(()->kill(rs))
+    return nothing
 end
 
 global preload = false
