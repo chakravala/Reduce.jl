@@ -106,16 +106,17 @@ include("switch.jl") # load switch operators
 module Algebra
 using Reduce, LinearAlgebra
 import AbstractTensors
-import AbstractTensors: conj, inv, PROD, SUM, -, /, √
+import AbstractTensors: conj, inv, dot, PROD, SUM, -, /, √
 import AbstractTensors: sqrt, abs, exp, expm1, log, log1p, sin, cos, sinh, cosh, ^
 const *,+ = PROD,SUM
-
 
 export expm1, log1p, √
 for T ∈ (RExpr,Expr,Symbol,String)
     @eval begin
         Base.expm1(z::$T) = exp(z)-1
         Base.log1p(z::$T) = 1+log(z)
+        dot(a::$T,b) = conj(a)*b
+        dot(a,b::$T) = conj(a)*b
     end
 end
 

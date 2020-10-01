@@ -13,10 +13,10 @@ AbstractTensors = "a8e43f4a-99b7-5565-8bf1-0165161caaea"
 
 [compat]
 julia = "1"
-ForceImport = "0"
+ForceImport = "0.0.3"
 SyntaxTree = "1"
-ReplMaker = "0"
-AbstractTensors = "0.6.1"
+ReplMaker = "0.1, 0.2"
+AbstractTensors = "0.6.3"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

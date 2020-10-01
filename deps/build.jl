@@ -91,7 +91,7 @@ else
         cd(wdir)
         println("Building Reduce.jl with CSL binaries ...")
         cab = "wincsl.cab"
-        http = "https://ayera.dl.sourceforge.net/project/reduce-algebra/snapshot_"
+        http = "https://master.dl.sourceforge.net/project/reduce-algebra/snapshot_"
         download(http*date[ρ]*"/windows/wincsl_$(rsvn[ρ]).cab",joinpath(wdir,cab))
         open("redextract.bat","w") do f
                 write(f,"expand $cab \"$(wdir)\" -F:*\n")
