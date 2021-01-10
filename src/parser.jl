@@ -623,7 +623,7 @@ end
     elseif expr.head == :(::)
         show_expr(io,expr.args[1])
     elseif expr.head == :macrocall
-        if expr.args[1] ∈ (Symbol("@big_str"),Symbol("@int128_str"),Expr(:.,:Core,QuoteNode(Symbol("@big_str"))),Expr(:.,:Core,QuoteNode(Symbol("@int128_str"))))
+        if expr.args[1] ∈ (Symbol("@big_str"),Symbol("@int128_str"),GlobalRef(Core,Symbol("@big_str")),GlobalRef(Core,Symbol("@int128_str")))
             print(io,expr.args[end])
         else
             throw(ReduceError("Macro $(expr.args[1]) block structure not supported\n\n$expr"))

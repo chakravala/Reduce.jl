@@ -117,8 +117,11 @@ for T ∈ (RExpr,Expr,Symbol,String)
         Base.log1p(z::$T) = 1+log(z)
         dot(a::$T,b) = conj(a)*b
         dot(a,b::$T) = conj(a)*b
+        dot(a::$T,b::$T) = conj(a)*b
     end
 end
+dot(a::Expr,b::Symbol) = conj(a)*b
+dot(a::Symbol,b::Expr) = conj(a)*b
 
 include("unary.jl") # load unary operators
 include("args.jl") # load calculus operators

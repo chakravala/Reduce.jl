@@ -3,7 +3,7 @@
 
 rpsl = "redcsl"
 
-ρ = 5
+ρ = 7
 
 date = Dict(
   0 =>  "2017-05-16",
@@ -12,7 +12,8 @@ date = Dict(
   3 =>  "2019-04-13",
   4 =>  "2019-09-15",
   5 =>  "2020-03-01",
-  6 =>  "2020-06-24")
+  6 =>  "2020-06-24",
+  7 =>  "2020-10-07")
 
 rsvn = Dict(
   0 =>  "4052",
@@ -21,7 +22,8 @@ rsvn = Dict(
   3 =>  "4961",
   4 =>  "5129",
   5 =>  "5286",
-  6 =>  "5377")
+  6 =>  "5377",
+  7 =>  "5424")
 
 function _spawn(cmd, input=devnull, output=devnull)
     run(pipeline(cmd, stdin=input, stdout=output, stderr=stderr), wait=false)
