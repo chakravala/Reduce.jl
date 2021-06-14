@@ -30,17 +30,10 @@ end
 if !Sys.iswindows()
     try
         try
-            process = _spawn(`$rpsl`)
+            process = _spawn(red())
             kill(process)
         catch
-            if Sys.islinux()
-                cmd = `$(joinpath(wdir,"usr","bin"))/$rpsl`
-            elseif Sys.isapple()
-                cmd = `$(joinpath(wdir,"psl"))/$rpsl`
-            else
-                cmd = `$(joinpath(wdir,"Reduce-svn$(rsvn[ρ])-src","bin"))/$rpsl`
-            end
-            process = _spawn(cmd)
+            process = _spawn(redsys(wdir))
             kill(process)
             !isfile("ver") && writever(0)
         end
@@ -49,9 +42,9 @@ if !Sys.iswindows()
         rtg = "reduce.tar.gz"
         dl = "/download"
         cd(wdir)
-        println("Building Reduce.jl with CSL binaries ... ")
+        println("Building Reduce.jl with $(ispsl() ? "PSL" : "CSL") binaries ... ")
         if Sys.islinux()
-            src = "/reduce-csl_"
+            src = "/reduce-$(redsl())_"
             if occursin("64",read(`uname -m`,String))
                 download(http*date[ρ]*"/linux64"*src*rsvn[ρ]*"_amd64.tgz"*dl,joinpath(wdir,rtg))
             else
@@ -65,8 +58,8 @@ if !Sys.iswindows()
             snap = "Reduce-snapshot"
             download(http*date[ρ]*"/macintosh/"*snap*"_"*rsvn[ρ]*".dmg"*dl,joinpath(wdir,"$(snap)_$(date[ρ]).dmg"))
             run(`hdiutil attach $(wdir)/$(snap)_$(date[ρ]).dmg`)
-            run(`rm -rf $(joinpath(wdir,"csl"))`)
-            run(`cp -r /Volumes/$(snap)/csl $(wdir)/csl`)
+            run(`rm -rf $(joinpath(wdir,redsl()))`)
+            run(`cp -r /Volumes/$(snap)/csl $(wdir)/$(redsl())`)
             run(`hdiutil unmount /Volumes/$(snap)`)
             run(`rm $(snap)_$(date[ρ]).dmg`)
             writever(ρ)
@@ -83,16 +76,14 @@ if !Sys.iswindows()
     end
 else
     try
-        #cmd = `"$(wdir)\psl\bpsl.exe" -td 16000000 -f "$(wdir)\red\reduce.img"`
-        cmd = `"$(wdir)\reduce.exe" --nogui`
-        process = _spawn(cmd)
+        process = _spawn(redsys(wdir))
         kill(process)
     catch
         cd(wdir)
-        println("Building Reduce.jl with CSL binaries ...")
-        cab = "wincsl.cab"
+        println("Building Reduce.jl with $(ispsl() ? "PSL" : "CSL") binaries ...")
+        cab,winsl = "winred.cab",ispsl() ? "winpsl64" : "wincsl"
         http = "https://master.dl.sourceforge.net/project/reduce-algebra/snapshot_"
-        download(http*date[ρ]*"/windows/wincsl_$(rsvn[ρ]).cab",joinpath(wdir,cab))
+        download(http*date[ρ]*"/windows/$(winsl)_$(rsvn[ρ]).cab",joinpath(wdir,cab))
         open("redextract.bat","w") do f
                 write(f,"expand $cab \"$(wdir)\" -F:*\n")
                 #write(f,"reg Query \"HKLM\\Hardware\\Description\\System\\CentralProcessor\\0\" | find /i \"x86\" > NUL && set OSQ=32BIT || set OSQ=64BIT\n")

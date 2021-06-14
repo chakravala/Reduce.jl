@@ -16,26 +16,16 @@ struct PSL <: Base.AbstractPipe
         # Setup pipes and reduce process
         input = Pipe()
         output = Pipe()
-        rsl = `$(split(rpsl))`
-        dirf = @__DIR__
+        rsl = red()
+        dirf = joinpath(@__DIR__,"..","deps")
         if !Sys.iswindows()
             try
-                process = _spawn(rsl, input, output)
+                process = _spawn(red(), input, output)
             catch
-                if Sys.islinux()
-                    rsl = `$(joinpath(dirf,"..","deps","usr","bin"))/$rpsl`
-                elseif Sys.isapple()
-                    rsl = `$(joinpath(dirf,"..","deps","csl"))/$rpsl -w`
-                else
-                    rsl = `$(joinpath(dirf,"..","Reduce-svn$(rsvn[ρ])-src","bin"))/$rpsl`
-                end
-                process = _spawn(rsl, input, output)
+                process = _spawn(redsys(dirf), input, output)
             end
         else
-            dirf = joinpath(dirf,"..","deps")
-            #rsl = `"$(dirf)\psl\bpsl.exe" -td 16000000 -f "$(dirf)\red\reduce.img"`
-            rsl = `"$(dirf)\reduce.exe" --nogui`
-            process = _spawn(rsl, input, output)
+            process = _spawn(redsys(dirf), input, output)
         end
         # Close the unneeded ends of Pipes
         close(input.out)
