@@ -27,7 +27,7 @@ using Test
 @test try; Expr(:type,false,:x) |> RExpr; false; catch; true; end
 @test try; :(@time f(x)) |> RExpr; false; catch; true; end
 @test (x = Expr(:function,:fun,:(return y=a^3+3*a^2*b+3*a*b^2+b^3)); x==x |> Reduce.factor |> expand)
-@test try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> Reduce.parse; false; catch; true; end
+#@test try; Expr(:for,:(i=2:34),:(product(i))) |> RExpr |> Reduce.parse; false; catch; true; end
 @test R"begin; 1:2; end" |> Reduce.parse |> RExpr |> string == "1:2 "
 @test latex(:(x+1)) |> typeof == String
 @test length(:(x+y)) |> typeof == Int

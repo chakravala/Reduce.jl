@@ -301,6 +301,20 @@ macro load_package(pkg...)
 end
 
 """
+    Reduce.stop()
+
+Kills the REDUCE process without starting a new instance.
+
+This call is required to stop the IO if Reduce is used in a precompiled package.
+
+## Examples
+```julia-repl
+julia> Reduce.stop()
+```
+"""
+stop() = kill(rs)
+
+"""
     Reduce.Reset()
 
 Kills the REDUCE process and starts a new instance.
