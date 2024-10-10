@@ -6,7 +6,7 @@ using ForceImport, SyntaxTree, LinearAlgebra
 #   This file is part of Reduce.jl. It is licensed under the MIT license
 #   Copyright (C) 2017 Michael Reed
 
-include(joinpath(@__DIR__,"../deps/svn.jl"))
+include("build.jl")
 
 struct PSL <: Base.AbstractPipe
     input::Pipe
