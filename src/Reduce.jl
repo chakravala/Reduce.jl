@@ -246,7 +246,7 @@ Base.write(rs::PSL,r::RExpr) = write(rs,convert(String,r))
 
 import Base: zero, one
 
-for T ∈ [:Any,:Expr,:Symbol]
+for T ∈ [:Expr,:Symbol] # Any
     @eval begin
         zero(::Type{$T}) = 0
         zero(::$T) = 0
