@@ -80,14 +80,14 @@ end
 
 if !Sys.iswindows()
     try
-        try
-            process = _spawn(red())
-            kill(process)
-        catch
+        #try
+        #    process = _spawn(red())
+        #    kill(process)
+        #catch
             process = _spawn(redsys(wdir))
             kill(process)
             !isfile("ver") && writever(0)
-        end
+        #end
     catch
         http = "https://sourceforge.net/projects/reduce-algebra/files/snapshot_"
         rtg = "reduce.tar.gz"

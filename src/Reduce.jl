@@ -19,11 +19,11 @@ struct PSL <: Base.AbstractPipe
         rsl = red()
         dirf = joinpath(@__DIR__,"..","deps")
         if !Sys.iswindows()
-            try
-                process = _spawn(red(), input, output)
-            catch
+            #try
+            #    process = _spawn(red(), input, output)
+            #catch
                 process = _spawn(redsys(dirf), input, output)
-            end
+            #end
         else
             process = _spawn(redsys(dirf), input, output)
         end
